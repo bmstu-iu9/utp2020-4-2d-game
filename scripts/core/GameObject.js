@@ -1,4 +1,5 @@
 import Vector2d from './Vector2d.js';
+import Component from './Component.js';
 
 export default class GameObject {
 	/**
@@ -25,6 +26,10 @@ export default class GameObject {
 		this.setScale(scale);
 		this.isStatic = isStatic;
 		/**
+		 * @type {Component[]}
+		 */
+		this.components = [];
+		/**
 		 * @type {GameObject[]}
 		 */
 		this.children = [];
@@ -33,6 +38,7 @@ export default class GameObject {
 		 */
 		this.parent = null;
 		this.isInitialized = false;
+		this.isDestroyed = false;
 	}
 
 	/**
@@ -177,6 +183,136 @@ export default class GameObject {
 	}
 
 	/**
+	 * Добавляет компонент к игровому объекту.
+	 * 
+	 * @param {Component} component Компонент, который надо добавить.
+	 */
+	addComponent(component) {
+		if (!(component instanceof Component)) {
+			throw new TypeError('invalid parameter "component". Expected an instance of Component class.');
+		}
+		if (this.components.includes(component)) {
+			return;
+		}
+		if (!component.allowMultipleComponents) {
+			const componentConstructor = Object.getPrototypeOf(component).constructor;
+			if (this.getComponent(componentConstructor) != null) {
+				const message = `adding multiple instances of "${componentConstructor.name}" component is disallowed.`;
+				throw new Error(message);
+			}
+		}
+		component.attach(this);
+		this.components.push(component);
+		if (this.isInitialized) {
+			component.initialize();
+		}
+	}
+
+	/**
+	 * @param {function} componentClass Класс компонента, который надо получить.
+	 * 
+	 * @return {Component} Возвращает первый компонент, который принадлежит передаваемому классу. Если такого нет, то возвращается undefined.
+	 */
+	getComponent(componentClass) {
+		if (typeof componentClass !== 'function') {
+			throw new TypeError('invalid parameter "componentClass". Expected a function.');
+		}
+		return this.components.find(component => component instanceof componentClass);
+	}
+	
+	/**
+	 * @param {function} componentsClass Класс компонентов, которые надо получить.
+	 * 
+	 * @return {Component[]} Возвращает массив компонентов, которые принадлежат передаваемому классу. Если таких нет, то возвращается пустой массив.
+	 */
+	getComponents(componentsClass) {
+		if (typeof componentsClass !== 'function') {
+			throw new TypeError('invalid parameter "componentsClass". Expected a function.');
+		}
+		return this.components.filter(component => component instanceof componentsClass);
+	}
+
+	/**
+	 * Удаляет первый компонент, который принадлежит передаваемому классу, из данного игрового объекта.
+	 * 
+	 * @param {function} componentClass Класс компонента, который надо удалить.
+	 */
+	removeComponentByClass(componentClass) {
+		if (typeof componentClass !== 'function') {
+			throw new TypeError('invalid parameter "componentClass". Expected a function.');
+		}
+		const index = this.components.findIndex(component => component instanceof componentClass);
+		if (index >= 0) {
+			this.removeComponentAt(index);
+		}
+	}
+
+	/**
+	 * Удаляет компоненты, которые принадлежат передаваемому классу, из данного игрового объекта.
+	 * 
+	 * @param {function} componentsClass Класс компонентов, которые надо удалить.
+	 */
+	removeComponentsByClass(componentsClass) {
+		if (typeof componentsClass !== 'function') {
+			throw new TypeError('invalid parameter "componentsClass". Expected a function.');
+		}
+		let i = 0;
+		while (i < this.components.length) {
+			if (this.components[i] instanceof componentsClass) {
+				this.removeComponentAt(i);
+			} else {
+				i++;
+			}
+		}
+	}
+
+	/**
+	 * Удаляет компонент из данного игрового объекта.
+	 * 
+	 * @param {Component} component Компонент, который надо удалить.
+	 */
+	removeComponent(component) {
+		const index = this.components.indexOf(component);
+		if (index >= 0) {
+			this.removeComponentAt(index);
+		}
+	}
+
+	/**
+	 * Удаляет компонент из данного игрового объекта по индексу.
+	 * 
+	 * @param {number} index Индекс компонента, который нужно удалить.
+	 */
+	removeComponentAt(index) {
+		if (!Number.isInteger(index)) {
+			throw new TypeError('invalid parameter "index". Expected a integer.');
+		}
+		if (index < 0 || index >= this.components.length) {
+			throw new RangeError('invalid parametr "index".');
+		}
+		const [deleted] = this.components.splice(index, 1);
+		deleted.destroy();
+	}
+
+	/**
+	 * Вызывает функцию во всех компонентах данного игрового объекта с помощью класса Reflect.
+	 * 
+	 * @param {string} functionName Название функции, которую надо вызвать.
+	 * @param {...any} args         Агрументы, которые надо передать в функцию.
+	 */
+	callInComponents(functionName, ...args) {
+		this.components.forEach(component => {
+			if (!component.isEnabled) {
+				return;
+			}
+			const componentFunction = component[functionName];
+			if (componentFunction != null && typeof componentFunction === 'function') {
+				Reflect.apply(componentFunction, component, args);
+			}
+		});
+	}
+
+	/**
 	 * Инициализирует данный игровой объект.
 	 */
 	initialize() {
@@ -184,6 +320,7 @@ export default class GameObject {
 			throw new Error('already initialized.');
 		}
 		this.isInitialized = true;
+		this.components.forEach(component => component.initialize());
 	}
 
 	/**
@@ -192,6 +329,7 @@ export default class GameObject {
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
 	onFrameUpdate(deltaTime) {
+		this.callInComponents('onFrameUpdate', deltaTime);
 	}
 
 	/**
@@ -200,6 +338,7 @@ export default class GameObject {
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
 	onFrameUpdateEnd(deltaTime) {
+		this.callInComponents('onFrameUpdateEnd', deltaTime);
 	}
 
 	/**
@@ -214,5 +353,9 @@ export default class GameObject {
 	 * Уничтожает данный игровой объект.
 	 */
 	destroy() {
+		while (this.components.length != 0) {
+			this.components[0].destroy();
+		}
+		this.isDestroyed = true;
 	}
 }
