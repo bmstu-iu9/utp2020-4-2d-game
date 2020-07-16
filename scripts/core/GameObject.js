@@ -25,10 +25,8 @@ export default class GameObject {
 		this.setRotation(rotation);
 		this.setScale(scale);
 		this.isStatic = isStatic;
-		/**
-		 * @type {Component[]}
-		 */
-		this.components = [];
+		this.isInitialized = false;
+		this.isDestroyed = false;
 		/**
 		 * @type {GameObject[]}
 		 */
@@ -37,8 +35,48 @@ export default class GameObject {
 		 * @type {GameObject}
 		 */
 		this.parent = null;
-		this.isInitialized = false;
-		this.isDestroyed = false;
+
+		/**
+		 * @type {Component[]}
+		 * 
+		 * @access private
+		 */
+		this.components = [];
+		/**
+		 * @access private
+		 */
+		this.componentsInProcessing = false;
+		/**
+		 * @access private
+		 */
+		this.componentRemovedInProcessing = false;
+	}
+
+	/**
+	 * Выбрасывает ошибку, если игровой объект уничтожен.
+	 */
+	throwIfDestroyed() {
+		if (this.isDestroyed) {
+			throw new Error('game object is destroyed.');
+		}
+	}
+
+	/**
+	 * Выбрасывает ошибку, если игровой объект статичный.
+	 */
+	throwIfStatic() {
+		if (this.isStatic) {
+			throw new Error('attempt to modify a static game object.');
+		}
+	}
+
+	/**
+	 * Выбрасывает ошибку, если игровой объект еше не инициализирован.
+	 */
+	throwIfNotInitialized() {
+		if (!this.isInitialized) {
+			throw new Error('game object is not initialized.');
+		}
 	}
 
 	/**
@@ -47,9 +85,8 @@ export default class GameObject {
 	 * @param {Vector2d} position Новая позиция игрового объекта. 
 	 */
 	setPosition(position) {
-		if (this.isStatic) {
-			throw new Error('attempt to modify a static gameobject.');
-		}
+		this.throwIfDestroyed();
+		this.throwIfStatic();
 		if (!(position instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
 		}
@@ -62,9 +99,8 @@ export default class GameObject {
 	 * @param {number} angle Новый угол поворота игрового объекта в радианах. 
 	 */
 	setRotation(angle) {
-		if (this.isStatic) {
-			throw new Error('attempt to modify a static gameobject.');
-		}
+		this.throwIfDestroyed();
+		this.throwIfStatic();
 		if (typeof angle !== 'number') {
 			throw new TypeError('invalid parameter "angle". Expected a number.');
 		}
@@ -77,9 +113,8 @@ export default class GameObject {
 	 * @param {Vector2d} scale Новый масштаб игрового объекта. 
 	 */
 	setScale(scale) {
-		if (this.isStatic) {
-			throw new Error('attempt to modify a static gameobject.');
-		}
+		this.throwIfDestroyed();
+		this.throwIfStatic();
 		if (!(scale instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
 		}
@@ -93,9 +128,8 @@ export default class GameObject {
 	 * @param {GameObject} gameObject Родительский игровой объект. Может быть null.
 	 */
 	setParent(gameObject) {
-		if (this.isStatic) {
-			throw new Error('attempt to modify a static gameobject.');
-		}
+		this.throwIfDestroyed();
+		this.throwIfStatic();
 		if (gameObject == null) {
 			if (this.parent != null) {
 				this.parent.removeChild(this);
@@ -114,6 +148,7 @@ export default class GameObject {
 	 * @param {GameObject} gameObject Игровой объект, который станет дочерним. 
 	 */
 	addChild(gameObject) {
+		this.throwIfDestroyed();
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
@@ -132,6 +167,7 @@ export default class GameObject {
 	 * @return {GameObject} Возвращает дочерний игровой объект с переданным именем. Если он не нашелся, то возвращается undefined.
 	 */
 	getChildByName(name) {
+		this.throwIfDestroyed();
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}
@@ -144,6 +180,7 @@ export default class GameObject {
 	 * @return {GameObject} Возвращает дочерний игровой объект по индексу.
 	 */
 	getChildByIndex(index) {
+		this.throwIfDestroyed();
 		if (!Number.isInteger(index)) {
 			throw new TypeError('invalid parameter "index". Expected a integer.');
 		}
@@ -159,6 +196,7 @@ export default class GameObject {
 	 * @param {GameObject} child Дочерний объект.
 	 */
 	removeChild(child) {
+		this.throwIfDestroyed();
 		const index = this.children.indexOf(child);
 		if (index >= 0) {
 			const [deleted] = this.children.splice(index, 1);
@@ -172,6 +210,7 @@ export default class GameObject {
 	 * @param {number} index Индекс дочернего объекта.
 	 */
 	removeChildAt(index) {
+		this.throwIfDestroyed();
 		if (!Number.isInteger(index)) {
 			throw new TypeError('invalid parameter "index". Expected a integer.');
 		}
@@ -188,13 +227,14 @@ export default class GameObject {
 	 * @param {Component} component Компонент, который надо добавить.
 	 */
 	addComponent(component) {
+		this.throwIfDestroyed();
 		if (!(component instanceof Component)) {
 			throw new TypeError('invalid parameter "component". Expected an instance of Component class.');
 		}
 		if (this.components.includes(component)) {
 			return;
 		}
-		if (!component.allowMultipleComponents) {
+		if (!component.allowMultipleComponents()) {
 			const componentConstructor = Object.getPrototypeOf(component).constructor;
 			if (this.getComponent(componentConstructor) != null) {
 				const message = `adding multiple instances of "${componentConstructor.name}" component is disallowed.`;
@@ -214,22 +254,37 @@ export default class GameObject {
 	 * @return {Component} Возвращает первый компонент, который принадлежит передаваемому классу. Если такого нет, то возвращается undefined.
 	 */
 	getComponent(componentClass) {
+		this.throwIfDestroyed();
 		if (typeof componentClass !== 'function') {
 			throw new TypeError('invalid parameter "componentClass". Expected a function.');
 		}
-		return this.components.find(component => component instanceof componentClass);
+		return this.components.find(component => !component.isDestroyed && component instanceof componentClass);
 	}
-	
+
 	/**
 	 * @param {function} componentsClass Класс компонентов, которые надо получить.
 	 * 
 	 * @return {Component[]} Возвращает массив компонентов, которые принадлежат передаваемому классу. Если таких нет, то возвращается пустой массив.
 	 */
 	getComponents(componentsClass) {
+		this.throwIfDestroyed();
 		if (typeof componentsClass !== 'function') {
 			throw new TypeError('invalid parameter "componentsClass". Expected a function.');
 		}
-		return this.components.filter(component => component instanceof componentsClass);
+		return this.components.filter(component => !component.isDestroyed && component instanceof componentsClass);
+	}
+
+	/**
+	 * @return {number} Возвращает количество компонентов на данном игровом объекте.
+	 */
+	getComponentsCount() {
+		this.throwIfDestroyed();
+		return this.components.reduce((accumulator, component) => {
+			if (!component.isDestroyed) {
+				accumulator++;
+			}
+			return accumulator;
+		}, 0);
 	}
 
 	/**
@@ -238,6 +293,7 @@ export default class GameObject {
 	 * @param {function} componentClass Класс компонента, который надо удалить.
 	 */
 	removeComponentByClass(componentClass) {
+		this.throwIfDestroyed();
 		if (typeof componentClass !== 'function') {
 			throw new TypeError('invalid parameter "componentClass". Expected a function.');
 		}
@@ -253,16 +309,24 @@ export default class GameObject {
 	 * @param {function} componentsClass Класс компонентов, которые надо удалить.
 	 */
 	removeComponentsByClass(componentsClass) {
+		this.throwIfDestroyed();
 		if (typeof componentsClass !== 'function') {
 			throw new TypeError('invalid parameter "componentsClass". Expected a function.');
 		}
-		let i = 0;
-		while (i < this.components.length) {
-			if (this.components[i] instanceof componentsClass) {
-				this.removeComponentAt(i);
-			} else {
-				i++;
-			}
+		if (this.componentsInProcessing) {
+			this.components.forEach(component => {
+				if (!component.isDestroyed && component instanceof componentsClass) {
+					component.destroy();
+				}
+			});
+		} else {
+			this.components = this.components.filter(component => {
+				if (!component.isDestroyed && component instanceof componentsClass) {
+					component.destroy();
+					return false;
+				}
+				return true;
+			});
 		}
 	}
 
@@ -272,6 +336,10 @@ export default class GameObject {
 	 * @param {Component} component Компонент, который надо удалить.
 	 */
 	removeComponent(component) {
+		this.throwIfDestroyed();
+		if (!(component instanceof Component)) {
+			throw new TypeError('invalid parameter "component". Expected an instance of Component class.');
+		}
 		const index = this.components.indexOf(component);
 		if (index >= 0) {
 			this.removeComponentAt(index);
@@ -284,14 +352,34 @@ export default class GameObject {
 	 * @param {number} index Индекс компонента, который нужно удалить.
 	 */
 	removeComponentAt(index) {
+		this.throwIfDestroyed();
 		if (!Number.isInteger(index)) {
 			throw new TypeError('invalid parameter "index". Expected a integer.');
 		}
 		if (index < 0 || index >= this.components.length) {
 			throw new RangeError('invalid parametr "index".');
 		}
-		const [deleted] = this.components.splice(index, 1);
-		deleted.destroy();
+		if (!this.components[index].isDestroyed) {
+			this.components[index].destroy();
+		}
+		if (!this.componentsInProcessing) {
+			this.components.splice(index, 1);
+		}
+	}
+
+	/**
+	 * Удаляет компоненты, которые были уничтожены во время обработки всех компонентов.
+	 * 
+	 * Если вызов функции произойдет, когда компоненты еще обрабатываются, то удаления уничтоженных компонентов не будет выполнено.
+	 * Однако этот вызов скажет игровому объекту, что во время обработки компонентов было удаление.
+	 */
+	removeDestroyedComponents() {
+		if (this.componentsInProcessing) {
+			this.componentRemovedInProcessing = true;
+		} else if (this.componentRemovedInProcessing) {
+			this.components = this.components.filter(component => !component.isDestroyed);
+			this.componentRemovedInProcessing = false;
+		}
 	}
 
 	/**
@@ -301,8 +389,12 @@ export default class GameObject {
 	 * @param {...any} args         Агрументы, которые надо передать в функцию.
 	 */
 	callInComponents(functionName, ...args) {
+		this.throwIfDestroyed();
+		const isMainProcess = !this.componentsInProcessing;
+		this.componentsInProcessing = true;
+
 		this.components.forEach(component => {
-			if (!component.isEnabled) {
+			if (component.isDestroyed || !component.isEnabled) {
 				return;
 			}
 			const componentFunction = component[functionName];
@@ -310,17 +402,28 @@ export default class GameObject {
 				Reflect.apply(componentFunction, component, args);
 			}
 		});
+
+		if (isMainProcess) {
+			this.componentsInProcessing = false;
+			this.removeDestroyedComponents();
+		}
 	}
 
 	/**
 	 * Инициализирует данный игровой объект.
 	 */
 	initialize() {
+		this.throwIfDestroyed();
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
 		this.isInitialized = true;
+		this.componentsInProcessing = true;
+
 		this.components.forEach(component => component.initialize());
+
+		this.componentsInProcessing = false;
+		this.removeDestroyedComponents();
 	}
 
 	/**
@@ -329,6 +432,8 @@ export default class GameObject {
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
 	onFrameUpdate(deltaTime) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
 		this.callInComponents('onFrameUpdate', deltaTime);
 	}
 
@@ -338,24 +443,30 @@ export default class GameObject {
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
 	onFrameUpdateEnd(deltaTime) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
 		this.callInComponents('onFrameUpdateEnd', deltaTime);
 	}
 
 	/**
-	 * Отрисовывает данный игровой объект в передаваемом контексте.
+	 * Вызывается, когда надо отрисовать игровой объект.
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка. 
 	 */
-	draw(context) {
+	onDraw(context) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
 	}
 
 	/**
 	 * Уничтожает данный игровой объект.
 	 */
 	destroy() {
-		while (this.components.length != 0) {
-			this.components[0].destroy();
-		}
+		this.throwIfDestroyed();
+		this.components.forEach(component => component.destroy());
+		this.children.forEach(child => child.destroy());
+		delete this.children;
+		delete this.components;
 		this.isDestroyed = true;
 	}
 }
