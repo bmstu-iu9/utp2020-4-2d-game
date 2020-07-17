@@ -1,5 +1,6 @@
 import Vector2d from './Vector2d.js';
 import Component from './Component.js';
+import Renderer from './graphics/Renderer.js';
 
 export default class GameObject {
 	/**
@@ -467,6 +468,16 @@ export default class GameObject {
 	onDraw(context) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
+		this.componentsInProcessing = true;
+
+		this.components.forEach(component => {
+			if (!component.isDestroyed && component.isEnabled && component instanceof Renderer) {
+				component.onDraw(context);
+			}
+		});
+
+		this.componentsInProcessing = false;
+		this.removeDestroyedComponents();
 	}
 
 	/**
