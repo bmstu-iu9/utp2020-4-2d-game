@@ -55,14 +55,14 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает длину данного вектора в квадрате. 
+	 * @return {number} Возвращает длину данного вектора в квадрате. 
 	 */
 	squaredLength() {
 		return this.x * this.x + this.y * this.y;
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает длину данного вектора. 
+	 * @return {number} Возвращает длину данного вектора. 
 	 */
 	length() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -98,41 +98,6 @@ export default class Vector2d {
 	}
 
 	/**
-	 * Вычисляет векторное произведение на плоскости данного вектора с передаваемым.
-	 * 
-	 * Это аналог вектороного произведения в пространстве: вычисляется проекция векторного произведения векторов,
-	 * находящихся в плоскости Oxy, на ось Oz. 
-	 * 
-	 * @param {Vector2d} vector
-	 *
-	 * @return {number} Возвращает векторное произведение векторов на плоскости.
-	 */
-	cross(vector) {
-		if (!(vector instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
-		}
-		return firstVector.x * secondVector.y - secondVector.x * firstVector.y;
-	}
-
-	/**
-	 * Определяет ориентацию упрорядоченной пары векторов.
-	 * 
-	 * @param {Vector2d} firstVector
-	 * @param {Vector2d} secondVector
-	 *
-	 * @return {number} Возвращает число, соответствующее ориентации векторов (-1 - отрицательно ориентированные, 0 - коллинеарны, 1 - положительно ориентированные).
-	 */
-	static orientation(firstVector, secondVector) {
-		if (!(firstVector instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "firstVector". Expected an instance of Vector2d class.');
-		}
-		if (!(secondVector instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "secondVector". Expected an instance of Vector2d class.');
-		}
-		return Math.sign(firstVector.cross(secondVector));
-	}
-
-	/**
 	 * Вычисляет векторную проекцию данного вектора на передаваемый.
 	 * 
 	 * @param {Vector2d} vector
@@ -143,7 +108,7 @@ export default class Vector2d {
 		if (!(vector instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
 		}
-		return vector.multiply(vector.scalarMultiply(this) / vector.scalarMultiply(vector));
+		return vector.multiply(vector.dot(this) / vector.dot(vector));
 	}
 
 	/**
@@ -157,7 +122,7 @@ export default class Vector2d {
 		if (!(vector instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
 		}
-		return vector.scalarMultiply(this) / vector.length();
+		return vector.dot(this) / vector.length();
 	}
 
 	/**
@@ -183,6 +148,20 @@ export default class Vector2d {
 	 */
 	copy() {
 		return new Vector2d(this.x, this.y);
+	}
+
+	/**
+	 * Сравнивает данный вектор с передаваемым.
+	 * 
+	 * @param {Vector2d} vector
+	 * 
+	 * @return {boolean} Возвращает true, если векторы равны, иначе - false.
+	 */
+	equals(vector) {
+		if (!(vector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
+		}
+		return this.x === vector.x && this.y === vector.y;
 	}
 	
 	/**
