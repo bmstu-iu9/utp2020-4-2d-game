@@ -5,22 +5,38 @@ export default class Component {
 		if (new.target === Component) {
 			throw new TypeError('cannot create instance of abstract class.');
 		}
-		this.allowMultipleComponents = true;
 		this.isEnabled = true;
 		this.isInitialized = false;
 		this.isDestroyed = false;
 		/**
-		 * @type {GameObject} 
+		 * @type {GameObject}
 		 */
 		this.gameObject = null;
 	}
 	
 	/**
+	 * Выбрасывает ошибку, если компонент уничтожен.
+	 */
+	throwIfDestroyed() {
+		if (this.isDestroyed) {
+			throw new Error('component is destroyed.');
+		}
+	}
+
+	/**
+	 * @return {boolean} Возвращает false, если нельзя использовать несколько экземляров данного компонента на игровом объекте. В остальных случаях возвращает true.
+	 */
+	allowMultipleComponents() {
+		return true;
+	}
+
+	/**
 	 * Включает или выключает компонент.
 	 * 
-	 * @param {boolean} value Должен ли компонент включиться. 
+	 * @param {boolean} value Должен ли компонент включиться.
 	 */
 	setEnabled(value) {
+		this.throwIfDestroyed();
 		if (typeof value !== 'boolean') {
 			throw new TypeError('invalid parameter "value". Expected a boolean.');
 		}
@@ -34,6 +50,8 @@ export default class Component {
 		if (value && !this.isInitialized) {
 			this.initialize();
 			return;
+		} else if (!this.isInitialized) {
+			return;
 		}
 		if (value) {
 			this.onEnable();
@@ -46,6 +64,7 @@ export default class Component {
 	 * Инициализирует данный компонент. Но если он отключен, то ничего не делает.
 	 */
 	initialize() {
+		this.throwIfDestroyed();
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
@@ -69,6 +88,14 @@ export default class Component {
 	 * Вызывается, когда компонент включается.
 	 */
 	onEnable() {
+	}
+
+	/**
+	 * Вызывается перед обновлением физики.
+	 * 
+	 * @param {number} fixedDeltaTime Фиксированное время обновления физики.
+	 */
+	onPhysicsUpdate(fixedDeltaTime) {
 	}
 
 	/**
@@ -103,18 +130,16 @@ export default class Component {
 	 * Уничтожает компонент.
 	 */
 	destroy() {
+		this.throwIfDestroyed();
 		if (this.gameObject == null) {
 			throw new Error('component is not attached to gameobject.');
-		}
-		if (this.isDestroyed) {
-			return;
 		}
 		if (this.isInitialized) {
 			this.setEnabled(false);
 			this.onDestroy();
 		}
 		this.isDestroyed = true;
-		this.gameObject.removeComponent(this);
+		this.gameObject.removeDestroyedComponents();
 		this.gameObject = null;
 	}
 	
@@ -124,6 +149,7 @@ export default class Component {
 	 * @param {GameObject} gameObject Игровой объект, к которому привяжется данный компонент.
 	 */
 	attach(gameObject) {
+		this.throwIfDestroyed();
 		if (gameObject == this.gameObject) {
 			return;
 		}
