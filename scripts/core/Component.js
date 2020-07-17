@@ -91,6 +91,14 @@ export default class Component {
 	}
 
 	/**
+	 * Вызывается перед обновлением физики.
+	 * 
+	 * @param {number} fixedDeltaTime Фиксированное время обновления физики.
+	 */
+	onPhysicsUpdate(fixedDeltaTime) {
+	}
+
+	/**
 	 * Вызывается во время каждого кадра.
 	 * 
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.

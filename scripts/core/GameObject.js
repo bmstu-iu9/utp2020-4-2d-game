@@ -427,6 +427,17 @@ export default class GameObject {
 	}
 
 	/**
+	 * Вызывается перед обновлением физики.
+	 * 
+	 * @param {number} fixedDeltaTime Фиксированное время обновления физики в секундах.
+	 */
+	onPhysicsUpdate(fixedDeltaTime) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
+		this.callInComponents('onPhysicsUpdate', fixedDeltaTime);
+	}
+
+	/**
 	 * Вызывается во время каждого кадра.
 	 * 
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
