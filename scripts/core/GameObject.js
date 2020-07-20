@@ -1,6 +1,7 @@
 import Vector2d from './Vector2d.js';
 import ComponentObject from './ComponentObject.js';
 import Renderer from './graphics/Renderer.js';
+import Transform from './Transform.js';
 
 export default class GameObject extends ComponentObject {
 	/**
@@ -18,15 +19,9 @@ export default class GameObject extends ComponentObject {
 		if (name.trim() === '') {
 			throw new Error('invalid parameter "name". Expected a non-empty string.');
 		}
-		if (typeof isStatic !== 'boolean') {
-			throw new TypeError('invalid parameter "isStatic". Expected a boolean value.');
-		}
 
 		this.name = name;
-		this.setPosition(position);
-		this.setRotation(rotation);
-		this.setScale(scale);
-		this.isStatic = isStatic;
+		this.transform = new Transform(isStatic, position, rotation, scale);
 		/**
 		 * @type {GameObject[]}
 		 */
@@ -44,48 +39,6 @@ export default class GameObject extends ComponentObject {
 		if (this.isStatic) {
 			throw new Error('attempt to modify a static game object.');
 		}
-	}
-
-	/**
-	 * Изменяет позицию игрового объекта.
-	 * 
-	 * @param {Vector2d} position Новая позиция игрового объекта. 
-	 */
-	setPosition(position) {
-		this.throwIfDestroyed();
-		this.throwIfStatic();
-		if (!(position instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
-		}
-		this.position = position.copy();
-	}
-
-	/**
-	 * Изменяет угол поворота игрового объекта.
-	 * 
-	 * @param {number} angle Новый угол поворота игрового объекта в радианах. 
-	 */
-	setRotation(angle) {
-		this.throwIfDestroyed();
-		this.throwIfStatic();
-		if (typeof angle !== 'number') {
-			throw new TypeError('invalid parameter "angle". Expected a number.');
-		}
-		this.rotation = angle;
-	}
-
-	/**
-	 * Изменяет масштаб игрового объекта.
-	 * 
-	 * @param {Vector2d} scale Новый масштаб игрового объекта. 
-	 */
-	setScale(scale) {
-		this.throwIfDestroyed();
-		this.throwIfStatic();
-		if (!(scale instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
-		}
-		this.scale = scale.copy();
 	}
 
 	/**
@@ -248,5 +201,6 @@ export default class GameObject extends ComponentObject {
 		super.destroy();
 		this.children.forEach(child => child.destroy());
 		delete this.children;
+		delete this.transform;
 	}
 }
