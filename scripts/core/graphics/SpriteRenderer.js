@@ -30,7 +30,7 @@ export default class SpriteRenderer extends Renderer {
 	 */
 	onDraw(context) {
 		let position = this.gameObject.position;
-		const size = this.sprite.size;
+		const region = this.sprite.region;
 		const scale = this.gameObject.scale;
 		const rotation = this.gameObject.rotation;
 
@@ -42,7 +42,17 @@ export default class SpriteRenderer extends Renderer {
 		context.translate(position.x, position.y);
 		context.rotate(rotation);
 		context.scale(scale.x, scale.y);
-		context.drawImage(this.sprite.image, -size.x / 2, -size.y / 2);
+		context.drawImage(
+			this.sprite.image,
+			region.x,
+			region.y,
+			region.width,
+			region.height,
+			-region.width / 2,
+			-region.height / 2,
+			region.width,
+			region.height,
+		);
 		context.restore();
 	}
 }
