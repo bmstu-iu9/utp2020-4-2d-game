@@ -146,15 +146,12 @@ export default class Component {
 	/**
 	 * Привязывает данный компонент к игровому объекту.
 	 * 
-	 * @param {GameObject} gameObject Игровой объект, к которому привяжется данный компонент.
+	 * @param {ComponentObject} gameObject Игровой объект, к которому привяжется данный компонент.
 	 */
 	attach(gameObject) {
 		this.throwIfDestroyed();
-		if (gameObject == this.gameObject) {
-			return;
-		}
 		if (this.gameObject != null) {
-			throw new Error('component already attached to other gameobject.');
+			throw new Error('component already attached to game object.');
 		}
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
