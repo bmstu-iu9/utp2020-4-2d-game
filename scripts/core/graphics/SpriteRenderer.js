@@ -28,7 +28,7 @@ export default class SpriteRenderer extends Renderer {
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	onDraw(context) {
+	draw(context) {
 		let position = this.transform.position;
 		const region = this.sprite.region;
 		const scale = this.transform.scale;

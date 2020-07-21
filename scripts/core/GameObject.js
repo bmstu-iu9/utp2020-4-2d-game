@@ -162,51 +162,29 @@ export default class GameObject extends ComponentObject {
 	}
 
 	/**
-	 * Вызывается перед обновлением физики.
+	 * Обновляет все компоненты в данном игровом компоненте.
 	 * 
-	 * @param {number} fixedDeltaTime Фиксированное время обновления физики в секундах.
+	 * @param {number} fixedDeltaTime Фиксированное время обновления логики игры в секундах.
 	 */
-	onPhysicsUpdate(fixedDeltaTime) {
+	fixedUpdate(fixedDeltaTime) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.callInComponents('onPhysicsUpdate', fixedDeltaTime);
+		this.callInComponents('onFixedUpdate', fixedDeltaTime);
 	}
 
 	/**
-	 * Вызывается во время каждого кадра.
-	 * 
-	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
-	 */
-	onFrameUpdate(deltaTime) {
-		this.throwIfDestroyed();
-		this.throwIfNotInitialized();
-		this.callInComponents('onFrameUpdate', deltaTime);
-	}
-
-	/**
-	 * Вызывается во время каждого кадра в конце.
-	 * 
-	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
-	 */
-	onFrameUpdateEnd(deltaTime) {
-		this.throwIfDestroyed();
-		this.throwIfNotInitialized();
-		this.callInComponents('onFrameUpdateEnd', deltaTime);
-	}
-
-	/**
-	 * Вызывается, когда надо отрисовать игровой объект.
+	 * Отрисовывает данный игровой объект.
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка. 
 	 */
-	onDraw(context) {
+	draw(context) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
 		this.componentsInProcessing = true;
 
 		this.components.forEach(component => {
 			if (!component.isDestroyed && component.isEnabled && component instanceof Renderer) {
-				component.onDraw(context);
+				component.draw(context);
 			}
 		});
 

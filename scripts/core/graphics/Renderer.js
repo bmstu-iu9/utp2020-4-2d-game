@@ -17,7 +17,7 @@ export default class Renderer extends GameComponent {
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	onDraw(context) {
+	draw(context) {
 		throw new Error('not implemented.');
 	}
 }

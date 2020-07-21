@@ -11,19 +11,11 @@ export default class GameComponent extends TransformComponent {
 	}
 
 	/**
-	 * Вызывается перед обновлением физики.
+	 * Вызывается во время каждого обновления игрового объекта.
 	 * 
-	 * @param {number} fixedDeltaTime Фиксированное время обновления физики.
+	 * @param {number} fixedDeltaTime Фиксированное время обновления логики игры в секундах.
 	 */
-	onPhysicsUpdate(fixedDeltaTime) {
-	}
-
-	/**
-	 * Вызывается во время каждого кадра в конце.
-	 * 
-	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
-	 */
-	onFrameUpdateEnd(deltaTime) {
+	onFixedUpdate(fixedDeltaTime) {
 	}
 
 	destroy() {

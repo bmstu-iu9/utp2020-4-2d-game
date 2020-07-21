@@ -95,7 +95,7 @@ export default class Component {
 	 * 
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
-	onFrameUpdate(deltaTime) {
+	onUpdate(deltaTime) {
 	}
 
 	/**

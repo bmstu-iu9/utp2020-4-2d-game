@@ -260,6 +260,18 @@ export default class ComponentObject {
 	}
 
 	/**
+	 * Обновляет все компоненты в данном объекте.
+	 * 
+	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в секундах.
+	 */
+	update(deltaTime) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
+		this.callInComponents('onUpdate', deltaTime);
+	}
+
+
+	/**
 	 * Уничтожает данный объект.
 	 */
 	destroy() {

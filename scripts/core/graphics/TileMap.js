@@ -94,7 +94,7 @@ export default class TileMap extends Renderer {
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	onDraw(context) {
+	draw(context) {
 		let position = this.transform.position;
 		const scale = this.transform.scale;
 		const invScale = new Vector2d(1 / scale.x, 1 / scale.y);
