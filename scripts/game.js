@@ -1,4 +1,6 @@
 import GameObject from './core/GameObject.js';
+import Screen from './core/Screen.js';
+import Input from './core/Input.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -16,24 +18,33 @@ const step = 1 / 60;
 let deltaTime = 0; 
 let lastFrameTime = performance.now();
 
+Screen.initialize(canvas);
+Input.initialize();
+
 const loop = () => {
-	deltaTime += Math.min(1, (performance.now() - lastFrameTime) / 1000);
+	deltaTime += Math.min(0.4, (performance.now() - lastFrameTime) / 1000);
+
+	Input.process();
 
 	while (deltaTime > step) {
 		deltaTime -= step;
-		gameObjects.forEach(gameObject => gameObject.onPhysicsUpdate(step));
+		gameObjects.forEach(gameObject => !gameObject.isDestroyed && gameObject.fixedUpdate(step));
 		// TODO: проверить столкновения
 	}
 
-	gameObjects.forEach(gameObject => gameObject.onFrameUpdate(performance.now() - lastFrameTime));
+	gameObjects.forEach(gameObject => {
+		if (!gameObject.isDestroyed) {
+			gameObject.update(Math.min(0.4, (performance.now() - lastFrameTime) / 1000));
+		}
+	});
 
-	gameObjects.forEach(gameObject => gameObject.onFrameUpdateEnd(performance.now() - lastFrameTime));
+	context.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+	gameObjects.forEach(gameObject => !gameObject.isDestroyed && gameObject.draw(context));
 
 	lastFrameTime = performance.now();
 
-	gameObjects.forEach(gameObject => gameObject.onDraw(context));
-
 	requestAnimationFrame(loop);
-}
+};
 
 requestAnimationFrame(loop);

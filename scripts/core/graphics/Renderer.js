@@ -1,6 +1,6 @@
-import Component from '../Component.js';
+import GameComponent from '../GameComponent.js';
 
-export default class Renderer extends Component {
+export default class Renderer extends GameComponent {
 	constructor() {
 		super();
 		if (new.target === Renderer) {
@@ -17,7 +17,7 @@ export default class Renderer extends Component {
 	 * 
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	onDraw(context) {
+	draw(context) {
 		throw new Error('not implemented.');
 	}
 }
