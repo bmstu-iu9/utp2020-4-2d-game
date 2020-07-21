@@ -1,6 +1,6 @@
-import Component from '../Component.js';
+import GameComponent from '../GameComponent.js';
 
-export default class Renderer extends Component {
+export default class Renderer extends GameComponent {
 	constructor() {
 		super();
 		if (new.target === Renderer) {

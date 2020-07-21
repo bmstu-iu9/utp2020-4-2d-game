@@ -29,10 +29,10 @@ export default class SpriteRenderer extends Renderer {
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
 	onDraw(context) {
-		let position = this.gameObject.transform.position;
+		let position = this.transform.position;
 		const region = this.sprite.region;
-		const scale = this.gameObject.transform.scale;
-		const rotation = this.gameObject.transform.rotation;
+		const scale = this.transform.scale;
+		const rotation = this.transform.rotation;
 
 		const canvas = context.canvas;
 		position = new Vector2d(position.x, -position.y);

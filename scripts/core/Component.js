@@ -1,4 +1,4 @@
-import GameObject from './GameObject.js';
+import ComponentObject from './ComponentObject.js';
 
 export default class Component {
 	constructor() {
@@ -9,9 +9,9 @@ export default class Component {
 		this.isInitialized = false;
 		this.isDestroyed = false;
 		/**
-		 * @type {GameObject}
+		 * @type {ComponentObject}
 		 */
-		this.gameObject = null;
+		this.componentObject = null;
 	}
 	
 	/**
@@ -24,7 +24,7 @@ export default class Component {
 	}
 
 	/**
-	 * @return {boolean} Возвращает false, если нельзя использовать несколько экземляров данного компонента на игровом объекте. В остальных случаях возвращает true.
+	 * @return {boolean} Возвращает false, если нельзя использовать несколько экземляров данного компонента на объекте. В остальных случаях возвращает true.
 	 */
 	allowMultipleComponents() {
 		return true;
@@ -44,7 +44,7 @@ export default class Component {
 			return;
 		}
 		this.isEnabled = value;
-		if (this.gameObject == null) {
+		if (this.componentObject == null) {
 			return;
 		}
 		if (value && !this.isInitialized) {
@@ -68,8 +68,8 @@ export default class Component {
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
-		if (this.gameObject == null) {
-			throw new Error('component is not attached to gameobject.');
+		if (this.componentObject == null) {
+			throw new Error('component is not attached to component object.');
 		}
 		if (this.isEnabled) {
 			this.isInitialized = true;
@@ -91,27 +91,11 @@ export default class Component {
 	}
 
 	/**
-	 * Вызывается перед обновлением физики.
-	 * 
-	 * @param {number} fixedDeltaTime Фиксированное время обновления физики.
-	 */
-	onPhysicsUpdate(fixedDeltaTime) {
-	}
-
-	/**
 	 * Вызывается во время каждого кадра.
 	 * 
 	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
 	 */
 	onFrameUpdate(deltaTime) {
-	}
-
-	/**
-	 * Вызывается во время каждого кадра в конце.
-	 * 
-	 * @param {number} deltaTime Время, которое прошло с прошлого кадра в миллисекундах.
-	 */
-	onFrameUpdateEnd(deltaTime) {
 	}
 
 	/**
@@ -131,31 +115,31 @@ export default class Component {
 	 */
 	destroy() {
 		this.throwIfDestroyed();
-		if (this.gameObject == null) {
-			throw new Error('component is not attached to gameobject.');
+		if (this.componentObject == null) {
+			throw new Error('component is not attached to component object.');
 		}
 		if (this.isInitialized) {
 			this.setEnabled(false);
 			this.onDestroy();
 		}
 		this.isDestroyed = true;
-		this.gameObject.removeDestroyedComponents();
-		this.gameObject = null;
+		this.componentObject.removeDestroyedComponents();
+		this.componentObject = null;
 	}
 	
 	/**
-	 * Привязывает данный компонент к игровому объекту.
+	 * Привязывает данный компонент к объекту.
 	 * 
-	 * @param {ComponentObject} gameObject Игровой объект, к которому привяжется данный компонент.
+	 * @param {ComponentObject} componentObject Объект, к которому привяжется данный компонент.
 	 */
-	attach(gameObject) {
+	attach(componentObject) {
 		this.throwIfDestroyed();
-		if (this.gameObject != null) {
-			throw new Error('component already attached to game object.');
+		if (this.componentObject != null) {
+			throw new Error('component already attached to component object.');
 		}
-		if (!(gameObject instanceof GameObject)) {
-			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
+		if (!(componentObject instanceof ComponentObject)) {
+			throw new TypeError('invalid parameter "componentObject". Expected an instance of ComponentObject class.');
 		}
-		this.gameObject = gameObject;
+		this.componentObject = componentObject;
 	}
 }
