@@ -1,4 +1,5 @@
 import GameObject from './core/GameObject.js';
+import Screen from './core/Screen.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -8,11 +9,15 @@ const context = canvas.getContext('2d');
  */
 const gameObjects = [];
 
+
+
 gameObjects.forEach(gameObject => gameObject.initialize());
 
 const step = 1 / 60;
 let deltaTime = 0; 
 let lastFrameTime = performance.now();
+
+Screen.initialize(canvas);
 
 const loop = () => {
 	deltaTime += Math.min(0.4, (performance.now() - lastFrameTime) / 1000);

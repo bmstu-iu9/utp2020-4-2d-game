@@ -31,4 +31,20 @@ export default class Rect {
 		this.width = width;
 		this.height = height;
 	}
+
+	/**
+	 * @param {number} x
+	 * @param {number} y
+	 * 
+	 * @return {boolean} Возврщает true, если точка с координатами (x, y) содержится в данном прямоугольнике.
+	 */
+	contains(x, y) {
+		if (typeof x !== 'number') {
+			throw new TypeError('invalid parameter "x". Expected a number.');
+		}
+		if (typeof y !== 'number') {
+			throw new TypeError('invalid parameter "y". Expected a number.');
+		}
+		return x >= this.x && Math.abs(x - this.x) <= this.width && y >= this.y && Math.abs(y - this.y) <= this.height;
+	}
 }
