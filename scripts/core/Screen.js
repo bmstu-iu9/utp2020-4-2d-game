@@ -14,7 +14,7 @@ export default class Screen {
 		if (Screen.canvas == null) {
 			throw new Error('screen is not initialized.');
 		}
-		return new Vector2d(Screen.canvas.clientWidth, Screen.canvas.clientHeight)
+		return new Vector2d(Screen.canvas.clientWidth, Screen.canvas.clientHeight);
 	}
 
 	/**
