@@ -2,22 +2,40 @@ import Vector2d from './Vector2d.js';
 import ComponentObject from './ComponentObject.js';
 import Renderer from './graphics/Renderer.js';
 import Transform from './Transform.js';
+import Component from './Component.js';
 
 export default class GameObject extends ComponentObject {
 	/**
-	 * @param {string}   name     Имя игрового объекта.
-	 * @param {boolean}  isStatic Должен ли игровой объект быть статичным.
-	 * @param {Vector2d} position Позиция игрового объекта.
-	 * @param {number}   rotation Угол поворота игрового объекта в радианах.
-	 * @param {Vector2d} scale    Масштаб игрового объекта.
+	 * @param {object}       settings            Настройки игрового объекта.
+	 * @param {string}       settings.name       Название игрового объекта.
+	 * @param {boolean}      settings.isStatic   Должен ли игровой объект быть статичным.
+	 * @param {Vector2d}     settings.position   Позиция игрового объекта.
+	 * @param {number}       settings.rotation   Угол поворота игрового объекта в радианах.
+	 * @param {Vector2d}     settings.scale      Масштаб игрового объекта.
+	 * @param {Component[]}  settings.components Компоненты игрового объекта.
+	 * @param {GameObject[]} settings.children   Дочерние игровые объекты создаваемоего игрового объекта.
 	 */
-	constructor(name, isStatic = false, position = Vector2d.zero, rotation = 0, scale = new Vector2d(1, 1)) {
+	constructor({
+		name,
+		isStatic = false,
+		position = Vector2d.zero,
+		rotation = 0,
+		scale = new Vector2d(1, 1),
+		components = [],
+		children = [],
+	}) {
 		super();
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}
 		if (name.trim() === '') {
 			throw new Error('invalid parameter "name". Expected a non-empty string.');
+		}
+		if (!Array.isArray(components)) {
+			throw new TypeError('invalid parameter "components". Expected an array.');
+		}
+		if (!Array.isArray(children)) {
+			throw new TypeError('invalid parameter "children". Expected an array.');
 		}
 
 		this.name = name;
@@ -30,26 +48,19 @@ export default class GameObject extends ComponentObject {
 		 * @type {GameObject}
 		 */
 		this.parent = null;
-	}
 
-	/**
-	 * Выбрасывает ошибку, если игровой объект статичный.
-	 */
-	throwIfStatic() {
-		if (this.isStatic) {
-			throw new Error('attempt to modify a static game object.');
-		}
+		components.forEach(component => this.addComponent(component));
+		children.forEach(child => this.addChild(child));
 	}
 
 	/**
 	 * Устанавливает родителя для данного игрового объкта.
-	 * Можно передать null, чтобы сделать его независимым. 
+	 * Можно передать null, чтобы сделать его независимым.
 	 * 
 	 * @param {GameObject} gameObject Родительский игровой объект. Может быть null.
 	 */
 	setParent(gameObject) {
 		this.throwIfDestroyed();
-		this.throwIfStatic();
 		if (gameObject == null) {
 			if (this.parent != null) {
 				this.parent.removeChild(this);
@@ -58,6 +69,12 @@ export default class GameObject extends ComponentObject {
 		}
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
+		}
+		if (this.transform.isStatic && !gameObject.transform.isStatic) {
+			throw new Error('cannot set a non-static game object as parent in a static game object.');
+		}
+		if (this.parent != null) {
+			this.parent.removeChild(this);
 		}
 		gameObject.addChild(this);
 	}
@@ -73,6 +90,9 @@ export default class GameObject extends ComponentObject {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
 		if (this.getChildByName(gameObject.name) == null) {
+			if (gameObject.transform.isStatic && !this.transform.isStatic) {
+				throw new Error('cannot set a non-static game object as parent in a static game object.');
+			}
 			this.children.push(gameObject);
 			if (gameObject.parent != null) {
 				gameObject.parent.removeChild(gameObject);
