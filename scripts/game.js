@@ -1,6 +1,8 @@
 import GameObject from './core/GameObject.js';
 import Screen from './core/Screen.js';
 import Input from './core/Input.js';
+import Collider from './core/physics/Collider.js';
+import RigidBody from './core/physics/RigidBody.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -29,6 +31,8 @@ const loop = () => {
 	while (deltaTime > step) {
 		deltaTime -= step;
 		gameObjects.forEach(gameObject => !gameObject.isDestroyed && gameObject.fixedUpdate(step));
+		Collider.dynamicColliders.forEach(collider => collider.recalculate());
+		RigidBody.rigidBodies.forEach(rigidBody => rigidBody.recalculate());
 		// TODO: проверить столкновения
 	}
 

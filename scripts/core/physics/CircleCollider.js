@@ -17,4 +17,21 @@ export default class CircleCollider extends Collider {
 		 */
 		this.radius = radius;
 	}
+
+	onInitialize() {
+		super.onInitialize();
+		if (Math.abs(this.transform.scale.x) !== Math.abs(this.transform.scale.y)) {
+			throw new Error('scale.x must be equal scale.y.');
+		}
+		this.radius = Math.abs(this.scale.x);
+		this.area = Math.PI * this.radius * this.radius;
+	}
+
+	onRecalculate() {
+		if (Math.abs(this.transform.scale.x) !== Math.abs(this.transform.scale.y)) {
+			throw new Error('scale.x must be equal scale.y.');
+		}
+		this.radius = this.radius / Math.abs(this.scale.x) * Math.abs(this.transform.scale.x);
+		this.area = Math.PI * this.radius * this.radius;
+	}
 }

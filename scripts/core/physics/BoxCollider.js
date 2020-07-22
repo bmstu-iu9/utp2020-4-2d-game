@@ -28,4 +28,17 @@ export default class BoxCollider extends Collider {
 		 */
 		this.halfHeight = height / 2;
 	}
+
+	onInitialize() {
+		super.onInitialize();
+		this.halfWidth *= Math.abs(this.scale.x);
+		this.halfHeight *= Math.abs(this.scale.y);
+		this.area = 4 * this.halfWidth * this.halfHeight; 
+	}
+
+	onRecalculate() {
+		this.halfWidth = this.halfWidth / Math.abs(this.scale.x) * Math.abs(this.transform.scale.x);
+		this.halfHeight = this.halfHeight / Math.abs(this.scale.y) * Math.abs(this.transform.scale.y);
+		this.area = 4 * this.halfWidth * this.halfHeight;
+	}
 }
