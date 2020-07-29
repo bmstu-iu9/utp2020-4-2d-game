@@ -2,7 +2,7 @@ import ComponentObject from '../ComponentObject.js';
 import GameObject from '../GameObject.js';
 import Vector2d from '../Vector2d.js';
 import Transform from '../Transform.js';
-import Screen from '../Screen.js';
+import Screen from './Screen.js';
 import Component from '../Component.js';
 import Color from './Color.js';
 

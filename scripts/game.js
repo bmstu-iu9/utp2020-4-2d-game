@@ -1,5 +1,5 @@
 import GameObject from './core/GameObject.js';
-import Screen from './core/Screen.js';
+import Screen from './core/graphics/Screen.js';
 import Input from './core/Input.js';
 import Camera from './core/graphics/Camera.js';
 import Color from './core/graphics/Color.js';
