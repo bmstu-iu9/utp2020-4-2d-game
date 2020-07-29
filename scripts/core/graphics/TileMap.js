@@ -1,6 +1,7 @@
 import Renderer from './Renderer.js';
 import SpriteSheet from './SpriteSheet.js';
 import Vector2d from '../Vector2d.js';
+import Camera from './Camera.js';
 
 export default class TileMap extends Renderer {
 	/**
@@ -92,17 +93,14 @@ export default class TileMap extends Renderer {
 	/**
 	 * Отрисовывает TileMap.
 	 * 
+	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	draw(context) {
-		let position = this.transform.position;
+	draw(camera, context) {
+		let position = camera.worldToCameraPosition(this.transform.position);
 		const scale = this.transform.scale;
 		const invScale = new Vector2d(1 / scale.x, 1 / scale.y);
 		const rotation = this.transform.rotation;
-
-		const canvas = context.canvas;
-		position = new Vector2d(position.x, -position.y);
-		position = position.add(new Vector2d(canvas.clientWidth / 2, canvas.clientHeight / 2));
 
 		const offset = new Vector2d(
 			this.width / 2 * (this.tileWidth - 1),
@@ -110,7 +108,6 @@ export default class TileMap extends Renderer {
 		);
 
 		context.save();
-
 		context.translate(position.x, position.y);
 		for (let i = 0; i < this.height; i++) {
 			for (let j = 0; j < this.map[i].length; j++) {
@@ -137,7 +134,6 @@ export default class TileMap extends Renderer {
 				context.rotate(-rotation);
 			}
 		}
-
 		context.restore();
 	}
 }

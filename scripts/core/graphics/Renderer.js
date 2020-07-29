@@ -1,4 +1,5 @@
 import GameComponent from '../GameComponent.js';
+import Camera from './Camera.js';
 
 export default class Renderer extends GameComponent {
 	constructor() {
@@ -15,9 +16,10 @@ export default class Renderer extends GameComponent {
 	/**
 	 * Что-то отрисовывается (зависит от реализации).
 	 * 
+	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	draw(context) {
+	draw(camera, context) {
 		throw new Error('not implemented.');
 	}
 }

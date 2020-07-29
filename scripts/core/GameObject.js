@@ -3,6 +3,7 @@ import ComponentObject from './ComponentObject.js';
 import Renderer from './graphics/Renderer.js';
 import Transform from './Transform.js';
 import Component from './Component.js';
+import Camera from './graphics/Camera.js';
 
 export default class GameObject extends ComponentObject {
 	/**
@@ -175,21 +176,16 @@ export default class GameObject extends ComponentObject {
 	/**
 	 * Отрисовывает данный игровой объект.
 	 * 
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка. 
+	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
+	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	draw(context) {
+	draw(camera, context) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.componentsInProcessing = true;
-
-		this.components.forEach(component => {
-			if (!component.isDestroyed && component.isEnabled && component instanceof Renderer) {
-				component.draw(context);
-			}
-		});
-
-		this.componentsInProcessing = false;
-		this.removeDestroyedComponents();
+		const renderer = this.getComponent(Renderer);
+		if (renderer != null && renderer.isEnabled) {
+			renderer.draw(camera, context);
+		}
 	}
 
 	/**
