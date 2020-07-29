@@ -5,9 +5,10 @@ import Camera from './Camera.js';
 export default class SpriteRenderer extends Renderer {
 	/**
 	 * @param {Sprite} sprite Спрайт, который будет отрисовываться каждый кадр.
+	 * @param {number} layer  Слой отрисовки.
 	 */
-	constructor(sprite) {
-		super();
+	constructor(sprite, layer = 0) {
+		super(layer);
 		this.setSprite(sprite);
 	}
 

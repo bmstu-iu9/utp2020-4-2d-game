@@ -9,9 +9,10 @@ export default class TileMap extends Renderer {
 	 * @param {number}      tileHeight  Высота одной плитки.
 	 * @param {SpriteSheet} spriteSheet Лист, который содержит используемые в карте спрайты.
 	 * @param {string[][]}  map         Двумерный массив строк (элементы могут быть null), из которого будет построен TileMap.
+	 * @param {number}      layer       Слой отрисовки.
 	 */
-	constructor(tileWidth, tileHeight, spriteSheet, map) {
-		super();
+	constructor(tileWidth, tileHeight, spriteSheet, map, layer = 0) {
+		super(layer);
 		if (typeof tileWidth !== 'number') {
 			throw new TypeError('invalid parameter "tileWidth". Expected a number.');
 		}
