@@ -44,7 +44,7 @@ export default class Component {
 			return;
 		}
 		this.isEnabled = value;
-		if (this.componentObject == null) {
+		if (this.componentObject == null || !this.componentObject.isEnabled) {
 			return;
 		}
 		if (value && !this.isInitialized) {
@@ -61,12 +61,19 @@ export default class Component {
 	}
 
 	/**
+	 * @return {boolean} Возвращает true, если компонент включен и не уничтожен, и привязанный объект включен и не уничтожен.
+	 */
+	isActive() {
+		return this.componentObject != null && this.isEnabled && !this.isDestroyed && this.componentObject.isActive();
+	}
+
+	/**
 	 * Инициализирует данный компонент. Но если он отключен, то ничего не делает.
 	 */
 	initialize() {
 		this.throwIfDestroyed();
 		if (this.isInitialized) {
-			throw new Error('already initialized.');
+			return;
 		}
 		if (this.componentObject == null) {
 			throw new Error('component is not attached to component object.');

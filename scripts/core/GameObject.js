@@ -4,11 +4,13 @@ import Renderer from './graphics/Renderer.js';
 import Transform from './Transform.js';
 import Component from './Component.js';
 import Camera from './graphics/Camera.js';
+import GameComponent from './GameComponent.js';
 
 export default class GameObject extends ComponentObject {
 	/**
 	 * @param {object}       settings            Настройки игрового объекта.
 	 * @param {string}       settings.name       Название игрового объекта.
+	 * @param {boolean}      settings.isEnabled  Влючен ли игровой объект.
 	 * @param {boolean}      settings.isStatic   Должен ли игровой объект быть статичным.
 	 * @param {Vector2d}     settings.position   Позиция игрового объекта.
 	 * @param {number}       settings.rotation   Угол поворота игрового объекта в радианах.
@@ -18,6 +20,7 @@ export default class GameObject extends ComponentObject {
 	 */
 	constructor({
 		name,
+		isEnabled = true,
 		isStatic = false,
 		position = Vector2d.zero,
 		rotation = 0,
@@ -25,7 +28,7 @@ export default class GameObject extends ComponentObject {
 		components = [],
 		children = [],
 	}) {
-		super();
+		super(isEnabled);
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}
@@ -55,6 +58,83 @@ export default class GameObject extends ComponentObject {
 	}
 
 	/**
+	 * Влючает или выключает игровой объект.
+	 * 
+	 * @param {boolean} value Должен ли игровой объект включиться.
+	 */
+	setEnabled(value) {
+		super.setEnabled(value);
+		if (value && !this.isInitialized && this.isEnabledInHierarchy()) {
+			this.initialize();
+			this.children.forEach(child => child.isEnabled && child.enable());
+		}
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения игрового объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	enable() {
+		this.throwIfDestroyed();
+		if (this.parent != null && !this.parent.isEnabledInHierarchy()) {
+			return;
+		}
+		if (!this.isInitialized) {
+			this.initialize();
+			this.children.forEach(child => child.isEnabled && child.enable());
+			return;
+		}
+		super.enable();
+		this.children.forEach(child => child.isEnabled && child.enable());
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения игрового объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	disable() {
+		this.throwIfDestroyed();
+		if (!this.isInitialized) {
+			return;
+		}
+		if (this.parent != null && !this.parent.isEnabledInHierarchy()) {
+			return;
+		}
+		super.disable();
+		this.children.forEach(child => child.isEnabled && child.disable());
+	}
+
+	/**
+	 * @return {boolean} Возвращает true, если объект включен в иерархии.
+	 */
+	isEnabledInHierarchy() {
+		let gameObject = this;
+		while (gameObject != null) {
+			if (!gameObject.isEnabled) {
+				return false;
+			}
+			gameObject = gameObject.parent;
+		}
+		return true;
+	}
+
+	/**
+	 * @return {boolean} Возвращает true, если объект не уничтожен и включен.
+	 */
+	isActive() {
+		return !this.isDestroyed && this.isEnabledInHierarchy();
+	}
+
+	initialize() {
+		if (!this.isEnabledInHierarchy()) {
+			return;
+		}
+		super.initialize();
+	}
+
+	/**
 	 * Устанавливает родителя для данного игрового объкта.
 	 * Можно передать null, чтобы сделать его независимым.
 	 * 
@@ -74,16 +154,13 @@ export default class GameObject extends ComponentObject {
 		if (this.transform.isStatic && !gameObject.transform.isStatic) {
 			throw new Error('cannot set a non-static game object as parent in a static game object.');
 		}
-		if (this.parent != null) {
-			this.parent.removeChild(this);
-		}
 		gameObject.addChild(this);
 	}
 
 	/**
 	 * Добавляет дочерний игровой объект.
 	 * 
-	 * @param {GameObject} gameObject Игровой объект, который станет дочерним. 
+	 * @param {GameObject} gameObject Игровой объект, который станет дочерним.
 	 */
 	addChild(gameObject) {
 		this.throwIfDestroyed();
@@ -96,7 +173,24 @@ export default class GameObject extends ComponentObject {
 			}
 			this.children.push(gameObject);
 			if (gameObject.parent != null) {
-				gameObject.parent.removeChild(gameObject);
+				const index = gameObject.parent.children.indexOf(gameObject);
+				if (index >= 0) {
+					gameObject.parent.children.splice(index, 1);
+				}
+				const previousParentEnabled = gameObject.parent.isEnabledInHierarchy();
+				const currentParentEnabled = this.isEnabledInHierarchy();
+				gameObject.parent = null;
+				if (previousParentEnabled != currentParentEnabled) {
+					if (previousParentEnabled && gameObject.isEnabled) {
+						gameObject.disable();
+					} else if (gameObject.isEnabled) {
+						gameObject.enable();
+					}
+				}
+			} else {
+				if (this.isEnabledInHierarchy() != gameObject.isEnabled && gameObject.isEnabled) {
+					gameObject.disable();
+				}
 			}
 			gameObject.parent = this;
 		}
@@ -140,8 +234,7 @@ export default class GameObject extends ComponentObject {
 		this.throwIfDestroyed();
 		const index = this.children.indexOf(child);
 		if (index >= 0) {
-			const [deleted] = this.children.splice(index, 1);
-			deleted.parent = null;
+			this.removeChildAt(index);
 		}
 	}
 
@@ -160,6 +253,9 @@ export default class GameObject extends ComponentObject {
 		}
 		const [deleted] = this.children.splice(index, 1);
 		deleted.parent = null;
+		if (this.isEnabledInHierarchy() != deleted.isEnabled && deleted.isEnabled) {
+			deleted.enable();
+		}
 	}
 
 	/**
@@ -170,7 +266,11 @@ export default class GameObject extends ComponentObject {
 	fixedUpdate(fixedDeltaTime) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.callInComponents('onFixedUpdate', fixedDeltaTime);
+		this.forEachComponent(component => {
+			if (component.isEnabled && component instanceof GameComponent) {
+				component.onFixedUpdate(fixedDeltaTime);
+			}
+		});
 	}
 
 	/**
@@ -183,7 +283,7 @@ export default class GameObject extends ComponentObject {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
 		const renderer = this.getComponent(Renderer);
-		if (renderer != null && renderer.isEnabled) {
+		if (renderer != null && renderer.isActive()) {
 			renderer.draw(camera, context);
 		}
 	}
@@ -192,9 +292,16 @@ export default class GameObject extends ComponentObject {
 	 * Уничтожает данный игровой объект.
 	 */
 	destroy() {
+		if (this.isDestroyed) {
+			return;
+		}
 		super.destroy();
 		this.children.forEach(child => child.destroy());
 		delete this.children;
 		delete this.transform;
+		if (this.parent != null) {
+			this.parent.removeChild(this);
+			delete this.parent;
+		}
 	}
 }

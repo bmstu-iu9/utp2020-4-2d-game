@@ -1,9 +1,13 @@
 import Component from './Component.js';
 
 export default class ComponentObject {
-	constructor() {
+	/**
+	 * @param {boolean} isEnabled Влючен ли объект.
+	 */
+	constructor(isEnabled) {
 		this.isInitialized = false;
 		this.isDestroyed = false;
+		this.isEnabled = isEnabled;
 
 		/**
 		 * @type {Component[]}
@@ -27,7 +31,7 @@ export default class ComponentObject {
 	initialize() {
 		this.throwIfDestroyed();
 		if (this.isInitialized) {
-			throw new Error('already initialized.');
+			return;
 		}
 		this.isInitialized = true;
 		this.componentsInProcessing = true;
@@ -36,6 +40,65 @@ export default class ComponentObject {
 
 		this.componentsInProcessing = false;
 		this.removeDestroyedComponents();
+	}
+
+	/**
+	 * Влючает или выключает объект.
+	 * 
+	 * @param {boolean} value Должен ли объект включиться.
+	 */
+	setEnabled(value) {
+		this.throwIfDestroyed();
+		if (typeof value !== 'boolean') {
+			throw new TypeError('invalid parameter "value". Expected a boolean value.');
+		}
+		if (value === this.isEnabled) {
+			return;
+		}
+		if (this.isInitialized) {
+			if (value) {
+				this.isEnabled = true;
+				this.enable();
+			} else {
+				this.disable();
+				this.isEnabled = false;
+			}
+		} else {
+			this.isEnabled = value;
+		}
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	enable() {
+		this.throwIfDestroyed();
+		this.forEachComponent(component => {
+			if (!component.isEnabled) {
+				return;
+			}
+			if (!component.isInitialized) {
+				component.initialize();
+			} else {
+				component.onEnable();
+			}
+		});
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	disable() {
+		this.throwIfDestroyed();
+		this.forEachComponent(component => {
+			if (component.isEnabled) {
+				component.onDisable();
+			}
+		});
 	}
 
 	/**
@@ -236,14 +299,7 @@ export default class ComponentObject {
 	 */
 	callInComponents(functionName, ...args) {
 		this.throwIfDestroyed();
-		const isMainProcess = !this.componentsInProcessing;
-		this.componentsInProcessing = true;
-
-		this.components.forEach(component => {
-			if (component.isDestroyed) {
-				this.componentRemovedInProcessing = true;
-				return;
-			}
+		this.forEachComponent(component => {
 			if (!component.isEnabled) {
 				return;
 			}
@@ -252,6 +308,39 @@ export default class ComponentObject {
 				Reflect.apply(componentFunction, component, args);
 			}
 		});
+	}
+
+	/**
+	 * @return {boolean} Возвращает true, если объект не уничтожен и включен.
+	 */
+	isActive() {
+		return !this.isDestroyed && this.isEnabled;
+	}
+
+	/**
+	 * Выполняет функцию для всех компонентов.
+	 * 
+	 * @param {(component: Component) => void} action Фукнкция, котороя выполнится для каждого компонента.
+	 */
+	forEachComponent(action) {
+		this.throwIfDestroyed();
+		const isMainProcess = !this.componentsInProcessing;
+		this.componentsInProcessing = true;
+
+		this.components.forEach(component => {
+			if (!this.isActive()) {
+				return;
+			}
+			if (component.isDestroyed) {
+				this.componentRemovedInProcessing = true;
+				return;
+			}
+			action(component);
+		});
+
+		if (this.isDestroyed) {
+			return;
+		}
 
 		if (isMainProcess) {
 			this.componentsInProcessing = false;
@@ -267,16 +356,21 @@ export default class ComponentObject {
 	update(deltaTime) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.callInComponents('onUpdate', deltaTime);
+		this.forEachComponent(component => {
+			if (component.isEnabled) {
+				component.onUpdate(deltaTime);
+			}
+		});
 	}
-
 
 	/**
 	 * Уничтожает данный объект.
 	 */
 	destroy() {
-		this.throwIfDestroyed();
-		this.components.forEach(component => component.destroy());
+		if (this.isDestroyed) {
+			return;
+		}
+		this.components.forEach(component => !component.isDestroyed && component.destroy());
 		delete this.components;
 		this.isDestroyed = true;
 	}

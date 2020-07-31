@@ -11,6 +11,7 @@ export default class Camera extends ComponentObject {
 	 * @param {object}      settings            Настройки камеры.
 	 * @param {string}      settings.name       Название камеры.
 	 * @param {Color}       settings.clearColor Цвет фона.
+	 * @param {boolean}     settings.isEnabled  Влючена ли камера.
 	 * @param {boolean}     settings.isStatic   Должна ли камера быть статичной.
 	 * @param {Vector2d}    settings.position   Позиция камеры.
 	 * @param {number}      settings.rotation   Угол поворота камеры в радианах.
@@ -20,13 +21,14 @@ export default class Camera extends ComponentObject {
 	constructor({
 		name,
 		clearColor = Color.black,
+		isEnabled = true,
 		isStatic = false,
 		position = Vector2d.zero,
 		rotation = 0,
 		scale = new Vector2d(1, 1),
 		components = [],
 	}) {
-		super();
+		super(isEnabled);
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}

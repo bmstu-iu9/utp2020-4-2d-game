@@ -36,18 +36,28 @@ const loop = () => {
 
 	while (deltaTime > step) {
 		deltaTime -= step;
-		gameObjects.forEach(gameObject => !gameObject.isDestroyed && gameObject.fixedUpdate(step));
+		gameObjects.forEach(gameObject => {
+			if (!gameObject.isDestroyed && gameObject.isEnabled && gameObject.isInitialized) {
+				gameObject.fixedUpdate(step)
+			}
+		});
 		// TODO: проверить столкновения
 	}
 
 	gameObjects.forEach(gameObject => {
-		if (!gameObject.isDestroyed) {
+		if (!gameObject.isDestroyed && gameObject.isEnabled && gameObject.isInitialized) {
 			gameObject.update(timestep);
 		}
 	});
 
-	camera.update(timestep);
-	camera.draw([...gameObjects], context);
+	if (camera.isActive()) {
+		camera.update(timestep);
+	}
+	if (camera.isActive()) {
+		camera.draw([...gameObjects].filter(gameObject => {
+			return !gameObject.isDestroyed && gameObject.isEnabled && gameObject.isInitialized;
+		}), context);
+	}
 
 	lastFrameTime = performance.now();
 
