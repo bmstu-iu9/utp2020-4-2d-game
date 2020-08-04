@@ -1,4 +1,5 @@
 import Component from './Component.js';
+import Scene from './Scene.js';
 
 export default class ComponentObject {
 	/**
@@ -30,16 +31,14 @@ export default class ComponentObject {
 	 */
 	initialize() {
 		this.throwIfDestroyed();
-		if (this.isInitialized) {
+		if (this.isInitialized || !this.isActive()) {
 			return;
 		}
 		this.isInitialized = true;
-		this.componentsInProcessing = true;
-
-		this.components.forEach(component => component.initialize());
-
-		this.componentsInProcessing = false;
-		this.removeDestroyedComponents();
+		this.scene.disabledObjects.delete(this);
+		this.scene.enabledObjects.delete(this);
+		this.scene.objectsBuffer.add(this);
+		this.forEachComponent(component => component.initialize());
 	}
 
 	/**
@@ -55,16 +54,11 @@ export default class ComponentObject {
 		if (value === this.isEnabled) {
 			return;
 		}
-		if (this.isInitialized) {
-			if (value) {
-				this.isEnabled = true;
-				this.enable();
-			} else {
-				this.disable();
-				this.isEnabled = false;
-			}
+		this.isEnabled = value;
+		if (value) {
+			this.enable();
 		} else {
-			this.isEnabled = value;
+			this.disable();
 		}
 	}
 
@@ -75,8 +69,18 @@ export default class ComponentObject {
 	 */
 	enable() {
 		this.throwIfDestroyed();
+		if (this.scene == null) {
+			return;
+		}
+		this.scene.disabledObjects.delete(this);
+		this.scene.enabledObjects.delete(this);
+		this.scene.objectsBuffer.add(this);
+		if (!this.isInitialized) {
+			this.initialize();
+			return;
+		}
 		this.forEachComponent(component => {
-			if (!component.isEnabled) {
+			if (!component.isActive()) {
 				return;
 			}
 			if (!component.isInitialized) {
@@ -94,11 +98,38 @@ export default class ComponentObject {
 	 */
 	disable() {
 		this.throwIfDestroyed();
-		this.forEachComponent(component => {
-			if (component.isEnabled) {
+		if (this.scene != null) {
+			this.scene.disabledObjects.delete(this);
+			this.scene.enabledObjects.delete(this);
+			this.scene.objectsBuffer.add(this);
+		}
+		if (!this.isInitialized) {
+			return;
+		}
+		const isMainProcess = !this.componentsInProcessing;
+		this.componentsInProcessing = true;
+
+		this.components.forEach(component => {
+			if (this.isDestroyed || this.isActive()) {
+				return;
+			}
+			if (component.isDestroyed) {
+				this.componentRemovedInProcessing = true;
+				return;
+			}
+			if (component.isEnabled && component.isInitialized) {
 				component.onDisable();
 			}
 		});
+
+		if (this.isDestroyed) {
+			return;
+		}
+
+		if (isMainProcess) {
+			this.componentsInProcessing = false;
+			this.removeDestroyedComponents();
+		}
 	}
 
 	/**
@@ -373,5 +404,24 @@ export default class ComponentObject {
 		this.components.forEach(component => !component.isDestroyed && component.destroy());
 		delete this.components;
 		this.isDestroyed = true;
+		if (this.scene != null) {
+			this.scene.removeObject(this);
+			this.scene = null;
+		}
+	}
+
+	/**
+	 * Привязывает данный объект к сцене.
+	 * 
+	 * @param {Scene} scene Сцена, к которой привяжется объект.
+	 */
+	attach(scene) {
+		if (!(scene instanceof Scene)) {
+			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
+		}
+		if (this.scene != null) {
+			throw new Error('component object already attached to scene.');
+		}
+		this.scene = scene;
 	}
 }

@@ -1,5 +1,5 @@
 import ComponentObject from '../ComponentObject.js';
-import GameObject from '../GameObject.js';
+import Renderer from './Renderer.js';
 import Vector2d from '../Vector2d.js';
 import Transform from '../Transform.js';
 import Screen from './Screen.js';
@@ -82,22 +82,22 @@ export default class Camera extends ComponentObject {
 	/**
 	 * Отрисовывает объекты, которые попадают в данную камеру.
 	 * 
-	 * @param {GameObject[]}             gameObjects Игровые объекты, которые надо отрисовать.
-	 * @param {CanvasRenderingContext2D} context     Контекст, в котором будет происходить отрисовка.
+	 * @param {Renderer[]}               renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
+	 * @param {CanvasRenderingContext2D} context   Контекст, в котором будет происходить отрисовка.
 	 */
-	draw(gameObjects, context) {
+	draw(renderers, context) {
 		this.throwIfNotInitialized();
 		this.throwIfDestroyed();
 		const size = Screen.getSize();
 		context.fillStyle = this.clearColor.rgbString();
 		context.fillRect(0, 0, size.x, size.y);
-
+		
 		context.translate(size.x / 2, size.y / 2);
 		context.scale(this.transform.scale.x, this.transform.scale.y);
 		context.rotate(-this.transform.rotation);
 		context.translate(-size.x / 2, -size.y / 2);
 
-		gameObjects.forEach(gameObject => gameObject.draw(this, context));
+		renderers.forEach(renderer => renderer.draw(this, context));
 
 		context.translate(size.x / 2, size.y / 2);
 		context.rotate(this.transform.rotation);

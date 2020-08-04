@@ -44,7 +44,7 @@ export default class Component {
 			return;
 		}
 		this.isEnabled = value;
-		if (this.componentObject == null || !this.componentObject.isEnabled) {
+		if (this.componentObject == null || !this.componentObject.isActive()) {
 			return;
 		}
 		if (value && !this.isInitialized) {
@@ -64,7 +64,7 @@ export default class Component {
 	 * @return {boolean} Возвращает true, если компонент включен и не уничтожен, и привязанный объект включен и не уничтожен.
 	 */
 	isActive() {
-		return this.componentObject != null && this.isEnabled && !this.isDestroyed && this.componentObject.isActive();
+		return this.isEnabled && !this.isDestroyed && this.componentObject.isActive();
 	}
 
 	/**
@@ -72,16 +72,20 @@ export default class Component {
 	 */
 	initialize() {
 		this.throwIfDestroyed();
-		if (this.isInitialized) {
+		if (this.isInitialized || this.inInitialization) {
 			return;
 		}
 		if (this.componentObject == null) {
 			throw new Error('component is not attached to component object.');
 		}
 		if (this.isEnabled) {
-			this.isInitialized = true;
+			this.inInitialization = true;
 			this.onInitialize();
-			this.onEnable();
+			this.isInitialized = true;
+			delete this.inInitialization;
+			if (this.isActive()) {
+				this.onEnable();
+			}
 		}
 	}
 

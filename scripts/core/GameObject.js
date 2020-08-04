@@ -1,9 +1,7 @@
 import Vector2d from './Vector2d.js';
 import ComponentObject from './ComponentObject.js';
-import Renderer from './graphics/Renderer.js';
 import Transform from './Transform.js';
 import Component from './Component.js';
-import Camera from './graphics/Camera.js';
 import GameComponent from './GameComponent.js';
 
 export default class GameObject extends ComponentObject {
@@ -43,11 +41,12 @@ export default class GameObject extends ComponentObject {
 		}
 
 		this.name = name;
+		this.isEnabledInHierarchy = this.isEnabled;
 		this.transform = new Transform(isStatic, position, rotation, scale);
 		/**
-		 * @type {GameObject[]}
+		 * @type {Set<GameObject>}
 		 */
-		this.children = [];
+		this.children = new Set();
 		/**
 		 * @type {GameObject}
 		 */
@@ -58,35 +57,27 @@ export default class GameObject extends ComponentObject {
 	}
 
 	/**
-	 * Влючает или выключает игровой объект.
-	 * 
-	 * @param {boolean} value Должен ли игровой объект включиться.
-	 */
-	setEnabled(value) {
-		super.setEnabled(value);
-		if (value && !this.isInitialized && this.isEnabledInHierarchy()) {
-			this.initialize();
-			this.children.forEach(child => child.isEnabled && child.enable());
-		}
-	}
-
-	/**
 	 * Служебная функция. Для включения и выключения игрового объекта использовать setEnabled(value).
 	 * 
 	 * @access protected
 	 */
 	enable() {
 		this.throwIfDestroyed();
-		if (this.parent != null && !this.parent.isEnabledInHierarchy()) {
-			return;
+		if (!this.isEnabledInHierarchy && (this.parent == null || this.parent.isEnabledInHierarchy)) {
+			this.isEnabledInHierarchy = true;
+			super.enable();
+			if (!this.isActive()) {
+				return;
+			}
+			for (let child of this.children.values()) {
+				if (!this.isActive()) {
+					return;
+				}
+				if (child.isEnabled) {
+					child.enable();
+				}
+			}
 		}
-		if (!this.isInitialized) {
-			this.initialize();
-			this.children.forEach(child => child.isEnabled && child.enable());
-			return;
-		}
-		super.enable();
-		this.children.forEach(child => child.isEnabled && child.enable());
 	}
 
 	/**
@@ -96,42 +87,36 @@ export default class GameObject extends ComponentObject {
 	 */
 	disable() {
 		this.throwIfDestroyed();
-		if (!this.isInitialized) {
-			return;
-		}
-		if (this.parent != null && !this.parent.isEnabledInHierarchy()) {
-			return;
-		}
-		super.disable();
-		this.children.forEach(child => child.isEnabled && child.disable());
-	}
-
-	/**
-	 * @return {boolean} Возвращает true, если объект включен в иерархии.
-	 */
-	isEnabledInHierarchy() {
-		let gameObject = this;
-		while (gameObject != null) {
-			if (!gameObject.isEnabled) {
-				return false;
+		if (
+			this.isEnabledInHierarchy
+			&& (
+				this.parent == null
+				|| !this.parent.isEnabledInHierarchy
+				|| !this.isEnabled
+			)
+		) {
+			this.isEnabledInHierarchy = false;
+			super.disable();
+			if (this.isDestroyed || this.isActive()) {
+				return;
 			}
-			gameObject = gameObject.parent;
+			for (let child of this.children.values()) {
+				if (this.isDestroyed || this.isActive()) {
+					return;
+				}
+				if (child.isEnabled) {
+					child.disable();
+				}
+			}
+			return;
 		}
-		return true;
 	}
 
 	/**
 	 * @return {boolean} Возвращает true, если объект не уничтожен и включен.
 	 */
 	isActive() {
-		return !this.isDestroyed && this.isEnabledInHierarchy();
-	}
-
-	initialize() {
-		if (!this.isEnabledInHierarchy()) {
-			return;
-		}
-		super.initialize();
+		return !this.isDestroyed && this.isEnabledInHierarchy;
 	}
 
 	/**
@@ -151,9 +136,6 @@ export default class GameObject extends ComponentObject {
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
-		if (this.transform.isStatic && !gameObject.transform.isStatic) {
-			throw new Error('cannot set a non-static game object as parent in a static game object.');
-		}
 		gameObject.addChild(this);
 	}
 
@@ -167,31 +149,38 @@ export default class GameObject extends ComponentObject {
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
-		if (this.getChildByName(gameObject.name) == null) {
-			if (gameObject.transform.isStatic && !this.transform.isStatic) {
-				throw new Error('cannot set a non-static game object as parent in a static game object.');
-			}
-			this.children.push(gameObject);
-			if (gameObject.parent != null) {
-				const index = gameObject.parent.children.indexOf(gameObject);
-				if (index >= 0) {
-					gameObject.parent.children.splice(index, 1);
-				}
-				const previousParentEnabled = gameObject.parent.isEnabledInHierarchy();
-				const currentParentEnabled = this.isEnabledInHierarchy();
-				gameObject.parent = null;
-				if (previousParentEnabled != currentParentEnabled) {
-					if (previousParentEnabled && gameObject.isEnabled) {
-						gameObject.disable();
-					} else if (gameObject.isEnabled) {
-						gameObject.enable();
-					}
-				}
-			} else {
-				if (this.isEnabledInHierarchy() != gameObject.isEnabled && gameObject.isEnabled) {
+		if (gameObject.isDestroyed) {
+			return;
+		}
+		if (this.children.has(gameObject)) {
+			return;
+		}
+		if (gameObject.transform.isStatic && !this.transform.isStatic) {
+			throw new Error('cannot set a non-static game object as parent in a static game object.');
+		}
+		if (gameObject.parent != null) {
+			gameObject.parent.children.delete(gameObject);
+			const previousParentEnabled = gameObject.parent.isEnabledInHierarchy;
+			const currentParentEnabled = this.isEnabledInHierarchy;
+			gameObject.parent = null;
+			if (previousParentEnabled != currentParentEnabled) {
+				if (previousParentEnabled && gameObject.isEnabled) {
 					gameObject.disable();
+				} else if (gameObject.isEnabled) {
+					gameObject.enable();
 				}
 			}
+		} else {
+			if (this.isEnabledInHierarchy != gameObject.isEnabled && gameObject.isEnabled) {
+				gameObject.disable();
+			} else if (this.isEnabledInHierarchy && gameObject.isEnabled) {
+				if (this.isInitialized && gameObject.scene == null) {
+					this.scene.addObject(gameObject);
+				}
+			}
+		}
+		if (!gameObject.isDestroyed) {
+			this.children.add(gameObject);
 			gameObject.parent = this;
 		}
 	}
@@ -206,23 +195,12 @@ export default class GameObject extends ComponentObject {
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}
-		return this.children.find(child => child.name === name);
-	}
-
-	/**
-	 * @param {number} index Индекс дочернего игрового объекта.
-	 * 
-	 * @return {GameObject} Возвращает дочерний игровой объект по индексу.
-	 */
-	getChildByIndex(index) {
-		this.throwIfDestroyed();
-		if (!Number.isInteger(index)) {
-			throw new TypeError('invalid parameter "index". Expected a integer.');
+		for (let child of this.children.values()) {
+			if (child.name === name) {
+				return child;
+			}
 		}
-		if (index < 0 || index >= this.children.length) {
-			throw new RangeError('invalid parameter "index".');
-		}
-		return this.children[index];
+		return undefined;
 	}
 
 	/**
@@ -232,29 +210,15 @@ export default class GameObject extends ComponentObject {
 	 */
 	removeChild(child) {
 		this.throwIfDestroyed();
-		const index = this.children.indexOf(child);
-		if (index >= 0) {
-			this.removeChildAt(index);
-		}
-	}
-
-	/**
-	 * Удаляет дочерний игровой объект из данного игрового объекта по индексу.
-	 * 
-	 * @param {number} index Индекс дочернего объекта.
-	 */
-	removeChildAt(index) {
-		this.throwIfDestroyed();
-		if (!Number.isInteger(index)) {
-			throw new TypeError('invalid parameter "index". Expected a integer.');
-		}
-		if (index < 0 || index >= this.children.length) {
-			throw new RangeError('invalid parametr "index".');
-		}
-		const [deleted] = this.children.splice(index, 1);
-		deleted.parent = null;
-		if (this.isEnabledInHierarchy() != deleted.isEnabled && deleted.isEnabled) {
-			deleted.enable();
+		if (this.children.has(child)) {
+			this.children.delete(child);
+			child.parent = null;
+			if (child.isDestroyed) {
+				return;
+			}
+			if (this.isEnabledInHierarchy != child.isEnabled && child.isEnabled) {
+				child.enable();
+			}
 		}
 	}
 
@@ -274,21 +238,6 @@ export default class GameObject extends ComponentObject {
 	}
 
 	/**
-	 * Отрисовывает данный игровой объект.
-	 * 
-	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
-	 */
-	draw(camera, context) {
-		this.throwIfDestroyed();
-		this.throwIfNotInitialized();
-		const renderer = this.getComponent(Renderer);
-		if (renderer != null && renderer.isActive()) {
-			renderer.draw(camera, context);
-		}
-	}
-
-	/**
 	 * Уничтожает данный игровой объект.
 	 */
 	destroy() {
@@ -299,9 +248,9 @@ export default class GameObject extends ComponentObject {
 		this.children.forEach(child => child.destroy());
 		delete this.children;
 		delete this.transform;
-		if (this.parent != null) {
+		if (this.parent != null && !this.parent.isDestroyed) {
 			this.parent.removeChild(this);
-			delete this.parent;
 		}
+		delete this.parent;
 	}
 }
