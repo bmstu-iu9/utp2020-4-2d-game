@@ -16,9 +16,9 @@ export default class Vector2d {
 
 	/**
 	 * Добавляет к данному вектору передаваемый вектор.
-	 * 
+	 *
 	 * @param {Vector2d} vector
-	 * 
+	 *
 	 * @return {Vector2d} Возвращает сумму векторов (создается новый вектор).
 	 */
 	add(vector) {
@@ -29,10 +29,17 @@ export default class Vector2d {
 	}
 
 	/**
+	 * @return {Vector2d} Возвращает противоположный вектор данному (создается новый вектор).
+	 */
+	opposite() {
+		return new Vector2d(-this.x, -this.y);
+	}
+
+	/**
 	 * Вычитает из данного вектора передаваемый вектор.
-	 * 
+	 *
 	 * @param {Vector2d} vector
-	 * 
+	 *
 	 * @return {Vector2d} Возвращает разность векторов (создается новый вектор).
 	 */
 	subtract(vector) {
@@ -44,7 +51,7 @@ export default class Vector2d {
 
 	/**
 	 * @param {number} scalar
-	 * 
+	 *
 	 * @return {Vector2d} Возвращает произведение данного вектора на число (создается новый вектор).
 	 */
 	multiply(scalar) {
@@ -55,21 +62,21 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {number} Возвращает длину данного вектора в квадрате. 
+	 * @return {number} Возвращает длину данного вектора в квадрате.
 	 */
 	squaredLength() {
 		return this.x * this.x + this.y * this.y;
 	}
 
 	/**
-	 * @return {number} Возвращает длину данного вектора. 
+	 * @return {number} Возвращает длину данного вектора.
 	 */
 	length() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает вектор, получаемый нормированием данного (создается новый вектор). 
+	 * @return {Vector2d} Возвращает вектор, получаемый нормированием данного (создается новый вектор).
 	 */
 	normalize() {
 		const length = this.length();
@@ -77,15 +84,15 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает вектор, ортогональный данному (создается новый вектор). 
+	 * @return {Vector2d} Возвращает вектор, ортогональный данному (создается новый вектор).
 	 */
 	orthogonalVector() {
 		return new Vector2d(this.y, -this.x);
 	}
 
 	/**
-	 * Вычисляет скалярное произведение данного вектора с передаваемым. 
-	 * 
+	 * Вычисляет скалярное произведение данного вектора с передаваемым.
+	 *
 	 * @param {Vector2d} vector
 	 *
 	 * @return {number} Возвращает скалярное произведение векторов.
@@ -99,7 +106,7 @@ export default class Vector2d {
 
 	/**
 	 * Вычисляет векторную проекцию данного вектора на передаваемый.
-	 * 
+	 *
 	 * @param {Vector2d} vector
 	 *
 	 * @return {Vector2d} Возвращает векторную проекцию (создается новый вектор).
@@ -113,7 +120,7 @@ export default class Vector2d {
 
 	/**
 	 * Вычисляет скалярную проекцию данного вектора на передаваемый.
-	 * 
+	 *
 	 * @param {Vector2d} vector
 	 *
 	 * @return {number} Возвращает скалярную проекцию.
@@ -127,9 +134,9 @@ export default class Vector2d {
 
 	/**
 	 * Поворачивает данный вектор на угол (в радианах).
-	 * 
+	 *
 	 * Положительный угол - поворот против часовой, отрицательный - по часовой.
-	 * 
+	 *
 	 * @param {number} angle
 	 *
 	 * @return {Vector2d} Возвращает вектор, полученный при повороте данного (создается новый вектор).
@@ -152,9 +159,9 @@ export default class Vector2d {
 
 	/**
 	 * Сравнивает данный вектор с передаваемым.
-	 * 
+	 *
 	 * @param {Vector2d} vector
-	 * 
+	 *
 	 * @return {boolean} Возвращает true, если векторы равны, иначе - false.
 	 */
 	equals(vector) {
@@ -163,7 +170,7 @@ export default class Vector2d {
 		}
 		return this.x === vector.x && this.y === vector.y;
 	}
-	
+
 	/**
 	 * Vector (0, 0)
 	 */
@@ -173,17 +180,17 @@ export default class Vector2d {
 	 * Vector (0, 1)
 	 */
 	static up = new Vector2d(0, 1);
-	
+
 	/**
 	 * Vector (0, -1)
 	 */
 	static down = new Vector2d(0, -1);
-	
+
 	/**
 	 * Vector (1, 0)
 	 */
 	static right = new Vector2d(1, 0);
-	
+
 	/**
 	 * Vector (-1, 0)
 	 */

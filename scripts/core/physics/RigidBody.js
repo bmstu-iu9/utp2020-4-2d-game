@@ -5,9 +5,9 @@ import Collider from './Collider.js';
 
 export default class RigidBody extends GameComponent {
 	/**
-	 * @type {RigidBody[]}
+	 * @type {Set<RigidBody>}
 	 */
-	static rigidBodies = [];
+	static dynamicRigidBodies = new Set();
 
 	static gravity = new Vector2d(0, -9.81);
 
@@ -40,16 +40,20 @@ export default class RigidBody extends GameComponent {
 	}
 
 	recalculate() {
-		if (this.collider == null || this.collider.isDestroyed) {
-			this.collider = this.gameObject.getComponent(Collider);
+		if (this.isKinematic) {
+			this.mass = this.invMass = 0;
+			return;
 		}
-		this.mass = this.collider != null ? this.material.density * this.collider.area : 0;
-		this.invMass = mass != 0 ? 1 / mass : 0;
+		const collider = this.gameObject.getComponent(Collider);
+		this.mass = collider != null ? this.material.density * collider.area : 0;
+		this.invMass = this.mass != 0 ? 1 / this.mass : 0;
 	}
 
 	onInitialize() {
 		super.onInitialize();
-		RigidBody.rigidBodies.push(this);
+		if (!this.transform.isStatic) {
+			RigidBody.dynamicRigidBodies.add(this);
+		}
 		this.recalculate();
 	}
 
@@ -57,9 +61,29 @@ export default class RigidBody extends GameComponent {
 		return false;
 	}
 
+	integrateForces(deltaTime) {
+        if (this.isStatic || this.isKinematic) {
+            return;
+		}
+        const gravity = RigidBody.gravity.multiply(this.gravityScale);
+        this.velocity = this.velocity.add(this.force.multiply(this.invMass).add(gravity).multiply(deltaTime / 2));
+    }
+
+    integrateVelocity(deltaTime) {
+        if (this.isStatic) {
+            return;
+        }
+        this.transform.setPosition(this.transform.position.add(this.velocity.multiply(deltaTime)));
+        this.integrateForces(deltaTime);
+    }
+
+    clearForce() {
+        this.force = Vector2d.zero;
+    }
+
 	/**
 	 * Добавляет силу к данному телу.
-	 * 
+	 *
 	 * @param {Vector2d} force
 	 */
 	addForce(force) {
@@ -71,7 +95,7 @@ export default class RigidBody extends GameComponent {
 
 	/**
 	 * Устанавливает скорость для данного тела.
-	 * 
+	 *
 	 * @param {Vector2d} velocity
 	 */
 	setVelocity(velocity) {
@@ -83,7 +107,7 @@ export default class RigidBody extends GameComponent {
 
 	/**
 	 * Перемещает тело к позиции с указанной скоростью.
-	 * 
+	 *
 	 * @param {Vector2d} position Точка прибытия.
 	 * @param {number}   speed
 	 */
@@ -99,5 +123,9 @@ export default class RigidBody extends GameComponent {
 		}
 		const path = position.subtract(this.transform.position);
 		this.velocity = path.squaredLength() > speed * speed ? path.normalize().multiply(speed) : path;
+	}
+
+	onDestroy() {
+		RigidBody.rigidBodies.delete(this);
 	}
 }

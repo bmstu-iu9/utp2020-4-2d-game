@@ -23,7 +23,7 @@ export default class CircleCollider extends Collider {
 		if (Math.abs(this.transform.scale.x) !== Math.abs(this.transform.scale.y)) {
 			throw new Error('scale.x must be equal scale.y.');
 		}
-		this.radius = Math.abs(this.scale.x);
+		this.radius *= Math.abs(this.scale.x);
 		this.area = Math.PI * this.radius * this.radius;
 	}
 

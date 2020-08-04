@@ -36,6 +36,7 @@ export default class SpriteRenderer extends Renderer {
 
 		const canvas = context.canvas;
 		position = new Vector2d(position.x, -position.y);
+		position = position.multiply(100);
 		position = position.add(new Vector2d(canvas.clientWidth / 2, canvas.clientHeight / 2));
 	
 		context.save();
