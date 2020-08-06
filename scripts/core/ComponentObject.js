@@ -3,9 +3,12 @@ import Scene from './Scene.js';
 
 export default class ComponentObject {
 	/**
-	 * @param {boolean} isEnabled Влючен ли объект.
+	 * @param {boolean} isEnabled Включен ли объект.
 	 */
 	constructor(isEnabled) {
+		if (new.target === ComponentObject) {
+			throw new TypeError('cannot create instance of abstract class.');
+		}
 		this.isInitialized = false;
 		this.isDestroyed = false;
 		this.isEnabled = isEnabled;
