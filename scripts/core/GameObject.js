@@ -1,13 +1,14 @@
 import Vector2d from './Vector2d.js';
-import ComponentObject from './ComponentObject.js';
-import Renderer from './graphics/Renderer.js';
-import Transform from './Transform.js';
 import Component from './Component.js';
+import GameComponent from './GameComponent.js';
+import HierarchyObject from './HierarchyObject.js';
+import HierarchyTransform from './HierarchyTransform.js';
 
-export default class GameObject extends ComponentObject {
+export default class GameObject extends HierarchyObject {
 	/**
 	 * @param {object}       settings            Настройки игрового объекта.
 	 * @param {string}       settings.name       Название игрового объекта.
+	 * @param {boolean}      settings.isEnabled  Влючен ли игровой объект.
 	 * @param {boolean}      settings.isStatic   Должен ли игровой объект быть статичным.
 	 * @param {Vector2d}     settings.position   Позиция игрового объекта.
 	 * @param {number}       settings.rotation   Угол поворота игрового объекта в радианах.
@@ -17,6 +18,7 @@ export default class GameObject extends ComponentObject {
 	 */
 	constructor({
 		name,
+		isEnabled = true,
 		isStatic = false,
 		position = Vector2d.zero,
 		rotation = 0,
@@ -24,7 +26,7 @@ export default class GameObject extends ComponentObject {
 		components = [],
 		children = [],
 	}) {
-		super();
+		super(isEnabled);
 		if (typeof name !== 'string') {
 			throw new TypeError('invalid parameter "name". Expected a string.');
 		}
@@ -39,15 +41,15 @@ export default class GameObject extends ComponentObject {
 		}
 
 		this.name = name;
-		this.transform = new Transform(isStatic, position, rotation, scale);
+		this.transform = new HierarchyTransform(this, isStatic, position, rotation, scale);
 		/**
-		 * @type {GameObject[]}
+		 * @type {Set<GameObject>}
 		 */
-		this.children = [];
+		this.children;
 		/**
 		 * @type {GameObject}
 		 */
-		this.parent = null;
+		this.parent;
 
 		components.forEach(component => this.addComponent(component));
 		children.forEach(child => this.addChild(child));
@@ -60,44 +62,41 @@ export default class GameObject extends ComponentObject {
 	 * @param {GameObject} gameObject Родительский игровой объект. Может быть null.
 	 */
 	setParent(gameObject) {
-		this.throwIfDestroyed();
 		if (gameObject == null) {
-			if (this.parent != null) {
-				this.parent.removeChild(this);
-			}
+			super.setParent(null);
 			return;
 		}
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
-		if (this.transform.isStatic && !gameObject.transform.isStatic) {
-			throw new Error('cannot set a non-static game object as parent in a static game object.');
+		if (gameObject.isDestroyed) {
+			return;
 		}
-		if (this.parent != null) {
-			this.parent.removeChild(this);
-		}
-		gameObject.addChild(this);
+		super.setParent(gameObject);
 	}
 
 	/**
 	 * Добавляет дочерний игровой объект.
 	 * 
-	 * @param {GameObject} gameObject Игровой объект, который станет дочерним. 
+	 * @param {GameObject} gameObject Игровой объект, который станет дочерним.
+	 * 
+	 * @return {boolean} Возвращает true, если игровой объект стал дочерним.
 	 */
 	addChild(gameObject) {
-		this.throwIfDestroyed();
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
-		if (this.getChildByName(gameObject.name) == null) {
-			if (gameObject.transform.isStatic && !this.transform.isStatic) {
-				throw new Error('cannot set a non-static game object as parent in a static game object.');
-			}
-			this.children.push(gameObject);
-			if (gameObject.parent != null) {
-				gameObject.parent.removeChild(gameObject);
-			}
-			gameObject.parent = this;
+		if (gameObject.isDestroyed) {
+			return;
+		}
+		if (gameObject.transform.isStatic && !this.transform.isStatic) {
+			throw new Error('cannot set a non-static game object as parent in a static game object.');
+		}
+		if (super.addChild(gameObject)) {
+			gameObject.transform.updateMatrices(true);
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -107,58 +106,23 @@ export default class GameObject extends ComponentObject {
 	 * @return {GameObject} Возвращает дочерний игровой объект с переданным именем. Если он не нашелся, то возвращается undefined.
 	 */
 	getChildByName(name) {
-		this.throwIfDestroyed();
-		if (typeof name !== 'string') {
-			throw new TypeError('invalid parameter "name". Expected a string.');
-		}
-		return this.children.find(child => child.name === name);
-	}
-
-	/**
-	 * @param {number} index Индекс дочернего игрового объекта.
-	 * 
-	 * @return {GameObject} Возвращает дочерний игровой объект по индексу.
-	 */
-	getChildByIndex(index) {
-		this.throwIfDestroyed();
-		if (!Number.isInteger(index)) {
-			throw new TypeError('invalid parameter "index". Expected a integer.');
-		}
-		if (index < 0 || index >= this.children.length) {
-			throw new RangeError('invalid parameter "index".');
-		}
-		return this.children[index];
+		return super.getChildByName(name);
 	}
 
 	/**
 	 * Удаляет дочерний игровой объект из данного игрового объекта.
 	 * 
-	 * @param {GameObject} child Дочерний объект.
+	 * @param {GameObject} child Дочерний игровой объект.
+	 * 
+	 * @return {boolean} Возвращает true, если дочерний игровой объект был удален.
 	 */
 	removeChild(child) {
-		this.throwIfDestroyed();
-		const index = this.children.indexOf(child);
-		if (index >= 0) {
-			const [deleted] = this.children.splice(index, 1);
-			deleted.parent = null;
+		if (super.removeChild(child)) {
+			child.transform.updateMatrices(true);
+			return true;
+		} else {
+			return false;
 		}
-	}
-
-	/**
-	 * Удаляет дочерний игровой объект из данного игрового объекта по индексу.
-	 * 
-	 * @param {number} index Индекс дочернего объекта.
-	 */
-	removeChildAt(index) {
-		this.throwIfDestroyed();
-		if (!Number.isInteger(index)) {
-			throw new TypeError('invalid parameter "index". Expected a integer.');
-		}
-		if (index < 0 || index >= this.children.length) {
-			throw new RangeError('invalid parametr "index".');
-		}
-		const [deleted] = this.children.splice(index, 1);
-		deleted.parent = null;
 	}
 
 	/**
@@ -169,36 +133,27 @@ export default class GameObject extends ComponentObject {
 	fixedUpdate(fixedDeltaTime) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.callInComponents('onFixedUpdate', fixedDeltaTime);
-	}
-
-	/**
-	 * Отрисовывает данный игровой объект.
-	 * 
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка. 
-	 */
-	draw(context) {
-		this.throwIfDestroyed();
-		this.throwIfNotInitialized();
-		this.componentsInProcessing = true;
-
-		this.components.forEach(component => {
-			if (!component.isDestroyed && component.isEnabled && component instanceof Renderer) {
-				component.draw(context);
+		this.forEachComponent(component => {
+			if (component.isEnabled && component instanceof GameComponent) {
+				component.onFixedUpdate(fixedDeltaTime);
 			}
 		});
-
-		this.componentsInProcessing = false;
-		this.removeDestroyedComponents();
 	}
 
 	/**
 	 * Уничтожает данный игровой объект.
 	 */
 	destroy() {
+		if (this.isDestroyed) {
+			return;
+		}
 		super.destroy();
 		this.children.forEach(child => child.destroy());
 		delete this.children;
 		delete this.transform;
+		if (this.parent != null && !this.parent.isDestroyed) {
+			this.parent.removeChild(this);
+		}
+		delete this.parent;
 	}
 }

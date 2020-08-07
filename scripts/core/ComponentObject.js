@@ -1,9 +1,17 @@
 import Component from './Component.js';
+import Scene from './Scene.js';
 
 export default class ComponentObject {
-	constructor() {
+	/**
+	 * @param {boolean} isEnabled Включен ли объект.
+	 */
+	constructor(isEnabled) {
+		if (new.target === ComponentObject) {
+			throw new TypeError('cannot create instance of abstract class.');
+		}
 		this.isInitialized = false;
 		this.isDestroyed = false;
+		this.isEnabled = isEnabled;
 
 		/**
 		 * @type {Component[]}
@@ -26,16 +34,105 @@ export default class ComponentObject {
 	 */
 	initialize() {
 		this.throwIfDestroyed();
-		if (this.isInitialized) {
-			throw new Error('already initialized.');
+		if (this.isInitialized || !this.isActive()) {
+			return;
 		}
 		this.isInitialized = true;
+		this.scene.disabledObjects.delete(this);
+		this.scene.enabledObjects.delete(this);
+		this.scene.objectsBuffer.add(this);
+		this.forEachComponent(component => component.initialize());
+	}
+
+	/**
+	 * Влючает или выключает объект.
+	 * 
+	 * @param {boolean} value Должен ли объект включиться.
+	 */
+	setEnabled(value) {
+		this.throwIfDestroyed();
+		if (typeof value !== 'boolean') {
+			throw new TypeError('invalid parameter "value". Expected a boolean value.');
+		}
+		if (value === this.isEnabled) {
+			return;
+		}
+		this.isEnabled = value;
+		if (value) {
+			this.enable();
+		} else {
+			this.disable();
+		}
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	enable() {
+		this.throwIfDestroyed();
+		if (this.scene == null) {
+			return;
+		}
+		this.scene.disabledObjects.delete(this);
+		this.scene.enabledObjects.delete(this);
+		this.scene.objectsBuffer.add(this);
+		if (!this.isInitialized) {
+			this.initialize();
+			return;
+		}
+		this.forEachComponent(component => {
+			if (!component.isActive()) {
+				return;
+			}
+			if (!component.isInitialized) {
+				component.initialize();
+			} else {
+				component.onEnable();
+			}
+		});
+	}
+
+	/**
+	 * Служебная функция. Для включения и выключения объекта использовать setEnabled(value).
+	 * 
+	 * @access protected
+	 */
+	disable() {
+		this.throwIfDestroyed();
+		if (this.scene != null) {
+			this.scene.disabledObjects.delete(this);
+			this.scene.enabledObjects.delete(this);
+			this.scene.objectsBuffer.add(this);
+		}
+		if (!this.isInitialized) {
+			return;
+		}
+		const isMainProcess = !this.componentsInProcessing;
 		this.componentsInProcessing = true;
 
-		this.components.forEach(component => component.initialize());
+		this.components.forEach(component => {
+			if (this.isDestroyed || this.isActive()) {
+				return;
+			}
+			if (component.isDestroyed) {
+				this.componentRemovedInProcessing = true;
+				return;
+			}
+			if (component.isEnabled && component.isInitialized) {
+				component.onDisable();
+			}
+		});
 
-		this.componentsInProcessing = false;
-		this.removeDestroyedComponents();
+		if (this.isDestroyed) {
+			return;
+		}
+
+		if (isMainProcess) {
+			this.componentsInProcessing = false;
+			this.removeDestroyedComponents();
+		}
 	}
 
 	/**
@@ -236,14 +333,7 @@ export default class ComponentObject {
 	 */
 	callInComponents(functionName, ...args) {
 		this.throwIfDestroyed();
-		const isMainProcess = !this.componentsInProcessing;
-		this.componentsInProcessing = true;
-
-		this.components.forEach(component => {
-			if (component.isDestroyed) {
-				this.componentRemovedInProcessing = true;
-				return;
-			}
+		this.forEachComponent(component => {
 			if (!component.isEnabled) {
 				return;
 			}
@@ -252,6 +342,39 @@ export default class ComponentObject {
 				Reflect.apply(componentFunction, component, args);
 			}
 		});
+	}
+
+	/**
+	 * @return {boolean} Возвращает true, если объект не уничтожен и включен.
+	 */
+	isActive() {
+		return !this.isDestroyed && this.isEnabled;
+	}
+
+	/**
+	 * Выполняет функцию для всех компонентов.
+	 * 
+	 * @param {(component: Component) => void} action Фукнкция, котороя выполнится для каждого компонента.
+	 */
+	forEachComponent(action) {
+		this.throwIfDestroyed();
+		const isMainProcess = !this.componentsInProcessing;
+		this.componentsInProcessing = true;
+
+		this.components.forEach(component => {
+			if (!this.isActive()) {
+				return;
+			}
+			if (component.isDestroyed) {
+				this.componentRemovedInProcessing = true;
+				return;
+			}
+			action(component);
+		});
+
+		if (this.isDestroyed) {
+			return;
+		}
 
 		if (isMainProcess) {
 			this.componentsInProcessing = false;
@@ -267,17 +390,41 @@ export default class ComponentObject {
 	update(deltaTime) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		this.callInComponents('onUpdate', deltaTime);
+		this.forEachComponent(component => {
+			if (component.isEnabled) {
+				component.onUpdate(deltaTime);
+			}
+		});
 	}
-
 
 	/**
 	 * Уничтожает данный объект.
 	 */
 	destroy() {
-		this.throwIfDestroyed();
-		this.components.forEach(component => component.destroy());
+		if (this.isDestroyed) {
+			return;
+		}
+		this.components.forEach(component => !component.isDestroyed && component.destroy());
 		delete this.components;
 		this.isDestroyed = true;
+		if (this.scene != null) {
+			this.scene.removeObject(this);
+			this.scene = null;
+		}
+	}
+
+	/**
+	 * Привязывает данный объект к сцене.
+	 * 
+	 * @param {Scene} scene Сцена, к которой привяжется объект.
+	 */
+	attach(scene) {
+		if (!(scene instanceof Scene)) {
+			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
+		}
+		if (this.scene != null) {
+			throw new Error('component object already attached to scene.');
+		}
+		this.scene = scene;
 	}
 }

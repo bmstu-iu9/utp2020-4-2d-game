@@ -1,5 +1,5 @@
 import Vector2d from './Vector2d.js';
-import Screen from './Screen.js';
+import Screen from './graphics/Screen.js';
 
 export default class Input {
 	static keysDown = new Set();
