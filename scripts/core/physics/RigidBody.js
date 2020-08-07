@@ -61,24 +61,24 @@ export default class RigidBody extends GameComponent {
 	}
 
 	integrateForces(deltaTime) {
-        if (this.isStatic || this.isKinematic) {
-            return;
+		if (this.isStatic || this.isKinematic) {
+			return;
 		}
-        const gravity = RigidBody.gravity.multiply(this.gravityScale);
-        this.velocity = this.velocity.add(this.force.multiply(this.invMass).add(gravity).multiply(deltaTime / 2));
-    }
+		const gravity = RigidBody.gravity.multiply(this.gravityScale);
+		this.velocity = this.velocity.add(this.force.multiply(this.invMass).add(gravity).multiply(deltaTime / 2));
+	}
 
-    integrateVelocity(deltaTime) {
-        if (this.isStatic) {
-            return;
-        }
-        this.transform.setPosition(this.transform.position.add(this.velocity.multiply(deltaTime)));
-        this.integrateForces(deltaTime);
-    }
+	integrateVelocity(deltaTime) {
+		if (this.isStatic) {
+			return;
+		}
+		this.transform.setPosition(this.transform.position.add(this.velocity.multiply(deltaTime)));
+		this.integrateForces(deltaTime);
+	}
 
-    clearForce() {
-        this.force = Vector2d.zero;
-    }
+	clearForce() {
+		this.force = Vector2d.zero;
+	}
 
 	/**
 	 * Добавляет силу к данному телу.
