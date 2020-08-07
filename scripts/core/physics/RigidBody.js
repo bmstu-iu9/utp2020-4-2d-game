@@ -14,7 +14,7 @@ export default class RigidBody extends GameComponent {
 	/**
 	 * @param {object}   settings              Настройки твердого тела.
 	 * @param {Material} settings.material     Материал, из которого должно состоять данное тело.
-	 * @param {boolean}  settings.isKinematic  Должено ли быть тело статическим.
+	 * @param {boolean}  settings.isKinematic  Должно ли тело игнорировать внешние силы.
 	 * @param {Vector2d} settings.velocity     Начальная скорость.
 	 * @param {number}   settings.gravityScale Влияние гравитации.
 	 */
@@ -37,6 +37,7 @@ export default class RigidBody extends GameComponent {
 		this.velocity = velocity;
 		this.gravityScale = gravityScale;
 		this.force = Vector2d.zero;
+		this.mass = this.invMass = 0;
 	}
 
 	recalculate() {
@@ -44,16 +45,45 @@ export default class RigidBody extends GameComponent {
 			this.mass = this.invMass = 0;
 			return;
 		}
-		const collider = this.gameObject.getComponent(Collider);
-		this.mass = collider != null ? this.material.density * collider.area : 0;
+		const calculateArea = (gameObject, isChild) => {
+			if (gameObject == null) {
+				return 0;
+			}
+			const collider = gameObject.getComponent(Collider);
+			if (isChild && gameObject.getComponent(RigidBody) != null) {
+				return 0;
+			}
+			let result = collider != null ? collider.area : 0;
+			gameObject.children.forEach(child => {
+				result += calculateArea(child, true);
+			});
+			return result;
+		}
+		this.mass = this.material.density * calculateArea(this.gameObject);
 		this.invMass = this.mass != 0 ? 1 / this.mass : 0;
+	}
+
+	/**
+	 * @param {boolean} value Должно ли тело игнорировать внешние силы.
+	 */
+	setKinematic(value) {
+		if (typeof value !== 'boolean') {
+			throw new TypeError('invalid parameter "value". Expected a boolean value.');
+		}
+		if (this.isKinematic != value) {
+			this.isKinematic = value;
+			if (this.isKinematic) {
+				this.clearForce();
+			}
+			this.recalculate();
+		}
 	}
 
 	onEnable() {
 		if (!this.transform.isStatic) {
 			RigidBody.dynamicRigidBodies.add(this);
+			this.recalculate();
 		}
-		this.recalculate();
 	}
 
 	allowMultipleComponents() {
@@ -61,7 +91,7 @@ export default class RigidBody extends GameComponent {
 	}
 
 	integrateForces(deltaTime) {
-		if (this.isStatic || this.isKinematic) {
+		if (this.transform.isStatic || this.isKinematic) {
 			return;
 		}
 		const gravity = RigidBody.gravity.multiply(this.gravityScale);
@@ -69,7 +99,7 @@ export default class RigidBody extends GameComponent {
 	}
 
 	integrateVelocity(deltaTime) {
-		if (this.isStatic) {
+		if (this.transform.isStatic) {
 			return;
 		}
 		this.transform.setPosition(this.transform.position.add(this.velocity.multiply(deltaTime)));
@@ -86,6 +116,9 @@ export default class RigidBody extends GameComponent {
 	 * @param {Vector2d} force
 	 */
 	addForce(force) {
+		if (this.isKinematic) {
+			throw new Error('cannot add force to kinematic body.');
+		}
 		if (!(force instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "force". Expected an instance of Vector2d class.');
 		}
@@ -107,10 +140,11 @@ export default class RigidBody extends GameComponent {
 	/**
 	 * Перемещает тело к позиции с указанной скоростью.
 	 *
-	 * @param {Vector2d} position Точка прибытия.
+	 * @param {Vector2d} position       Точка прибытия.
 	 * @param {number}   speed
+	 * @param {number}   fixedDeltaTime Фиксированное время обновления логики игры в секундах.
 	 */
-	moveTo(position, speed) {
+	moveTo(position, speed, fixedDeltaTime) {
 		if (!this.isKinematic) {
 			throw new Error('cannot move a non-kinematic body.');
 		}
@@ -120,8 +154,17 @@ export default class RigidBody extends GameComponent {
 		if (typeof speed !== 'number') {
 			throw new TypeError('invalid parameter "speed". Expected a number.');
 		}
+		if (typeof fixedDeltaTime != 'number') {
+			throw new TypeError('invalid parameter "fixedDeltaTime". Expected a number.');
+		}
 		const path = position.subtract(this.transform.position);
-		this.velocity = path.squaredLength() > speed * speed ? path.normalize().multiply(speed) : path;
+		const speedWithDelta = speed * fixedDeltaTime;
+		if (path.squaredLength() >= speedWithDelta * speedWithDelta) {
+			this.velocity = path.normalize().multiply(speed);
+		} else {
+			this.velocity = Vector2d.zero;
+			this.transform.setPosition(position);
+		}
 	}
 
 	onDisable() {

@@ -195,7 +195,10 @@ export default class Collision {
 		if (firstRigidBody == null || secondRigidBody == null) {
 			return null;
 		}
-		if (firstRigidBody.transform.isStatic && secondRigidBody.transform.isStatic) {
+		if (
+			(firstRigidBody.transform.isStatic || firstRigidBody.isKinematic)
+			&& (secondRigidBody.transform.isStatic || secondRigidBody.isKinematic)
+		) {
 			return null;
 		}
 		const collision = new Collision();
@@ -238,12 +241,12 @@ export default class Collision {
 		const correction = this.normal.multiply(
 			Math.max(this.depth - kSlop, 0) / (this.firstRigidBody.invMass + this.secondRigidBody.invMass) * percent,
 		);
-		if (!this.firstRigidBody.transform.isStatic) {
+		if (!this.firstRigidBody.transform.isStatic && !this.firstRigidBody.isKinematic) {
 			this.firstRigidBody.transform.setPosition(
 				this.firstRigidBody.transform.position.subtract(correction.multiply(this.firstRigidBody.invMass)),
 			);
 		}
-		if (!this.secondRigidBody.transform.isStatic) {
+		if (!this.secondRigidBody.transform.isStatic && !this.secondRigidBody.isKinematic) {
 			this.secondRigidBody.transform.setPosition(
 				this.secondRigidBody.transform.position.add(correction.multiply(this.secondRigidBody.invMass)),
 			);
