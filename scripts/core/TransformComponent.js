@@ -3,6 +3,9 @@ import Transform from './Transform.js';
 
 export default class TransformComponent extends Component {
 	constructor() {
+		if (new.target === TransformComponent) {
+			throw new TypeError('cannot create instance of abstract class.');
+		}
 		super();
 		/**
 		 * @type {Transform}
