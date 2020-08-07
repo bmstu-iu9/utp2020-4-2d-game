@@ -1,6 +1,8 @@
 import Renderer from './Renderer.js';
 import Sprite from './Sprite.js';
 import Camera from './Camera.js';
+import Vector2d from '../Vector2d.js';
+import Matrix3x3 from '../Matrix3x3.js';
 
 export default class SpriteRenderer extends Renderer {
 	/**
@@ -31,15 +33,15 @@ export default class SpriteRenderer extends Renderer {
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
 	draw(camera, context) {
-		const position = camera.worldToCameraPosition(this.transform.position);
+		const offset = camera.worldToCameraPosition(Vector2d.zero);
 		const region = this.sprite.region;
-		const scale = this.transform.scale;
-		const rotation = this.transform.rotation;
 	
-		context.save();
-		context.translate(position.x, position.y);
-		context.rotate(rotation);
-		context.scale(scale.x, scale.y);
+		const matrix = this.transform.worldMatrix;
+		context.transform(
+			matrix[0], matrix[1],
+			matrix[3], matrix[4],
+			offset.x + matrix[6], offset.y + matrix[7],
+		);
 		context.drawImage(
 			this.sprite.image,
 			region.x,
@@ -51,6 +53,6 @@ export default class SpriteRenderer extends Renderer {
 			region.width,
 			region.height,
 		);
-		context.restore();
+		context.resetTransform();
 	}
 }

@@ -98,18 +98,18 @@ export default class TileMap extends Renderer {
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
 	draw(camera, context) {
-		let position = camera.worldToCameraPosition(this.transform.position);
-		const scale = this.transform.scale;
-		const invScale = new Vector2d(1 / scale.x, 1 / scale.y);
-		const rotation = this.transform.rotation;
-
+		const positionOffset = camera.worldToCameraPosition(Vector2d.zero);
 		const offset = new Vector2d(
 			this.width / 2 * (this.tileWidth - 1),
 			this.height / 2 * (this.tileHeight - 1),
 		);
 
-		context.save();
-		context.translate(position.x, position.y);
+		const matrix = this.transform.worldMatrix;
+		context.transform(
+			matrix[0], matrix[1],
+			matrix[3], matrix[4],
+			positionOffset.x + matrix[6], positionOffset.y + matrix[7],
+		);
 		for (let i = 0; i < this.height; i++) {
 			for (let j = 0; j < this.map[i].length; j++) {
 				const sprite = this.map[i][j];
@@ -118,8 +118,6 @@ export default class TileMap extends Renderer {
 				}
 				const spritePositionX = j * this.tileWidth - offset.x;
 				const spritePositionY = i * this.tileHeight - offset.y;
-				context.rotate(rotation);
-				context.scale(scale.x, scale.y);
 				context.drawImage(
 					sprite.image,
 					sprite.region.x,
@@ -131,10 +129,8 @@ export default class TileMap extends Renderer {
 					sprite.region.width,
 					sprite.region.height,
 				);
-				context.scale(invScale.x, invScale.y);
-				context.rotate(-rotation);
 			}
 		}
-		context.restore();
+		context.resetTransform();
 	}
 }

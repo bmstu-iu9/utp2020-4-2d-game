@@ -1,4 +1,5 @@
 import Vector2d from './Vector2d.js';
+import Matrix3x3 from './Matrix3x3.js';
 
 export default class Transform {
 	/**
@@ -11,11 +12,31 @@ export default class Transform {
 		if (typeof isStatic !== 'boolean') {
 			throw new TypeError('invalid parameter "isStatic". Expected a boolean value.');
 		}
-
-		this.setPosition(position);
-		this.setRotation(rotation);
-		this.setScale(scale);
+		if (!(position instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
+		}
+		if (typeof rotation !== 'number') {
+			throw new TypeError('invalid parameter "rotation". Expected a number.');
+		}
+		if (!(scale instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
+		}
+		/**
+		 * @type {Vector2d}
+		 */
+		this.position = position;
+		/**
+		 * @type {number}
+		 */
+		this.rotation = this.clampAngle(rotation);
+		this.angle = this.rotation / Math.PI * 180;
+		/**
+		 * @type {Vector2d}
+		 */
+		this.scale = scale;
 		this.isStatic = isStatic;
+		this.isDirty = true;
+		this.updateMatrices();
 	}
 
 	/**
@@ -28,6 +49,44 @@ export default class Transform {
 	}
 
 	/**
+	 * Ограничивает угол от 0 до 2 pi.
+	 * 
+	 * @param {number} angle Угол в радианах.
+	 * 
+	 * @return {number} Возвращает ограниченный угол.
+	 */
+	clampAngle(angle) {
+		if (typeof angle !== 'number') {
+			throw new TypeError('invalid parameter "angle". Expected a number.');
+		}
+		const border = -angle / Math.PI / 2;
+		let n = Math.floor(border);
+		if (n < border) {
+			n++;
+		}
+		return angle + 2 * Math.PI * n;
+	}
+
+	/**
+	 * Обновляет матрицы преобразования.
+	 */
+	updateMatrices() {
+		if (!this.isDirty) {
+			return;
+		}
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.worldMatrix = Matrix3x3.ofTranslationRotationScaling(
+			this.position,
+			this.rotation,
+			this.scale,
+			this.worldMatrix,
+		);
+		this.isDirty = false;
+	}
+
+	/**
 	 * Изменяет позицию.
 	 * 
 	 * @param {Vector2d} position Новая позиция.
@@ -37,7 +96,12 @@ export default class Transform {
 		if (!(position instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
 		}
-		this.position = position.copy();
+		if (this.position.equals(position)) {
+			return;
+		}
+		this.isDirty = true;
+		this.position = position;
+		this.updateMatrices();
 	}
 
 	/**
@@ -50,7 +114,13 @@ export default class Transform {
 		if (typeof angle !== 'number') {
 			throw new TypeError('invalid parameter "angle". Expected a number.');
 		}
-		this.rotation = angle;
+		if (this.angle === angle) {
+			return;
+		}
+		this.isDirty = true;
+		this.rotation = this.clampAngle(angle);
+		this.angle = this.rotation / Math.PI * 180;
+		this.updateMatrices();
 	}
 
 	/**
@@ -63,6 +133,23 @@ export default class Transform {
 		if (!(scale instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
 		}
-		this.scale = scale.copy();
+		if (this.scale.equals(scale)) {
+			return;
+		}
+		this.isDirty = true;
+		this.scale = scale;
+		this.updateMatrices();
+	}
+
+	/**
+	 * @param {Vector2d} point Точка, которую нужно преобразовать.
+	 * 
+	 * @param {Vector2d} Возвращает преобразованную точку.
+	 */
+	transformPoint(point) {
+		if (!(point instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "point". Expected an instance of Vector2d class.');
+		}
+		return this.worldMatrix.multiplyByVector(point);
 	}
 }

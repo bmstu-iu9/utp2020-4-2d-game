@@ -1,8 +1,8 @@
 import Vector2d from './Vector2d.js';
-import Transform from './Transform.js';
 import Component from './Component.js';
 import GameComponent from './GameComponent.js';
 import HierarchyObject from './HierarchyObject.js';
+import HierarchyTransform from './HierarchyTransform.js';
 
 export default class GameObject extends HierarchyObject {
 	/**
@@ -41,7 +41,7 @@ export default class GameObject extends HierarchyObject {
 		}
 
 		this.name = name;
-		this.transform = new Transform(isStatic, position, rotation, scale);
+		this.transform = new HierarchyTransform(this, isStatic, position, rotation, scale);
 		/**
 		 * @type {Set<GameObject>}
 		 */
@@ -62,6 +62,10 @@ export default class GameObject extends HierarchyObject {
 	 * @param {GameObject} gameObject Родительский игровой объект. Может быть null.
 	 */
 	setParent(gameObject) {
+		if (gameObject == null) {
+			super.setParent(null);
+			return;
+		}
 		if (!(gameObject instanceof GameObject)) {
 			throw new TypeError('invalid parameter "gameObject". Expected an instance of GameObject class.');
 		}
@@ -88,7 +92,12 @@ export default class GameObject extends HierarchyObject {
 		if (gameObject.transform.isStatic && !this.transform.isStatic) {
 			throw new Error('cannot set a non-static game object as parent in a static game object.');
 		}
-		return super.addChild(gameObject);
+		if (super.addChild(gameObject)) {
+			gameObject.transform.updateMatrices(true);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -98,6 +107,22 @@ export default class GameObject extends HierarchyObject {
 	 */
 	getChildByName(name) {
 		return super.getChildByName(name);
+	}
+
+	/**
+	 * Удаляет дочерний игровой объект из данного игрового объекта.
+	 * 
+	 * @param {GameObject} child Дочерний игровой объект.
+	 * 
+	 * @return {boolean} Возвращает true, если дочерний игровой объект был удален.
+	 */
+	removeChild(child) {
+		if (super.removeChild(child)) {
+			child.transform.updateMatrices(true);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**

@@ -176,6 +176,8 @@ export default class HierarchyObject extends ComponentObject {
 	 * Удаляет дочерний объект из данного объекта.
 	 * 
 	 * @param {HierarchyObject} child Дочерний объект.
+	 * 
+	 * @return {boolean} Возвращает true, если дочерний объект был удален.
 	 */
 	removeChild(child) {
 		this.throwIfDestroyed();
@@ -183,11 +185,13 @@ export default class HierarchyObject extends ComponentObject {
 			this.children.delete(child);
 			child.parent = null;
 			if (child.isDestroyed) {
-				return;
+				return false;
 			}
 			if (this.isEnabledInHierarchy != child.isEnabled && child.isEnabled) {
 				child.enable();
 			}
+			return true;
 		}
+		return false;
 	}
 }

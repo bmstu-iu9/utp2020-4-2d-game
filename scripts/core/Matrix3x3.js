@@ -107,8 +107,8 @@ export default class Matrix3x3 extends Float32Array {
 		const cos = Math.cos(angle);
 		const sin = Math.sin(angle);
 		result[0] = cos;
-		result[1] = -sin;
-		result[3] = sin;
+		result[1] = sin;
+		result[3] = -sin;
 		result[4] = cos;
 		result[8] = 1;
 		if (outMatrix != null) {
