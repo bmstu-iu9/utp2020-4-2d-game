@@ -3,6 +3,9 @@ import Camera from './Camera.js';
 
 export default class CameraComponent extends TransformComponent {
 	constructor() {
+		if (new.target === CameraComponent) {
+			throw new TypeError('cannot create instance of abstract class.');
+		}
 		super();
 		/**
 		 * @type {Camera}
