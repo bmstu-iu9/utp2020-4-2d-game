@@ -11,14 +11,14 @@ const sign = x => x > 0 ? 1 : -1;
  * @param {CircleCollider} secondCircle 
  */
 const circleVsCircle = (circleA, circleB) => {
-	const AB = circleB.transform.position.subtract(circleA.transform.position);
+	const ab = circleB.transform.position.subtract(circleA.transform.position);
 	const radiiSum = circleA.radius + circleB.radius;
-	let distanse = AB.squaredLength();
+	let distanse = ab.squaredLength();
 	if (distanse >= radiiSum * radiiSum) {
 		return null;
 	}
 	distanse = Math.sqrt(distanse);
-	const normal = distanse != 0 ? AB.multiply(1 / distanse) : Vector2d.up;
+	const normal = distanse != 0 ? ab.multiply(1 / distanse) : Vector2d.up;
 	const depth = radiiSum - distanse;
 	return {normal, depth};
 };
@@ -28,27 +28,27 @@ const circleVsCircle = (circleA, circleB) => {
  * @param {BoxCollider} box
  */
 const circleVsBox = (circle, box) => {
-	const AB = box.transform.position.subtract(circle.transform.position);
+	const ab = box.transform.position.subtract(circle.transform.position);
 	const clamp = (x, a, b) => x < a ? a : (x > b ? b : x);
 	let closestPoint = new Vector2d(
-		clamp(AB.x, -box.halfWidth, box.halfWidth),
-		clamp(AB.y, -box.halfHeight, box.halfHeight),
+		clamp(ab.x, -box.halfWidth, box.halfWidth),
+		clamp(ab.y, -box.halfHeight, box.halfHeight),
 	);
-	if (closestPoint.equals(AB)) {
+	if (closestPoint.equals(ab)) {
 		let normal = Vector2d.zero;
-		if (box.halfWidth - Math.abs(AB.x) < box.halfHeight - Math.abs(AB.y)) {
-			const xSign = sign(AB.x);
+		if (box.halfWidth - Math.abs(ab.x) < box.halfHeight - Math.abs(ab.y)) {
+			const xSign = sign(ab.x);
 			normal = new Vector2d(xSign, 0);
-			closestPoint = new Vector2d(xSign * box.halfWidth, AB.y);
+			closestPoint = new Vector2d(xSign * box.halfWidth, ab.y);
 		} else {
-			const ySign = sign(AB.y);
+			const ySign = sign(ab.y);
 			normal = new Vector2d(0, ySign);
-			closestPoint = new Vector2d(AB.x, ySign * box.halfHeight);
+			closestPoint = new Vector2d(ab.x, ySign * box.halfHeight);
 		}
-		const depth = circle.radius - closestPoint.subtract(AB).length();
+		const depth = circle.radius - closestPoint.subtract(ab).length();
 		return {normal, depth};
 	}
-	let normal = AB.subtract(closestPoint);
+	let normal = ab.subtract(closestPoint);
 	const distanse = normal.length();
 	if (distanse >= circle.radius) {
 		return null;
@@ -63,14 +63,14 @@ const circleVsBox = (circle, box) => {
  * @param {BoxCollider} boxB
  */
 const boxVsBox = (boxA, boxB) => {
-	const AB = boxB.transform.position.subtract(boxA.transform.position);
-	const xOverlap = boxA.halfWidth + boxB.halfWidth - Math.abs(AB.x);
-	const yOverlap = boxA.halfHeight + boxB.halfHeight - Math.abs(AB.y);
+	const ab = boxB.transform.position.subtract(boxA.transform.position);
+	const xOverlap = boxA.halfWidth + boxB.halfWidth - Math.abs(ab.x);
+	const yOverlap = boxA.halfHeight + boxB.halfHeight - Math.abs(ab.y);
 	if (xOverlap <= 0 || yOverlap <= 0) {
 		return null;
 	}
-	const xSign = sign(AB.x);
-	const ySign = sign(AB.y);
+	const xSign = sign(ab.x);
+	const ySign = sign(ab.y);
 	const normal = xOverlap < yOverlap ? Vector2d.right.multiply(xSign) : Vector2d.up.multiply(ySign);
 	const depth = xOverlap < yOverlap ? xOverlap : yOverlap;
 	return {normal, depth};
@@ -225,10 +225,10 @@ export default class Collision {
 		}
 		const impulse = this.normal.multiply(impulseAlongNormal);
 		this.firstRigidBody.velocity = this.firstRigidBody.velocity.subtract(
-			impulse.multiply(this.firstRigidBody.invMass)
+			impulse.multiply(this.firstRigidBody.invMass),
 		);
 		this.secondRigidBody.velocity = this.secondRigidBody.velocity.add(
-			impulse.multiply(this.secondRigidBody.invMass)
+			impulse.multiply(this.secondRigidBody.invMass),
 		);
 	}
 
@@ -236,16 +236,16 @@ export default class Collision {
 		const kSlop = 0.0008;
 		const percent = 0.2;
 		const correction = this.normal.multiply(
-			Math.max(this.depth - kSlop, 0) / (this.firstRigidBody.invMass + this.secondRigidBody.invMass) * percent
+			Math.max(this.depth - kSlop, 0) / (this.firstRigidBody.invMass + this.secondRigidBody.invMass) * percent,
 		);
 		if (!this.firstRigidBody.transform.isStatic) {
 			this.firstRigidBody.transform.setPosition(
-				this.firstRigidBody.transform.position.subtract(correction.multiply(this.firstRigidBody.invMass))
+				this.firstRigidBody.transform.position.subtract(correction.multiply(this.firstRigidBody.invMass)),
 			);
 		}
 		if (!this.secondRigidBody.transform.isStatic) {
 			this.secondRigidBody.transform.setPosition(
-				this.secondRigidBody.transform.position.add(correction.multiply(this.secondRigidBody.invMass))
+				this.secondRigidBody.transform.position.add(correction.multiply(this.secondRigidBody.invMass)),
 			);
 		}
 	}
