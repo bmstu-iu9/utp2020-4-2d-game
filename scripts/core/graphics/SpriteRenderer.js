@@ -2,7 +2,6 @@ import Renderer from './Renderer.js';
 import Sprite from './Sprite.js';
 import Camera from './Camera.js';
 import Vector2d from '../Vector2d.js';
-import Matrix3x3 from '../Matrix3x3.js';
 
 export default class SpriteRenderer extends Renderer {
 	/**
@@ -36,11 +35,12 @@ export default class SpriteRenderer extends Renderer {
 		const offset = camera.worldToCameraPosition(Vector2d.zero);
 		const region = this.sprite.region;
 	
+		context.save();
 		const matrix = this.transform.worldMatrix;
 		context.transform(
 			matrix[0], matrix[1],
 			matrix[3], matrix[4],
-			offset.x + matrix[6], offset.y + matrix[7],
+			offset.x + matrix[6] * 100, offset.y + matrix[7] * 100,
 		);
 		context.drawImage(
 			this.sprite.image,
@@ -53,6 +53,6 @@ export default class SpriteRenderer extends Renderer {
 			region.width,
 			region.height,
 		);
-		context.resetTransform();
+		context.restore();
 	}
 }

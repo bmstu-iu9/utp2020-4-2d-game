@@ -104,11 +104,12 @@ export default class TileMap extends Renderer {
 			this.height / 2 * (this.tileHeight - 1),
 		);
 
+		context.save();
 		const matrix = this.transform.worldMatrix;
 		context.transform(
 			matrix[0], matrix[1],
 			matrix[3], matrix[4],
-			positionOffset.x + matrix[6], positionOffset.y + matrix[7],
+			positionOffset.x + matrix[6] * 100, positionOffset.y + matrix[7] * 100,
 		);
 		for (let i = 0; i < this.height; i++) {
 			for (let j = 0; j < this.map[i].length; j++) {
@@ -131,6 +132,6 @@ export default class TileMap extends Renderer {
 				);
 			}
 		}
-		context.resetTransform();
+		context.restore();
 	}
 }

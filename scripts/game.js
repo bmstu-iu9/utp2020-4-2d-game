@@ -1,13 +1,12 @@
 import Screen from './core/graphics/Screen.js';
 import Input from './core/Input.js';
 import Scene from './core/Scene.js';
+import Collider from './core/physics/Collider.js';
+import RigidBody from './core/physics/RigidBody.js';
+import Collision from './core/physics/Collision.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
-
-const step = 1 / 60;
-let deltaTime = 0;
-let lastFrameTime = performance.now();
 
 Screen.initialize(canvas);
 Input.initialize();
@@ -29,6 +28,10 @@ const shouldStopLoop = () => {
 	return false;
 }
 
+const step = 1 / 60;
+let deltaTime = 0;
+let lastFrameTime = performance.now();
+
 const loop = () => {
 	if (shouldStopLoop()) {
 		lastFrameTime = performance.now();
@@ -47,7 +50,26 @@ const loop = () => {
 			lastFrameTime = performance.now();
 			return;
 		}
-		// TODO: проверить столкновения
+		Collider.dynamicColliders.forEach(collider => collider.recalculate());
+		RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.recalculate());
+		const collisions = [];
+		Collider.colliders.forEach(dynamicCollider => {
+			Collider.colliders.forEach(collider => {
+				if (dynamicCollider !== collider) {
+					const collision = Collision.ofColliders(dynamicCollider, collider);
+					if (collision != null) {
+						collisions.push(collision);
+					}
+				}
+			});
+		});
+		for (let i = 0; i < 20; i++) {
+			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.integrateForces(step / 20));
+			collisions.forEach(collision => collision.applyImpulse());
+			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.integrateVelocity(step / 20));
+		}
+		collisions.forEach(collision => collision.positionalCorrection());
+		RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
 	}
 
 	Scene.current.forEachEnabledGameObject(gameObject => gameObject.update(timestep));
