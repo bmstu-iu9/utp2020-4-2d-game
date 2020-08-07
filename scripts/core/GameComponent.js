@@ -1,13 +1,21 @@
 import TransformComponent from './TransformComponent.js';
 import GameObject from './GameObject.js';
+import HierarchyTransform from './HierarchyTransform.js';
 
 export default class GameComponent extends TransformComponent {
 	constructor() {
+		if (new.target === GameComponent) {
+			throw new TypeError('cannot create instance of abstract class.');
+		}
 		super();
 		/**
 		 * @type {GameObject}
 		 */
 		this.gameObject = null;
+		/**
+		 * @type {HierarchyTransform}
+		 */
+		this.transform;
 	}
 
 	/**

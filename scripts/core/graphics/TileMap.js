@@ -1,6 +1,7 @@
 import Renderer from './Renderer.js';
 import SpriteSheet from './SpriteSheet.js';
 import Vector2d from '../Vector2d.js';
+import Camera from './Camera.js';
 
 export default class TileMap extends Renderer {
 	/**
@@ -8,9 +9,10 @@ export default class TileMap extends Renderer {
 	 * @param {number}      tileHeight  Высота одной плитки.
 	 * @param {SpriteSheet} spriteSheet Лист, который содержит используемые в карте спрайты.
 	 * @param {string[][]}  map         Двумерный массив строк (элементы могут быть null), из которого будет построен TileMap.
+	 * @param {number}      layer       Слой отрисовки.
 	 */
-	constructor(tileWidth, tileHeight, spriteSheet, map) {
-		super();
+	constructor(tileWidth, tileHeight, spriteSheet, map, layer = 0) {
+		super(layer);
 		if (typeof tileWidth !== 'number') {
 			throw new TypeError('invalid parameter "tileWidth". Expected a number.');
 		}
@@ -92,26 +94,23 @@ export default class TileMap extends Renderer {
 	/**
 	 * Отрисовывает TileMap.
 	 * 
+	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
 	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
 	 */
-	draw(context) {
-		let position = this.transform.position;
-		const scale = this.transform.scale;
-		const invScale = new Vector2d(1 / scale.x, 1 / scale.y);
-		const rotation = this.transform.rotation;
-
-		const canvas = context.canvas;
-		position = new Vector2d(position.x, -position.y);
-		position = position.add(new Vector2d(canvas.clientWidth / 2, canvas.clientHeight / 2));
-
+	draw(camera, context) {
+		const positionOffset = camera.worldToCameraPosition(Vector2d.zero);
 		const offset = new Vector2d(
 			this.width / 2 * (this.tileWidth - 1),
 			this.height / 2 * (this.tileHeight - 1),
 		);
 
 		context.save();
-
-		context.translate(position.x, position.y);
+		const matrix = this.transform.worldMatrix;
+		context.transform(
+			matrix[0], matrix[1],
+			matrix[3], matrix[4],
+			positionOffset.x + matrix[6] * 100, positionOffset.y + matrix[7] * 100,
+		);
 		for (let i = 0; i < this.height; i++) {
 			for (let j = 0; j < this.map[i].length; j++) {
 				const sprite = this.map[i][j];
@@ -120,8 +119,6 @@ export default class TileMap extends Renderer {
 				}
 				const spritePositionX = j * this.tileWidth - offset.x;
 				const spritePositionY = i * this.tileHeight - offset.y;
-				context.rotate(rotation);
-				context.scale(scale.x, scale.y);
 				context.drawImage(
 					sprite.image,
 					sprite.region.x,
@@ -133,11 +130,8 @@ export default class TileMap extends Renderer {
 					sprite.region.width,
 					sprite.region.height,
 				);
-				context.scale(invScale.x, invScale.y);
-				context.rotate(-rotation);
 			}
 		}
-
 		context.restore();
 	}
 }

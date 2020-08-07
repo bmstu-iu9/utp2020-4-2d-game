@@ -18,8 +18,8 @@ export default class CircleCollider extends Collider {
 		this.radius = radius;
 	}
 
-	onInitialize() {
-		super.onInitialize();
+	onEnable() {
+		super.onEnable();
 		if (Math.abs(this.transform.scale.x) !== Math.abs(this.transform.scale.y)) {
 			throw new Error('scale.x must be equal scale.y.');
 		}

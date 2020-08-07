@@ -59,7 +59,7 @@ export default class Collider extends GameComponent {
 
 	}
 
-	onInitialize() {
+	onEnable() {
 		this.scale = this.transform.scale;
 		Collider.colliders.add(this);
 		if (!this.transform.isStatic) {
@@ -67,7 +67,7 @@ export default class Collider extends GameComponent {
 		}
 	}
 
-	onDestroy() {
+	onDisable() {
 		Collider.colliders.delete(this);
 		Collider.dynamicColliders.delete(this);
 	}

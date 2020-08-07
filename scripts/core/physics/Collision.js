@@ -220,7 +220,7 @@ export default class Collision {
 		);
 		let impulseAlongNormal = -(1 + overallRestitution) * relativeVelocityAlongNormal;
 		impulseAlongNormal /= this.firstRigidBody.invMass + this.secondRigidBody.invMass;
-		if (impulseAlongNormal <= 0.01) {
+		if (impulseAlongNormal <= 0.025) {
 			return;
 		}
 		const impulse = this.normal.multiply(impulseAlongNormal);
@@ -233,7 +233,7 @@ export default class Collision {
 	}
 
 	positionalCorrection() {
-		const kSlop = 0.01;
+		const kSlop = 0.0008;
 		const percent = 0.2;
 		const correction = this.normal.multiply(
 			Math.max(this.depth - kSlop, 0) / (this.firstRigidBody.invMass + this.secondRigidBody.invMass) * percent

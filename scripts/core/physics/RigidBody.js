@@ -49,8 +49,7 @@ export default class RigidBody extends GameComponent {
 		this.invMass = this.mass != 0 ? 1 / this.mass : 0;
 	}
 
-	onInitialize() {
-		super.onInitialize();
+	onEnable() {
 		if (!this.transform.isStatic) {
 			RigidBody.dynamicRigidBodies.add(this);
 		}
@@ -125,7 +124,7 @@ export default class RigidBody extends GameComponent {
 		this.velocity = path.squaredLength() > speed * speed ? path.normalize().multiply(speed) : path;
 	}
 
-	onDestroy() {
+	onDisable() {
 		RigidBody.rigidBodies.delete(this);
 	}
 }
