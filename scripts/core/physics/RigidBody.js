@@ -168,6 +168,6 @@ export default class RigidBody extends GameComponent {
 	}
 
 	onDisable() {
-		RigidBody.rigidBodies.delete(this);
+		RigidBody.dynamicRigidBodies.delete(this);
 	}
 }
