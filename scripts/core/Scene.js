@@ -6,6 +6,7 @@ import Renderer from './graphics/Renderer.js';
 import ComponentObject from './ComponentObject.js';
 import Color from './graphics/Color.js';
 import Screen from './graphics/Screen.js';
+import HierarchyObject from './HierarchyObject.js';
 
 export default class Scene {
 	constructor() {
@@ -169,7 +170,7 @@ export default class Scene {
 	addObject(componentObject) {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
-		if (componentObject instanceof GameObject) {
+		if (componentObject instanceof HierarchyObject) {
 			if (!this.containsObject(componentObject)) {
 				this.objectsBuffer.add(componentObject);
 				componentObject.attach(this);

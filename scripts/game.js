@@ -7,6 +7,7 @@ import Collision from './core/physics/Collision.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
+const uiHost = document.getElementById('uiHost');
 
 Screen.initialize(canvas);
 Input.initialize();
@@ -40,6 +41,15 @@ const loop = () => {
 
 	const timestep = Math.min(0.1, (performance.now() - lastFrameTime) / 1000);
 	deltaTime += timestep;
+
+	const size = Screen.getSize();
+	
+	if (uiHost.style.width !== `${size.x}px`) {
+		uiHost.style.width = `${size.x}px`;	
+	}
+	if (uiHost.style.height !== `${size.y}px`) {
+		uiHost.style.height = `${size.y}px`;
+	}
 
 	Input.process();
 
