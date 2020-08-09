@@ -62,7 +62,7 @@ export default class Camera extends ComponentObject {
 		}
 		position = new Vector2d(position.x, -position.y);
 		position = position.add(Screen.getSize().multiply(0.5));
-		return position.subtract(new Vector2d(this.transform.position.x, -this.transform.position.y));
+		return position.subtract(new Vector2d(this.transform.position.x * 100, -this.transform.position.y * 100));
 	}
 
 	/**
@@ -74,7 +74,7 @@ export default class Camera extends ComponentObject {
 		if (!(position instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
 		}
-		position = position.add(new Vector2d(this.transform.position.x, -this.transform.position.y));
+		position = position.add(new Vector2d(this.transform.position.x * 100, -this.transform.position.y * 100));
 		position = position.subtract(Screen.getSize().multiply(0.5));
 		return new Vector2d(position.x, -position.y);
 	}
