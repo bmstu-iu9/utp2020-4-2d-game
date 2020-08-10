@@ -1,4 +1,4 @@
-import Vector2d from './Vector2d.js';
+import Vector2d from './mathematics/Vector2d.js';
 import Screen from './graphics/Screen.js';
 
 export default class Input {

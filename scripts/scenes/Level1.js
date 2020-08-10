@@ -4,7 +4,7 @@ import SpriteRenderer from '../core/graphics/SpriteRenderer.js';
 import Sprite from '../core/graphics/Sprite.js';
 import Camera from '../core/graphics/Camera.js';
 import Color from '../core/graphics/Color.js';
-import Vector2d from '../core/Vector2d.js';
+import Vector2d from '../core/mathematics/Vector2d.js';
 import RigidBody from '../core/physics/RigidBody.js';
 import Material from '../core/physics/Material.js';
 import BoxCollider from '../core/physics/BoxCollider.js';

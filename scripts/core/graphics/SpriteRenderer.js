@@ -1,7 +1,7 @@
 import Renderer from './Renderer.js';
 import Sprite from './Sprite.js';
 import Camera from './Camera.js';
-import Vector2d from '../Vector2d.js';
+import Vector2d from '../mathematics/Vector2d.js';
 
 export default class SpriteRenderer extends Renderer {
 	/**

@@ -1,8 +1,8 @@
-import Vector2d from './Vector2d.js';
+import Vector2d from './mathematics/Vector2d.js';
 import Component from './Component.js';
 import GameComponent from './GameComponent.js';
 import HierarchyObject from './HierarchyObject.js';
-import HierarchyTransform from './HierarchyTransform.js';
+import HierarchyTransform from './mathematics/HierarchyTransform.js';
 
 export default class GameObject extends HierarchyObject {
 	/**

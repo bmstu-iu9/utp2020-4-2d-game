@@ -1,6 +1,6 @@
 import TransformComponent from './TransformComponent.js';
 import GameObject from './GameObject.js';
-import HierarchyTransform from './HierarchyTransform.js';
+import HierarchyTransform from './mathematics/HierarchyTransform.js';
 
 export default class GameComponent extends TransformComponent {
 	constructor() {
