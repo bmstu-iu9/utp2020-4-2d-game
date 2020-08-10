@@ -148,12 +148,6 @@ export default class GameObject extends HierarchyObject {
 			return;
 		}
 		super.destroy();
-		this.children.forEach(child => child.destroy());
-		delete this.children;
 		delete this.transform;
-		if (this.parent != null && !this.parent.isDestroyed) {
-			this.parent.removeChild(this);
-		}
-		delete this.parent;
 	}
 }
