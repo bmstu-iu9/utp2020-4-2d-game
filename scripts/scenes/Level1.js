@@ -561,7 +561,7 @@ export default class Level1 extends Scene {
 		this.createRailSpike(3, new Vector2d(73, 3.5), 5)
 		this.createPlatform(new Vector2d(87, -2), new Vector2d(10, 10));
 		this.createCoin(new Vector2d(107, 5));
-		this.createPlatform(new Vector2d(107, -2), new Vector2d(30, 10));
+		this.createPlatform(new Vector2d(106, -2), new Vector2d(20, 10));
 		this.createHouse();
 		this.addObject(new Camera({
 			name: 'camera',
