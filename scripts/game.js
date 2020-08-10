@@ -29,7 +29,7 @@ const shouldStopLoop = () => {
 	return false;
 }
 
-const step = 1 / 60;
+const step = 1 / 120;
 let deltaTime = 0;
 let lastFrameTime = performance.now();
 

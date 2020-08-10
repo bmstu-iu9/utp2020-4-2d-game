@@ -205,12 +205,12 @@ export default class Collision {
 		if (firstRigidBody == null || secondRigidBody == null) {
 			return null;
 		}
-		if (!this.firstRigidBody.isActive() || !this.secondRigidBody.isActive()) {
+		if (!firstRigidBody.isActive() || !secondRigidBody.isActive()) {
 			return null;
 		}
 		if (
-			(this.firstRigidBody.transform.isStatic || this.firstRigidBody.isKinematic)
-			&& (this.secondRigidBody.transform.isStatic || this.secondRigidBody.isKinematic)
+			(firstRigidBody.transform.isStatic || firstRigidBody.isKinematic)
+			&& (secondRigidBody.transform.isStatic || secondRigidBody.isKinematic)
 		) {
 			return null;
 		}
