@@ -7,6 +7,7 @@ import ComponentObject from './ComponentObject.js';
 import Color from './graphics/Color.js';
 import Screen from './graphics/Screen.js';
 import HierarchyObject from './HierarchyObject.js';
+import UIObject from './ui/UIObject.js';
 
 export default class Scene {
 	constructor() {
@@ -58,10 +59,10 @@ export default class Scene {
 		}
 		this.resources = new Resources();
 		this.onInitialize();
+		this.isInitialized = true;
 		this.resources.loadAll(() => {
 			this.start();
 		});
-		this.isInitialized = true;
 	}
 
 	/**
@@ -257,6 +258,28 @@ export default class Scene {
 				return;
 			}
 			if (componentObject instanceof GameObject) {
+				action(componentObject);
+			}
+		});
+	}
+
+	/**
+	 * Выполняет передаваемую функцию для каждого включенного объекта интерфейса.
+	 * 
+	 * @param {(uiObject: UIObject) => void} action Функция, которую надо выполнить для каждого включенного объекта интерфейса.
+	 */
+	forEachEnabledUIObject(action) {
+		this.throwIfDestroyed();
+		this.throwIfNotInitialized();
+		this.processBuffer();
+		if (!this.isStarted) {
+			return;
+		}
+		this.enabledObjects.forEach(componentObject => {
+			if (!this.isStarted) {
+				return;
+			}
+			if (componentObject instanceof UIObject) {
 				action(componentObject);
 			}
 		});

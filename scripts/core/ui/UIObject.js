@@ -68,8 +68,17 @@ export default class UIObject extends HierarchyObject {
 			this.htmlObject.style.cssText = cssText;
 		}
 		this.name = name;
+		/**
+		 * @type {Event[]}
+		 */
 		this.unprocessedEvents = [];
+		/**
+		 * @type {Map<string, [(event: Event) => void, Set<(event: Event) => void>]>}
+		 */
 		this.eventHandlers = new Map();
+		/**
+		 * @type {Set<string>}
+		 */
 		this.availableEvents = new Set();
 		for (let property in this.htmlObject) {
 			if (property.substring(0, 2) === 'on') {
@@ -146,11 +155,14 @@ export default class UIObject extends HierarchyObject {
 		}
 	}
 
-	handleEvent(event) {
-		if (event.defaultPrevented) {
-			return;
+	createEventHandler() {
+		const uiObject = this;
+		return event => {
+			if (event.defaultPrevented) {
+				return;
+			}
+			uiObject.unprocessedEvents.push(event);
 		}
-		this.unprocessedEvents.push(event);
 	}
 
 	initialize() {
@@ -162,10 +174,16 @@ export default class UIObject extends HierarchyObject {
 
 	process() {
 		this.unprocessedEvents.forEach(event => {
-			this.eventHandlers.get(event.type).forEach(handler => {
+			this.eventHandlers.get(event.type)[1].forEach(handler => {
+				if (!this.isActive()) {
+					return;
+				}
 				handler(event);
 			});
 		});
+		if (!this.isActive()) {
+			return;
+		}
 		this.unprocessedEvents = [];
 	}
 
@@ -198,7 +216,7 @@ export default class UIObject extends HierarchyObject {
 	}
 
 	/**
-	 * Добавляет обработчик событий на html-элемент.
+	 * Добавляет обработчик события на html-элемент.
 	 * 
 	 * @param {string}                 type    Название события.
 	 * @param {(event: Event) => void} handler Обработчик события.
@@ -214,11 +232,35 @@ export default class UIObject extends HierarchyObject {
 			throw new Error(`invalid parameter "type". Tag "${this.htmlObject.tagName}" is not support event type "${type}".`);
 		}
 		if (this.eventHandlers.has(type)) {
-			this.eventHandlers.get(type).add(handler);
+			this.eventHandlers.get(type)[1].add(handler);
 		} else {
-			this.eventHandlers.set(type, new Set());
-			this.eventHandlers.get(type).add(handler);
-			this.htmlObject.addEventListener(type, this.handleEvent);
+			const eventHandler = this.createEventHandler();
+			this.eventHandlers.set(type, [eventHandler, new Set()]);
+			this.eventHandlers.get(type)[1].add(handler);
+			this.htmlObject.addEventListener(type, eventHandler);
+		}
+	}
+
+	/**
+	 * Удаляет обработчик события с html-элемента.
+	 * 
+	 * @param {string}                 type    Название события.
+	 * @param {(event: Event) => void} handler Обработчик события.
+	 */
+	removeEventListener(type, handler) {
+		if (typeof type !== 'string') {
+			throw new TypeError('invalid parameter "type". Expected a string.');
+		}
+		if (typeof handler !== 'function') {
+			throw new TypeError('invalid parameter "handler". Expected a function.');
+		}
+		if (this.eventHandlers.has(type)) {
+			const set = this.eventHandlers.get(type)[1];
+			if (set.delete(handler) && set.size === 0) {
+				const eventHandler = this.eventHandlers.get(type)[0];
+				this.eventHandlers.delete(type);
+				this.htmlObject.removeEventListener(type, eventHandler);
+			}
 		}
 	}
 
@@ -252,5 +294,22 @@ export default class UIObject extends HierarchyObject {
 		} else {
 			this.htmlObject.innerText = text;
 		}
+	}
+
+	destroy() {
+		if (this.isDestroyed) {
+			return;
+		}
+		super.destroy();
+		this.eventHandlers.forEach(([handler, _], type) => {
+			this.htmlObject.removeEventListener(type, handler);
+		});
+		this.eventHandlers.clear();
+		delete this.eventHandlers;
+		delete this.unprocessedEvents;
+		this.availableEvents.clear();
+		delete this.availableEvents;
+		this.htmlObject.remove();
+		delete this.htmlObject;
 	}
 }

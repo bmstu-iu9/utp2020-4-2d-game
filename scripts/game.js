@@ -92,6 +92,16 @@ const loop = () => {
 		lastFrameTime = performance.now();
 		return;
 	}
+	Scene.current.forEachEnabledUIObject(uiObject => uiObject.update());
+	if (shouldStopLoop()) {
+		lastFrameTime = performance.now();
+		return;
+	}
+	Scene.current.forEachEnabledUIObject(uiObject => uiObject.process());
+	if (shouldStopLoop()) {
+		lastFrameTime = performance.now();
+		return;
+	}
 	Scene.current.draw(context);
 	if (shouldStopLoop()) {
 		lastFrameTime = performance.now();
