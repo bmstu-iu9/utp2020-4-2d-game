@@ -1,4 +1,5 @@
 import HierarchyObject from '../HierarchyObject.js';
+import Component from '../Component.js';
 
 const uiHost = document.getElementById('uiHost');
 
@@ -6,24 +7,24 @@ export default class UIObject extends HierarchyObject {
 	/**
 	 * @param {object}      settings            Настройки объекта интерфейса.
 	 * @param {string}      settings.name       Название объекта интерфейса.
+	 * @param {string}      settings.tag        Тег html-элемента.
+	 * @param {string}      settings.className  Класс html-элемента.
+	 * @param {string}      settings.id         ID html-элемента.
+	 * @param {string}      settings.innerHTML  HTML-код, который будет внутри данного html-элемента.
+	 * @param {string}      settings.innerText  Текст, который будет внутри данного html-элемента.
+	 * @param {string}      settings.cssText    Стиль html-элемента.
 	 * @param {boolean}     settings.isEnabled  Влючен ли объект интерфейса.
 	 * @param {Component[]} settings.components Компоненты объекта интерфейса.
 	 * @param {UIObject[]}  settings.children   Дочерние объекты интерфейса создаваемоего объекта интерфейса.
-	 * @param {string}      setting.tag         Тег html-элемента.
-	 * @param {string}      setting.className   Класс html-элемента.
-	 * @param {string}      setting.id          ID html-элемента. 
-	 * @param {string}      setting.cssText     Стиль html-элемента.
-	 * @param {string}      setting.innerHTML   HTML-код, который будет внутри данного html-элемента. 
-	 * @param {string}      setting.innerText   Текст, который будет внутри данного html-элемента.
 	 */
 	constructor({
 		name,
 		tag,
 		className,
 		id,
-		cssText = '',
 		innerHTML,
 		innerText,
+		cssText,
 		isEnabled = true,
 		components = [],
 		children = [],
@@ -41,7 +42,7 @@ export default class UIObject extends HierarchyObject {
 		if (name.trim() === '') {
 			throw new Error('invalid parameter "name". Expected a non-empty string.');
 		}
-		if (typeof cssText !== 'string') {
+		if (cssText != null && typeof cssText !== 'string') {
 			throw new TypeError('invalid parameter "cssText". Expected a string.');
 		}
 		if (className != null && typeof className !== 'string') {
@@ -63,8 +64,10 @@ export default class UIObject extends HierarchyObject {
 		if (id != null) {
 			this.htmlObject.id = id;
 		}
+		if (cssText != null) {
+			this.htmlObject.style.cssText = cssText;
+		}
 		this.name = name;
-		this.htmlObject.style.cssText = cssText;
 		this.unprocessedEvents = [];
 		this.eventHandlers = new Map();
 		this.availableEvents = new Set();
@@ -74,6 +77,7 @@ export default class UIObject extends HierarchyObject {
 			}
 		}
 		children.forEach(child => this.addChild(child));
+		components.forEach(component => this.addComponent(component));
 		if (innerHTML != null) {
 			this.setInnerHTML(innerHTML);
 		} else if (innerText != null) {
