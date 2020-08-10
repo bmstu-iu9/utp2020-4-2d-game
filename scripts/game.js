@@ -4,6 +4,7 @@ import Scene from './core/Scene.js';
 import Collider from './core/physics/Collider.js';
 import RigidBody from './core/physics/RigidBody.js';
 import Collision from './core/physics/Collision.js';
+import Level1 from './scenes/Level1.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -29,9 +30,11 @@ const shouldStopLoop = () => {
 	return false;
 }
 
-const step = 1 / 60;
+const step = 1 / 120;
 let deltaTime = 0;
 let lastFrameTime = performance.now();
+
+Scene.changeScene(Level1);
 
 const loop = () => {
 	if (shouldStopLoop()) {

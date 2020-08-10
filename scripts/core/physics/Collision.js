@@ -107,23 +107,33 @@ const notify = (firstCollider, secondCollider, firstRigidBody, secondRigidBody, 
 		if (firstRigidBody.gameObject != firstCollider.gameObject) {
 			firstCollider.gameObject.callInComponents('onCollision' + message, secondCollider);
 		}
-		firstRigidBody.gameObject.callInComponents('onCollision' + message, secondCollider);
-		if (secondRigidBody.gameObject != secondCollider.gameObject) {
+		if (firstRigidBody.isActive()) {
+			firstRigidBody.gameObject.callInComponents('onCollision' + message, secondCollider);
+		}
+		if (secondRigidBody.gameObject != secondCollider.gameObject && secondCollider.isActive()) {
 			secondCollider.gameObject.callInComponents('onCollision' + message, firstCollider);
 		}
-		secondRigidBody.gameObject.callInComponents('onCollision' + message, firstCollider);
+		if (secondRigidBody.isActive()) {
+			secondRigidBody.gameObject.callInComponents('onCollision' + message, firstCollider);
+		}
 	} else if (firstRigidBody != null) {
 		if (firstRigidBody.gameObject != firstCollider.gameObject) {
 			firstCollider.gameObject.callInComponents('onTrigger' + message, secondCollider);
 		}
-		firstRigidBody.gameObject.callInComponents('onTrigger' + message, secondCollider);
-		secondCollider.gameObject.callInComponents('onTrigger' + message, firstCollider);
-	} else if (secondRigidBody != null) {
-		firstCollider.gameObject.callInComponents('onTrigger' + message, secondCollider);
-		if (secondRigidBody.gameObject != secondCollider.gameObject) {
+		if (firstRigidBody.isActive()) {
+			firstRigidBody.gameObject.callInComponents('onTrigger' + message, secondCollider);
+		}
+		if (secondCollider.isActive()) {
 			secondCollider.gameObject.callInComponents('onTrigger' + message, firstCollider);
 		}
-		secondRigidBody.gameObject.callInComponents('onTrigger' + message, firstCollider);
+	} else if (secondRigidBody != null) {
+		firstCollider.gameObject.callInComponents('onTrigger' + message, secondCollider);
+		if (secondRigidBody.gameObject != secondCollider.gameObject && secondCollider.isActive()) {
+			secondCollider.gameObject.callInComponents('onTrigger' + message, firstCollider);
+		}
+		if (secondRigidBody.isActive()) {
+			secondRigidBody.gameObject.callInComponents('onTrigger' + message, firstCollider);
+		}
 	}
 }
 
@@ -195,6 +205,9 @@ export default class Collision {
 		if (firstRigidBody == null || secondRigidBody == null) {
 			return null;
 		}
+		if (!firstRigidBody.isActive() || !secondRigidBody.isActive()) {
+			return null;
+		}
 		if (
 			(firstRigidBody.transform.isStatic || firstRigidBody.isKinematic)
 			&& (secondRigidBody.transform.isStatic || secondRigidBody.isKinematic)
@@ -212,6 +225,15 @@ export default class Collision {
 	}
 
 	applyImpulse() {
+		if (!this.firstRigidBody.isActive() || !this.secondRigidBody.isActive()) {
+			return null;
+		}
+		if (
+			(this.firstRigidBody.transform.isStatic || this.firstRigidBody.isKinematic)
+			&& (this.secondRigidBody.transform.isStatic || this.secondRigidBody.isKinematic)
+		) {
+			return null;
+		}
 		const relativeVelocity = this.secondRigidBody.velocity.subtract(this.firstRigidBody.velocity);
 		const relativeVelocityAlongNormal = relativeVelocity.dot(this.normal);
 		if (relativeVelocityAlongNormal >= 0) {
@@ -236,6 +258,15 @@ export default class Collision {
 	}
 
 	positionalCorrection() {
+		if (!this.firstRigidBody.isActive() || !this.secondRigidBody.isActive()) {
+			return null;
+		}
+		if (
+			(this.firstRigidBody.transform.isStatic || this.firstRigidBody.isKinematic)
+			&& (this.secondRigidBody.transform.isStatic || this.secondRigidBody.isKinematic)
+		) {
+			return null;
+		}
 		const kSlop = 0.0008;
 		const percent = 0.2;
 		const correction = this.normal.multiply(
