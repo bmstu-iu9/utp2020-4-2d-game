@@ -510,7 +510,7 @@ export default class Level1 extends Scene {
 					new CircleCollider(0.5),
 					new RigidBody({
 						material: new Material(0.5, 0.5),
-						velocity: new Vector2d(-i, Math.random() * i * 2)
+						velocity: new Vector2d(-i, Math.random() * i * 2),
 					}),
 					new Rotater(3),
 				],
