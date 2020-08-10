@@ -1,0 +1,27 @@
+* {
+	margin: unset;
+}
+
+body, html, #container {
+    height:100%;
+	min-height:100%;
+	width: 100%;
+	min-width: 100%;
+}
+
+#game {
+	z-index: 0;
+	position: absolute;
+}
+
+#uiHost {
+	z-index: 1;
+	position: relative;
+}
+
+#container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}

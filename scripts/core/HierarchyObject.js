@@ -194,4 +194,20 @@ export default class HierarchyObject extends ComponentObject {
 		}
 		return false;
 	}
+
+	/**
+	 * Уничтожает данный объект.
+	 */
+	destroy() {
+		if (this.isDestroyed) {
+			return;
+		}
+		super.destroy();
+		this.children.forEach(child => child.destroy());
+		delete this.children;
+		if (this.parent != null && !this.parent.isDestroyed) {
+			this.parent.removeChild(this);
+		}
+		delete this.parent;
+	}
 }
