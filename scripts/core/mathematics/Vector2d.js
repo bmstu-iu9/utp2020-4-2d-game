@@ -19,7 +19,7 @@ export default class Vector2d {
 	 *
 	 * @param {Vector2d} vector
 	 *
-	 * @return {Vector2d} Возвращает сумму векторов (создается новый вектор).
+	 * @return {Vector2d} Возвращает сумму векторов.
 	 */
 	add(vector) {
 		if (!(vector instanceof Vector2d)) {
@@ -29,7 +29,7 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает противоположный вектор данному (создается новый вектор).
+	 * @return {Vector2d} Возвращает противоположный вектор данному.
 	 */
 	opposite() {
 		return new Vector2d(-this.x, -this.y);
@@ -40,7 +40,7 @@ export default class Vector2d {
 	 *
 	 * @param {Vector2d} vector
 	 *
-	 * @return {Vector2d} Возвращает разность векторов (создается новый вектор).
+	 * @return {Vector2d} Возвращает разность векторов.
 	 */
 	subtract(vector) {
 		if (!(vector instanceof Vector2d)) {
@@ -52,13 +52,28 @@ export default class Vector2d {
 	/**
 	 * @param {number} scalar
 	 *
-	 * @return {Vector2d} Возвращает произведение данного вектора на число (создается новый вектор).
+	 * @return {Vector2d} Возвращает произведение данного вектора на число.
 	 */
 	multiply(scalar) {
 		if (typeof scalar !== 'number') {
 			throw new TypeError('invalid parameter "scalar". Expected a number.');
 		}
 		return new Vector2d(this.x * scalar, this.y * scalar);
+	}
+
+	/**
+	 * @param {number} scalar
+	 * 
+	 * @return {Vector2d} Возвращает произведение данного вектора на число, обратное передаваемому.
+	 */
+	divide(scalar) {
+		if (typeof scalar !== 'number') {
+			throw new TypeError('invalid parameter "scalar". Expected a number.');
+		}
+		if (scalar === 0) {
+			throw new Error('cannot divide by zero.');
+		}
+		return new Vector2d(this.x / scalar, this.y / scalar);
 	}
 
 	/**
@@ -76,7 +91,7 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает вектор, получаемый нормированием данного (создается новый вектор).
+	 * @return {Vector2d} Возвращает вектор, получаемый нормированием данного.
 	 */
 	normalize() {
 		const length = this.length();
@@ -84,7 +99,7 @@ export default class Vector2d {
 	}
 
 	/**
-	 * @return {Vector2d} Возвращает вектор, ортогональный данному (создается новый вектор).
+	 * @return {Vector2d} Возвращает вектор, ортогональный данному.
 	 */
 	orthogonalVector() {
 		return new Vector2d(this.y, -this.x);
@@ -95,7 +110,7 @@ export default class Vector2d {
 	 *
 	 * @param {Vector2d} vector
 	 *
-	 * @return {number} Возвращает скалярное произведение векторов.
+	 * @return {number}
 	 */
 	dot(vector) {
 		if (!(vector instanceof Vector2d)) {
@@ -105,17 +120,39 @@ export default class Vector2d {
 	}
 
 	/**
-	 * Вычисляет векторную проекцию данного вектора на передаваемый.
+	 * Вычисляет проекцию на ось Oz векторного произведения данного вектора с передаваемым.
 	 *
 	 * @param {Vector2d} vector
-	 *
-	 * @return {Vector2d} Возвращает векторную проекцию (создается новый вектор).
+	 * 
+	 * @return {number} 
 	 */
-	vectorProjectTo(vector) {
+	cross(vector) {
 		if (!(vector instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
 		}
-		return vector.multiply(vector.dot(this) / vector.dot(vector));
+		return this.x * vector.y - this.y * vector.x;
+	}
+
+	/**
+	 * Определяет ориентацию векторов на плоскости.
+	 * 
+	 * -1 соответствует отрицательной ориентации,
+	 * 0 соответствует случаю коллинеарности,
+	 * 1 соответствует положительной ориентации.
+	 * 
+	 * @param {Vector2d} firstVector 
+	 * @param {Vector2d} secondVector
+	 * 
+	 * @return {number} 
+	 */
+	static orientation(firstVector, secondVector) {
+		if (!(firstVector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "firstVector". Expected an instance of Vector2d class.');
+		}
+		if (!(secondVector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "secondVector". Expected an instance of Vector2d class.');
+		}
+		return Math.sign(firstVector.x * secondVector.y - firstVector.y * secondVector.x);
 	}
 
 	/**
@@ -123,23 +160,38 @@ export default class Vector2d {
 	 *
 	 * @param {Vector2d} vector
 	 *
-	 * @return {number} Возвращает скалярную проекцию.
+	 * @return {number}
 	 */
 	scalarProjectTo(vector) {
 		if (!(vector instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
 		}
-		return vector.dot(this) / vector.length();
+		return (vector.x * this.x + vector.y * this.y) / Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 	}
 
 	/**
-	 * Поворачивает данный вектор на угол (в радианах).
+	 * Вычисляет векторную проекцию данного вектора на передаваемый.
+	 *
+	 * @param {Vector2d} vector
+	 *
+	 * @return {Vector2d}
+	 */
+	vectorProjectTo(vector) {
+		if (!(vector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
+		}
+		const multiplier = (vector.x * this.x + vector.y * this.y) / (vector.x * vector.x + vector.y * vector.y);
+		return new Vector2d(vector.x * multiplier, vector.y * multiplier);
+	}
+
+	/**
+	 * Возвращает вектор, полученный при повороте данного на угол (в радианах).
 	 *
 	 * Положительный угол - поворот против часовой, отрицательный - по часовой.
 	 *
 	 * @param {number} angle
 	 *
-	 * @return {Vector2d} Возвращает вектор, полученный при повороте данного (создается новый вектор).
+	 * @return {Vector2d}
 	 */
 	rotate(angle) {
 		if (typeof angle !== 'number') {
@@ -148,13 +200,6 @@ export default class Vector2d {
 		const x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
 		const y = this.x * Math.sin(angle) + this.y * Math.cos(angle);
 		return new Vector2d(x, y);
-	}
-
-	/**
-	 * @return {Vector2d} Возвращает копию данного вектора (создается новый вектор).
-	 */
-	copy() {
-		return new Vector2d(this.x, this.y);
 	}
 
 	/**
