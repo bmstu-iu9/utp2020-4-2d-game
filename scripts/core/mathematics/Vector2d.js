@@ -235,7 +235,7 @@ export default class Vector2d {
 	 * Сравнивает с погрешностью данный вектор с передаваемым.
 	 * 
 	 * @param {Vector2d} vector 
-	 * @param {number} epsilon Точность сравнения. 
+	 * @param {number}   epsilon Точность сравнения. 
 	 * 
 	 * @return {boolean}
 	 */
