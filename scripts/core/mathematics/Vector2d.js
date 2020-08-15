@@ -232,6 +232,24 @@ export default class Vector2d {
 	}
 
 	/**
+	 * Сравнивает с погрешностью данный вектор с передаваемым.
+	 * 
+	 * @param {Vector2d} vector 
+	 * @param {number} epsilon Точность сравнения. 
+	 * 
+	 * @return {boolean}
+	 */
+	approximatelyEquals(vector, epsilon = 0.001) {
+		if (!(vector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
+		}
+		if (typeof epsilon !== 'number') {
+			throw new TypeError('invalid parameter "epsilon". Expected a number.');
+		}
+		return Math.abs(this.x - vector.x) <= epsilon && Math.abs(this.y - vector.y) <= epsilon;
+	}
+
+	/**
 	 * Vector (0, 0)
 	 */
 	static zero = new Vector2d(0, 0);
