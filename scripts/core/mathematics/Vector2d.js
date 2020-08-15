@@ -106,6 +106,21 @@ export default class Vector2d {
 	}
 
 	/**
+	 * Вычисляет ортогональную составляющую передаваемого вектора на подпространство, задаваемое данным вектором.
+	 * 
+	 * @param {Vector2d} vector
+	 * 
+	 * @return {Vector2d}
+	 */
+	orthogonalComponent(vector) {
+		if (!(vector instanceof Vector2d)) {
+			throw new TypeError('invalid parameter "vector". Expected an instance of Vector2d class.');
+		}
+		const multiplier = (vector.x * this.x + vector.y * this.y) / (this.x * this.x + this.y * this.y);
+		return new Vector2d(vector.x - multiplier * this.x, vector.y - multiplier * this.y);
+	}
+
+	/**
 	 * Вычисляет скалярное произведение данного вектора с передаваемым.
 	 *
 	 * @param {Vector2d} vector
