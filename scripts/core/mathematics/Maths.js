@@ -53,11 +53,11 @@ export default class Maths {
 	}
 
 	/**
-	 * Сравнивает два числа с погрешностью.
+	 * Сравнивает с погрешностью два числа.
 	 * 
 	 * @param {number} number 
 	 * @param {number} otherNumber 
-	 * @param {number} epsilon Точность сравнения.
+	 * @param {number} epsilon     Точность сравнения.
 	 * 
 	 * @return {boolean} 
 	 */
