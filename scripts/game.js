@@ -5,7 +5,6 @@ import Collider from './core/physics/Collider.js';
 import RigidBody from './core/physics/RigidBody.js';
 import Collision from './core/physics/Collision.js';
 import Level1 from './scenes/Level1.js';
-import Maths from './core/mathematics/Maths.js';
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -118,5 +117,3 @@ const loop = () => {
 };
 
 requestAnimationFrame(loop);
-
-console.log(Maths.clamp(-10, -Infinity, Infinity));
