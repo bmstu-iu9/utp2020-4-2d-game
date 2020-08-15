@@ -1,5 +1,5 @@
 import Transform from './Transform.js';
-import HierarchyObject from './HierarchyObject.js';
+import HierarchyObject from '../HierarchyObject.js';
 import Vector2d from './Vector2d.js';
 import Matrix3x3 from './Matrix3x3.js';
 

@@ -1,5 +1,5 @@
 import Component from './Component.js';
-import Transform from './Transform.js';
+import Transform from './mathematics/Transform.js';
 
 export default class TransformComponent extends Component {
 	constructor() {

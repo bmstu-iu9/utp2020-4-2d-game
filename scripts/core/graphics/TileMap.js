@@ -1,6 +1,6 @@
 import Renderer from './Renderer.js';
 import SpriteSheet from './SpriteSheet.js';
-import Vector2d from '../Vector2d.js';
+import Vector2d from '../mathematics/Vector2d.js';
 import Camera from './Camera.js';
 
 export default class TileMap extends Renderer {

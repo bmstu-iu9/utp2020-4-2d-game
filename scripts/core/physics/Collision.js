@@ -1,4 +1,4 @@
-import Vector2d from '../Vector2d.js';
+import Vector2d from '../mathematics/Vector2d.js';
 import BoxCollider from './BoxCollider.js';
 import CircleCollider from './CircleCollider.js';
 import Collider from './Collider.js';
