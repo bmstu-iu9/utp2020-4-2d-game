@@ -1,7 +1,6 @@
 import HierarchyObject from '../HierarchyObject.js';
 import Component from '../Component.js';
-
-const uiHost = document.getElementById('uiHost');
+import Game from '../Game.js';
 
 export default class UIObject extends HierarchyObject {
 	/**
@@ -168,7 +167,7 @@ export default class UIObject extends HierarchyObject {
 	initialize() {
 		super.initialize();
 		if (this.parent == null) {
-			uiHost.appendChild(this.htmlObject);
+			Game.uiHost.appendChild(this.htmlObject);
 		}
 	}
 
