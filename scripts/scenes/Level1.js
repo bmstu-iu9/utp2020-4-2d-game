@@ -1,4 +1,4 @@
-import * as CORE from '../core/core.js';
+import * as CORE from '../core/Core.js';
 
 class Rotater extends CORE.GameComponent {
 	constructor(speed) {
