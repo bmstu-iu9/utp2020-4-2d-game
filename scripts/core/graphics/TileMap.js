@@ -78,10 +78,9 @@ export default class TileMap extends Renderer {
 	draw(camera, context) {
 		const positionOffset = camera.worldToCameraPosition(Vector2d.zero);
 		const offset = new Vector2d(
-			this.width / 2 * (this.tileWidth - 1),
-			this.height / 2 * (this.tileHeight - 1),
+			Math.ceil(this.width / 2) * 100 - 50,
+			Math.ceil(this.height / 2) * 100 - 50,
 		);
-
 		context.save();
 		const matrix = this.transform.worldMatrix;
 		context.translate(positionOffset.x + matrix[6] * 100, positionOffset.y + matrix[7] * 100);
@@ -92,18 +91,18 @@ export default class TileMap extends Renderer {
 				if (sprite == null) {
 					continue;
 				}
-				const spritePositionX = j * this.tileWidth - offset.x;
-				const spritePositionY = i * this.tileHeight - offset.y;
+				const spritePositionX = j * 100 - offset.x;
+				const spritePositionY = i * 100 - offset.y;
 				context.drawImage(
 					sprite.image,
 					sprite.region.x,
 					sprite.region.y,
 					sprite.region.width,
 					sprite.region.height,
-					spritePositionX - 0.005,
-					spritePositionY - 0.005,
-					sprite.region.width + 0.01,
-					sprite.region.height + 0.01,
+					spritePositionX - 0.05,
+					spritePositionY - 0.05,
+					100.01,
+					100.01,
 				);
 			}
 		}

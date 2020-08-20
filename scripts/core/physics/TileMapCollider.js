@@ -1,6 +1,9 @@
 import Rect from '../graphics/Rect.js';
 import GameComponent from '../GameComponent.js';
 import TileMap from '../graphics/TileMap.js';
+import BoxCollider from './BoxCollider.js';
+import Vector2d from '../mathematics/Vector2d.js';
+import GameObject from '../GameObject.js';
 
 class Edge {
 	constructor(direction, begin, end, id) {
@@ -368,9 +371,21 @@ export default class TileMapCollider extends GameComponent {
 						}
 					}
 
-					this.rectList.push(new Rect(i, j, width, height));
+					this.rectList.push(new Rect(j, i, width, height));
 				}
 			}
 		}
+
+		this.rectList.forEach((rect, i) => {
+			const x = rect.x + rect.width / 2 - Math.ceil(this.tileMap.width / 2) + 0.5;
+			const y = -rect.y - rect.height / 2 + Math.ceil(this.tileMap.height / 2) - 0.5;
+			this.gameObject.addChild(new GameObject({
+				name: `collider - ${i}`,
+				position: new Vector2d(x, y),
+				components: [
+					new BoxCollider(rect.width, rect.height),
+				],
+			}));
+		});
 	}
 }
