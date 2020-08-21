@@ -80,23 +80,23 @@ export default class AchievementSystem {
 		}
 
 		const achievements = this.getAchievements();
-		const state = achievements[id];
-		if (state == null) {
+		const achievement = achievements[id];
+		if (achievement == null) {
 			throw new Error(`achievement with id "${id}" isn't defined.`);
 		}
 
-		if (state.progress === state.goal) {
+		if (achievement.progress === achievement.goal) {
 			return false;
 		}
 
-		state.progress = Maths.clamp(state.progress + value, 0, state.goal);
+		achievement.progress = Maths.clamp(achievement.progress + value, 0, achievement.goal);
 
 		localStorage[achievementSystemID] = JSON.stringify(achievements);
-		if (state.progress === state.goal) {
+		if (achievement.progress === achievement.goal) {
 			console.log('цель достигнута');
 			return true;
 		} else {
-			console.log(`текущее состояние ${state.progress}`);
+			console.log(`текущее состояние ${achievement.progress}`);
 			return false;
 		}
 	}
@@ -104,7 +104,7 @@ export default class AchievementSystem {
 	/**
 	 * Выполняет функцию для каждого достижения в системе, а потом сохраняет изменение.
 	 *
-	 * @param {function(id: string, state: {name: string, progress: number, goal: number}): void} action Выполняемая для достижения функция.
+	 * @param {function(id: string, achievement: {name: string, progress: number, goal: number}): void} action Выполняемая для достижения функция.
 	 */
 	static forEachAchievement(action) {
 		if (typeof action !== 'function') {
