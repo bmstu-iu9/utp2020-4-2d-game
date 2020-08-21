@@ -4,17 +4,18 @@ import Game from '../Game.js';
 
 export default class UIObject extends HierarchyObject {
 	/**
-	 * @param {object}      settings            Настройки объекта интерфейса.
-	 * @param {string}      settings.name       Название объекта интерфейса.
-	 * @param {string}      settings.tag        Тег html-элемента.
-	 * @param {string}      settings.className  Класс html-элемента.
-	 * @param {string}      settings.id         ID html-элемента.
-	 * @param {string}      settings.innerHTML  HTML-код, который будет внутри данного html-элемента.
-	 * @param {string}      settings.innerText  Текст, который будет внутри данного html-элемента.
-	 * @param {string}      settings.cssText    Стиль html-элемента.
-	 * @param {boolean}     settings.isEnabled  Влючен ли объект интерфейса.
-	 * @param {Component[]} settings.components Компоненты объекта интерфейса.
-	 * @param {UIObject[]}  settings.children   Дочерние объекты интерфейса создаваемоего объекта интерфейса.
+	 * @param {object}                          settings            Настройки объекта интерфейса.
+	 * @param {string}                          settings.name       Название объекта интерфейса.
+	 * @param {string}                          settings.tag        Тег html-элемента.
+	 * @param {string}                          settings.className  Класс html-элемента.
+	 * @param {string}                          settings.id         ID html-элемента. Становится именем объекта интерфейса, если имя не передается.
+	 * @param {string}                          settings.innerHTML  HTML-код, который будет внутри данного html-элемента.
+	 * @param {string}                          settings.innerText  Текст, который будет внутри данного html-элемента.
+	 * @param {string}                          settings.cssText    Стиль html-элемента.
+	 * @param {boolean}                         settings.isEnabled  Влючен ли объект интерфейса.
+	 * @param {{name: string, value: string}[]} settings.attributes Атрибуты html-элемента.
+	 * @param {Component[]}                     settings.components Компоненты объекта интерфейса.
+	 * @param {UIObject[]}                      settings.children   Дочерние объекты интерфейса создаваемоего объекта интерфейса.
 	 */
 	constructor({
 		name,
@@ -25,6 +26,7 @@ export default class UIObject extends HierarchyObject {
 		innerText,
 		cssText,
 		isEnabled = true,
+		attributes = [],
 		components = [],
 		children = [],
 	}) {
@@ -35,11 +37,21 @@ export default class UIObject extends HierarchyObject {
 		if (tag.trim() === '') {
 			throw new Error('invalid parameter "tag". Expected a non-empty string.');
 		}
-		if (typeof name !== 'string') {
-			throw new TypeError('invalid parameter "name". Expected a string.');
+		if (id != null && typeof id !== 'string') {
+			throw new TypeError('invalid parameter "id". Expected a string.');
 		}
-		if (name.trim() === '') {
-			throw new Error('invalid parameter "name". Expected a non-empty string.');
+		if (id != null && id.trim() === '') {
+			throw new Error('invalid parameter "id". Expected a non-empty string.');
+		}
+		if (name == null && id != null) {
+			name = id;
+		} else {
+			if (typeof name !== 'string') {
+				throw new TypeError('invalid parameter "name". Expected a string.');
+			}
+			if (name.trim() === '') {
+				throw new Error('invalid parameter "name". Expected a non-empty string.');
+			}
 		}
 		if (cssText != null && typeof cssText !== 'string') {
 			throw new TypeError('invalid parameter "cssText". Expected a string.');
@@ -47,8 +59,11 @@ export default class UIObject extends HierarchyObject {
 		if (className != null && typeof className !== 'string') {
 			throw new TypeError('invalid parameter "className". Expected a string.');
 		}
-		if (id != null && typeof id !== 'string') {
-			throw new TypeError('invalid parameter "id". Expected a string.');
+		if (className != null && className.trim() === '') {
+			throw new Error('invalid parameter "className". Expected a non-empty string.');
+		}
+		if (!Array.isArray(attributes)) {
+			throw new TypeError('invalid parameter "attributes". Expected an array.');
 		}
 		if (!Array.isArray(components)) {
 			throw new TypeError('invalid parameter "components". Expected an array.');
@@ -90,6 +105,12 @@ export default class UIObject extends HierarchyObject {
 			this.setInnerHTML(innerHTML);
 		} else if (innerText != null) {
 			this.setInnerText(innerText);
+		}
+		for (let attribute of attributes) {
+			if (typeof attribute !== 'object') {
+				throw new TypeError('invalid attribute. Expected an object.');
+			}
+			this.setAttribute(attribute.name, attribute.value);
 		}
 	}
 
@@ -221,6 +242,7 @@ export default class UIObject extends HierarchyObject {
 	 * @param {(event: Event) => void} handler Обработчик события.
 	 */
 	addEventListener(type, handler) {
+		this.throwIfDestroyed();
 		if (typeof type !== 'string') {
 			throw new TypeError('invalid parameter "type". Expected a string.');
 		}
@@ -247,6 +269,7 @@ export default class UIObject extends HierarchyObject {
 	 * @param {(event: Event) => void} handler Обработчик события.
 	 */
 	removeEventListener(type, handler) {
+		this.throwIfDestroyed();
 		if (typeof type !== 'string') {
 			throw new TypeError('invalid parameter "type". Expected a string.');
 		}
@@ -269,6 +292,7 @@ export default class UIObject extends HierarchyObject {
 	 * @param {string} html HTML-код, который будет внутри данного html-элемента.
 	 */
 	setInnerHTML(html) {
+		this.throwIfDestroyed();
 		if (typeof html !== 'string') {
 			throw new TypeError('invalid parameter "html". Expected a string.');
 		}
@@ -285,6 +309,7 @@ export default class UIObject extends HierarchyObject {
 	 * @param {string} text Текст, который будет внутри данного html-элемента.
 	 */
 	setInnerText(text) {
+		this.throwIfDestroyed();
 		if (typeof text !== 'string') {
 			throw new TypeError('invalid parameter "text". Expected a string.');
 		}
@@ -293,6 +318,23 @@ export default class UIObject extends HierarchyObject {
 		} else {
 			this.htmlObject.innerText = text;
 		}
+	}
+
+	/**
+	 * Устанавливает значение атрибута.
+	 * 
+	 * @param {string} name  Название атрибута.
+	 * @param {string} value Новое значение атрибута.
+	 */
+	setAttribute(name, value) {
+		this.throwIfDestroyed();
+		if (typeof name !== 'string') {
+			throw new TypeError('invalid parameter "name". Expected a string.');
+		}
+		if (typeof value !== 'string') {
+			throw new TypeError('invalid parameter "value". Expected a string.');
+		}
+		this.htmlObject.setAttribute(name, value);
 	}
 
 	destroy() {
