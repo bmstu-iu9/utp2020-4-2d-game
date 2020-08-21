@@ -12,6 +12,10 @@ body, html, #container {
 #game {
 	z-index: 0;
 	position: absolute;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -webkit-crisp-edges;
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
 }
 
 #uiHost {

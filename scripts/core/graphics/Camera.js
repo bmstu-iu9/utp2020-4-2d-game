@@ -88,6 +88,9 @@ export default class Camera extends ComponentObject {
 	draw(renderers, context) {
 		this.throwIfNotInitialized();
 		this.throwIfDestroyed();
+		context.imageSmoothingEnabled = false;
+		context.mozImageSmoothingEnabled = false;
+		context.webkitImageSmoothingEnabled = false;
 		const size = Screen.getSize();
 		context.fillStyle = this.clearColor.rgbString();
 		context.fillRect(0, 0, size.x, size.y);

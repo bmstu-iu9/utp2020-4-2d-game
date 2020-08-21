@@ -37,15 +37,11 @@ export default class TileMap extends Renderer {
 		this.width = 0;
 		this.tileHeight = tileHeight;
 		this.tileWidth = tileWidth;
-
-		let lastIndexNonEmptyLayer = -1;
-
 		map.forEach(layer => {
 			if (!Array.isArray(layer)) {
 				throw new TypeError('invalid "map" array value. Expected an array.');
 			}
 			this.map.push([]);
-			let lastIndexNotNullSprite = -1; 
 			layer.forEach(name => {
 				if (name == null) {
 					this.map[this.map.length - 1].push(null);
@@ -64,30 +60,12 @@ export default class TileMap extends Renderer {
 				if (sprite.region.height !== tileHeight) {
 					throw new Error(`sprite with name ${name} has the wrong height.`);
 				}
-				lastIndexNotNullSprite = this.map[this.map.length - 1].length;
 				this.map[this.map.length - 1].push(sprite);
 			});
-
-			if (lastIndexNotNullSprite === -1) {
-				this.map[this.map.length - 1] = [];
-			} else if (lastIndexNotNullSprite !== layer.length - 1) {
-				this.map[this.map.length - 1] = this.map[this.map.length - 1].slice(0, lastIndexNotNullSprite + 1);
-			}
-
-			if (this.map[this.map.length - 1].length != 0) {
-				lastIndexNonEmptyLayer = this.map.length - 1;
-			}
-
 			if (layer.length > this.width) {
 				this.width = layer.length;
 			}
 		});
-
-		if (lastIndexNonEmptyLayer === -1) {
-			this.map = [];
-		} else if (lastIndexNonEmptyLayer !== this.map.length - 1) {
-			this.map = this.map.slice(0, lastIndexNonEmptyLayer + 1);
-		}
 		this.height = this.map.length;
 	}
 	
@@ -100,35 +78,31 @@ export default class TileMap extends Renderer {
 	draw(camera, context) {
 		const positionOffset = camera.worldToCameraPosition(Vector2d.zero);
 		const offset = new Vector2d(
-			this.width / 2 * (this.tileWidth - 1),
-			this.height / 2 * (this.tileHeight - 1),
+			Math.ceil(this.width / 2) * 100 - 50,
+			Math.ceil(this.height / 2) * 100 - 50,
 		);
-
 		context.save();
 		const matrix = this.transform.worldMatrix;
-		context.transform(
-			matrix[0], matrix[1],
-			matrix[3], matrix[4],
-			positionOffset.x + matrix[6] * 100, positionOffset.y + matrix[7] * 100,
-		);
+		context.translate(positionOffset.x + matrix[6] * 100, positionOffset.y + matrix[7] * 100);
+		context.scale(this.transform.scale.x, this.transform.scale.y);
 		for (let i = 0; i < this.height; i++) {
 			for (let j = 0; j < this.map[i].length; j++) {
 				const sprite = this.map[i][j];
 				if (sprite == null) {
 					continue;
 				}
-				const spritePositionX = j * this.tileWidth - offset.x;
-				const spritePositionY = i * this.tileHeight - offset.y;
+				const spritePositionX = j * 100 - offset.x;
+				const spritePositionY = i * 100 - offset.y;
 				context.drawImage(
 					sprite.image,
 					sprite.region.x,
 					sprite.region.y,
 					sprite.region.width,
 					sprite.region.height,
-					spritePositionX,
-					spritePositionY,
-					sprite.region.width,
-					sprite.region.height,
+					spritePositionX - 0.05,
+					spritePositionY - 0.05,
+					100.01,
+					100.01,
 				);
 			}
 		}
