@@ -141,7 +141,7 @@ export default class HierarchyObject extends ComponentObject {
 			if (this.isEnabledInHierarchy != hierarchyObject.isEnabled && hierarchyObject.isEnabled) {
 				hierarchyObject.disable();
 			} else if (this.isEnabledInHierarchy && hierarchyObject.isEnabled) {
-				if (this.isInitialized && hierarchyObject.scene == null) {
+				if (this.scene != null && hierarchyObject.scene == null) {
 					this.scene.addObject(hierarchyObject);
 				}
 			}
