@@ -25,7 +25,7 @@ export default class Maths {
 		if (min > max) {
 			throw new Error('parameter "min" must not be greater than parameter "max".');
 		}
-		return value < min ? value : (value > max ? max : value);
+		return value < min ? min : (value > max ? max : value);
 	}
 
 	/**
