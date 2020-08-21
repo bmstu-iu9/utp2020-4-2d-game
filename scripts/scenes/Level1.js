@@ -4,15 +4,18 @@ class UICoinsCount extends CORE.UIComponent {
 	constructor(hero) {
 		super();
 		this.hero = hero;
+		this.currentValue = null;
 	}
 
 	onInitialize() {
-		this.player = this.hero.getComponent(Collector);
-
+		this.collector = this.hero.getComponent(Collector);
 	}
 
 	onUpdate() {
-		this.uiObject.setInnerHTML(`${this.player.coinsCount}`);
+		if (this.currentValue !== this.collector.coinsCount) {
+			this.uiObject.setInnerText(`${this.collector.coinsCount}`);
+			this.currentValue = this.collector.coinsCount;
+		}
 	}
 }
 
@@ -20,15 +23,18 @@ class UILifeCount extends CORE.UIComponent {
 	constructor(hero) {
 		super();
 		this.hero = hero;
+		this.currentValue = null;
 	}
 
 	onInitialize() {
 		this.player = this.hero.getComponent(Player);
-
 	}
 
 	onUpdate() {
-		this.uiObject.setInnerHTML(`${this.player.lifeCount}`);
+		if (this.currentValue !== this.player.lifeCount) {
+			this.uiObject.setInnerText(`${this.player.lifeCount}`);
+			this.currentValue = this.player.lifeCount;
+		}
 	}
 }
 
@@ -588,25 +594,23 @@ export default class Level1 extends CORE.Scene {
 				new Follower(this.hero),
 			],
 		}));
-		this.addObject(new CORE.UIObject({
+		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
+		this.addObject(ui);
+		ui.addChild(new CORE.UIObject({
 			tag: 'div',
-			name: 'countsContainer',
 			id: 'countsContainer',
 			children: [
 				new CORE.UIObject({
 					tag: 'div',
-					name: 'lifeContainer',
 					id: 'lifeContainer',
 					children: [
 						new CORE.UIObject({
 							tag: 'div',
-							name: 'lifeText',
 							id: 'lifeText',
 							innerText: 'Жизни:',
 						}),
 						new CORE.UIObject({
 							tag: 'div',
-							name: 'life',
 							id: 'life',
 							components: [
 								new UILifeCount(this.hero),
@@ -616,18 +620,15 @@ export default class Level1 extends CORE.Scene {
 				}),
 				new CORE.UIObject({
 					tag: 'div',
-					name: 'coinsContainer',
 					id: 'coinsContainer',
 					children: [
 						new CORE.UIObject({
 							tag: 'div',
-							name: 'coinsText',
 							id: 'coinsText',
 							innerText: 'Монетки:',
 						}),
 						new CORE.UIObject({
 							tag: 'div',
-							name: 'coins',
 							id: 'coins',
 							components: [
 								new UICoinsCount(this.hero),
@@ -637,32 +638,39 @@ export default class Level1 extends CORE.Scene {
 				}),
 			],
 		}));
-		this.addObject(new CORE.UIObject({
+		ui.addChild(new CORE.UIObject({
 			tag: 'button',
-			name: 'close',
-			innerText: 'Меню',
 			id: 'closeButton',
+			innerText: 'Меню',
 		}));
-		this.addObject(new CORE.UIObject({
+		ui.addChild(new CORE.UIObject({
 			tag: 'div',
-			name: 'open',
 			id: 'openMenu',
 			children: [
 				new CORE.UIObject({
 					tag: 'div',
-					name: 'about',
 					id: 'about',
 					innerHTML: '<h1>IndieDevs</h1><hr><h2>Игра-платформер</h2><hr><p>Демо-версия игры, где показаны возможности ядра и некоторые основные механики (механики передвижения, собирания монеток, смерти).</p><h2>Описание демо-версии игры:</h2><hr><ol><li>У игрока есть 3 жизни, при потере которых игра начинается сначала.</li><li>Жизни теряются при столкновении с шипами, прыжке с высокой платформы.</li><li>При падении в пропасть игра начинается сначала.</li><li>Игра считается пройденной при подбирании всех монеток на уровне (их всего 5).</li></ol><h2>Команда</h2><hr><ul><li>Игорь Бахтин (капитан) <a href="https://github.com/igor-vgs">@igor-vgs</a></li><li>Дмитрий Балакин (разработчик ядра игры) <a href="https://github.com/Trequend">@Trequend</a></li><li>Егор Смирнов (разработчик ядра игры) <a href="https://github.com/SmEgDm">@SmEgDm</a></li><li>Александра Пастухова <a href="https://github.com/caapricorn">@caapricorn</a></li><li>Гиорги Шаликиани <a href="https://github.com/gioshek">@gioshek</a></li><li>Лада Еникеева <a href="https://github.com/l-en">@l-en</a></li><li>Азамат Гимазов <a href="https://github.com/Azarolol">@Azarolol</a></li><li>Владислав Бровкин <a href="https://github.com/vladb000">@vladb000</a></li></ul><h2>Инструкция пользователя:</h2><hr><ul type="disc"><li>A, D - движение влево и вправо</li><li>W, S - движение вверх и вниз по лестнице</li><li>Space - прыжок</li></ul>',
 				}),
 				new CORE.UIObject({
 					tag: 'div',
-					name: 'audio',
 					id: 'audio',
-					innerHTML: '<input type="range" min="0" max="100" step="1" value="50">',
+					children: [
+						new CORE.UIObject({
+							name: 'volume',
+							tag: 'input',
+							attributes: [
+								{name: 'type', value: 'range'},
+								{name: 'min', value: '0'},
+								{name: 'max', value: '100'},
+								{name: 'step', value: '1'},
+								{name: 'value', value: '50'},
+							],
+						}),
+					],
 				}),
 				new CORE.UIObject({
 					tag: 'ul',
-					name: 'navbar',
 					id: 'navbar',
 					children: [
 						new CORE.UIObject({
@@ -693,7 +701,6 @@ export default class Level1 extends CORE.Scene {
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
-									name: 'closing',
 									innerText: 'Закрыть',
 									id: 'closeMenu',
 								}),
