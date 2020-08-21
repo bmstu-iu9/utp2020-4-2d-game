@@ -28,6 +28,10 @@ body, html, #container, #openedMenu {
 #uiHost {
 	z-index: 1;
 	position: relative;
+	user-select: none;
+}
+
+#ui {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
