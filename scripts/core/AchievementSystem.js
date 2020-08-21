@@ -93,10 +93,8 @@ export default class AchievementSystem {
 
 		localStorage[achievementSystemID] = JSON.stringify(achievements);
 		if (achievement.progress === achievement.goal) {
-			console.log('цель достигнута');
 			return true;
 		} else {
-			console.log(`текущее состояние ${achievement.progress}`);
 			return false;
 		}
 	}
