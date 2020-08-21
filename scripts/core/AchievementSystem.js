@@ -90,13 +90,8 @@ export default class AchievementSystem {
 		}
 
 		achievement.progress = Maths.clamp(achievement.progress + value, 0, achievement.goal);
-
 		localStorage[achievementSystemID] = JSON.stringify(achievements);
-		if (achievement.progress === achievement.goal) {
-			return true;
-		} else {
-			return false;
-		}
+		return achievement.progress === achievement.goal;
 	}
 
 	/**
