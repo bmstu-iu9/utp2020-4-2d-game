@@ -189,7 +189,7 @@ export default class TileMapCollider extends GameComponent {
 		 */
 		this.tileMap = this.gameObject.getComponent(TileMap);
 		this.rectList = [];
-		let	vertexMatrix = [];
+		let vertexMatrix = [];
 
 		vertexMatrix[0] = [];
 		for (let i = 0; i < this.tileMap.map.length; i++) {
