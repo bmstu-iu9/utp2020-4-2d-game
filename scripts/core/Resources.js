@@ -4,8 +4,10 @@ export default class Resources {
 	constructor() {
 		this.imageLoadQueue = {};
 		this.soundLoadQueue = {};
+		this.textLoadQueue = {};
 		this.loadedImages = {};
 		this.loadedSounds = {};
+		this.loadedTexts = {};
 		/**
 		 * @type {AudioContext}
 		 */
@@ -72,6 +74,32 @@ export default class Resources {
 	}
 
 	/**
+	 * Добавляет текст в очередь загрузки.
+	 * 
+	 * @param {string} id   ID по которому можно будет получить текст после загрузки.
+	 * @param {string} path Путь к текстовому файлу.
+	 */
+	addTextInLoadQueue(id, path) {
+		this.throwIfDestroyed();
+		if (typeof id !== 'string') {
+			throw new TypeError('invalid parameter "id". Expected a string.');
+		}
+		if (id.trim() === '') {
+			throw new TypeError('invalid parameter "id". Expected a non-empty string.');
+		}
+		if (typeof path !== 'string') {
+			throw new TypeError('invalid parameter "path". Expected a string.');
+		}
+		if (this.textLoadQueue[id] != null) {
+			throw new Error(`text with id "${id}" is already in the queue.`);
+		}
+		if (this.loadedTexts[id] != null) {
+			throw new Error(`text with id "${id}" is already loaded.`);
+		}
+		this.textLoadQueue[id] = path;
+	}
+
+	/**
 	 * Загружает все ресурсы.
 	 * 
 	 * @param {function} onload Функция, которая выполнится в конце загрузки.
@@ -82,8 +110,12 @@ export default class Resources {
 			throw new TypeError('invalid parameter "onload". Expected a function.');
 		}
 		const imageEntries = Object.entries(this.imageLoadQueue);
+		this.imageLoadQueue = {};
 		const soundEntries = Object.entries(this.soundLoadQueue);
-		let count = imageEntries.length + soundEntries.length;
+		this.soundLoadQueue = {};
+		const textEntries = Object.entries(this.textLoadQueue);
+		this.textLoadQueue = {};
+		let count = imageEntries.length + soundEntries.length + textEntries.length;
 		if (count === 0) {
 			if (onload != null) {
 				onload();
@@ -104,7 +136,6 @@ export default class Resources {
 			}
 			image.src = path;
 		});
-		this.imageLoadQueue = {};
 		soundEntries.forEach(([id, path]) => {
 			fetch(path)
 				.then(response => response.arrayBuffer())
@@ -115,9 +146,19 @@ export default class Resources {
 					if (count === 0 && onload != null) {
 						onload();
 					} 
-				})
+				});
 		});
-		this.soundLoadQueue = {};
+		textEntries.forEach(([id, path]) => {
+			fetch(path)
+				.then(response => response.text())
+				.then(text => {
+					this.loadedTexts[id] = text;
+					count--;
+					if (count === 0 && onload != null) {
+						onload();
+					}
+				});
+		});
 	}
 
 	/**
@@ -140,10 +181,24 @@ export default class Resources {
 		return this.loadedSounds[id];
 	}
 
+	/**
+	 * @param {string} id ID загруженного текста.
+	 * 
+	 * @return {Sound} Возвращает загруженный текст по переданному id.
+	 */
+	getText(id) {
+		this.throwIfDestroyed();
+		return this.loadedTexts[id];
+	}
+
 	destroy() {
 		this.throwIfDestroyed();
 		delete this.imageLoadQueue;
+		delete this.soundLoadQueue;
+		delete this.textLoadQueue;
 		delete this.loadedImages;
+		delete this.loadedSounds;
+		delete this.loadedTexts;
 		this.isDestroyed = true;
 	}
 }
