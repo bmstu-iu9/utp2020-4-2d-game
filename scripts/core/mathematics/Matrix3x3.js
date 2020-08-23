@@ -160,6 +160,43 @@ export default class Matrix3x3 extends Float32Array {
 	}
 
 	/**
+	 * @param {number}    left      Левая граница экрана.
+	 * @param {number}    right     Правая граница экрана.
+	 * @param {number}    bottom    Нижняя граница экрана.
+	 * @param {number}    top       Верхняя граница экрана.
+	 * @param {Matrix3x3} outMatrix Матрица 3x3, в которую можно записать результат.
+	 * 
+	 * @return {Matrix3x3} Возвращает матрицу ортографической проекции.
+	 */
+	static ofOrthographicProjection(left, right, bottom, top, outMatrix) {
+		if (outMatrix != null && !(outMatrix instanceof Matrix3x3)) {
+			throw new TypeError('invalid parameter "outMatrix". Expected an instance of Matrix3x3 class.');
+		}
+		if (typeof left != 'number') {
+			throw new TypeError('invalid parameter "left". Expected a number.');
+		}
+		if (typeof right != 'number') {
+			throw new TypeError('invalid parameter "right". Expected a number.');
+		}
+		if (typeof bottom != 'number') {
+			throw new TypeError('invalid parameter "bottom". Expected a number.');
+		}
+		if (typeof top != 'number') {
+			throw new TypeError('invalid parameter "top". Expected a number.');
+		}
+		const result = outMatrix || new Matrix3x3();
+		result[0] = 2 / (right - left);
+		result[4] = 2 / (top - bottom);
+		result[6] = -(right + left) / (right - left);
+		result[7] = -(top + bottom) / (top - bottom);
+		result[8] = 1;
+		if (outMatrix != null) {
+			result[1] = result[2] = result[3] = result[5] = 0;
+		}
+		return result;
+	}
+
+	/**
 	 * @return {number} Возвращает определитель матрицы.
 	 */
 	det() {
