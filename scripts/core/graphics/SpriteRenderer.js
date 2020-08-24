@@ -1,9 +1,9 @@
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import Sprite from './Sprite.js';
 import Camera from './Camera.js';
 import Vector2d from '../mathematics/Vector2d.js';
 
-export default class SpriteRenderer extends Renderer {
+export default class SpriteRenderer extends RendererComponent {
 	/**
 	 * @param {Sprite} sprite Спрайт, который будет отрисовываться каждый кадр.
 	 * @param {number} layer  Слой отрисовки.

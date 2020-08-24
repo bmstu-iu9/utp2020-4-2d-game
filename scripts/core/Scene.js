@@ -2,7 +2,7 @@ import Resourses from './Resources.js';
 import GameObject from './GameObject.js';
 import Camera from './graphics/Camera.js';
 import Resources from './Resources.js';
-import Renderer from './graphics/Renderer.js';
+import RendererComponent from './graphics/RendererComponent.js';
 import ComponentObject from './ComponentObject.js';
 import Color from './graphics/Color.js';
 import Screen from './graphics/Screen.js';
@@ -312,7 +312,7 @@ export default class Scene {
 		if (this.camera != null && this.camera.isActive()) {
 			const renderers = [];
 			for (let componentObject of this.enabledObjects.values()) {
-				const renderer = componentObject.getComponent(Renderer);
+				const renderer = componentObject.getComponent(RendererComponent);
 				if (renderer != null) {
 					renderers.push(renderer);
 				}

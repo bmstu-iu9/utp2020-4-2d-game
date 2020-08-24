@@ -12,7 +12,7 @@ export { default as Screen } from './graphics/Screen.js';
 export { default as Scene } from './Scene.js';
 export { default as Camera } from './graphics/Camera.js';
 export { default as CameraComponent } from './graphics/CameraComponent.js';
-export { default as Renderer} from './graphics/Renderer.js';
+export { default as RendererComponent} from './graphics/RendererComponent.js';
 export { default as Sprite } from './graphics/Sprite.js';
 export { default as SpriteRenderer } from './graphics/SpriteRenderer.js';
 export { default as Text } from './graphics/Text.js';

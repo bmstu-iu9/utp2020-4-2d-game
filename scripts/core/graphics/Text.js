@@ -1,8 +1,8 @@
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import Vector2d from '../mathematics/Vector2d.js';
 import Color from './Color.js';
 
-export default class Text extends Renderer {
+export default class Text extends RendererComponent {
 	/**
 	 * @param {object} settings          Настройки текста.
 	 * @param {string} settings.text     Текст, который будет отображаться.

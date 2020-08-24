@@ -1,5 +1,5 @@
 import ComponentObject from '../ComponentObject.js';
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import Vector2d from '../mathematics/Vector2d.js';
 import Screen from './Screen.js';
 import Component from '../Component.js';
@@ -185,7 +185,7 @@ export default class Camera extends ComponentObject {
 	/**
 	 * Отрисовывает объекты, которые попадают в данную камеру.
 	 * 
-	 * @param {Renderer[]}               renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
+	 * @param {RendererComponent[]}      renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
 	 * @param {CanvasRenderingContext2D} context   Контекст, в котором будет происходить отрисовка.
 	 */
 	draw(renderers, context) {

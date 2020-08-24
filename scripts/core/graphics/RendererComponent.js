@@ -1,13 +1,13 @@
 import GameComponent from '../GameComponent.js';
 import Camera from './Camera.js';
 
-export default class Renderer extends GameComponent {
+export default class RendererComponent extends GameComponent {
 	/**
 	 * @param {number} layer Слой отрисовки.
 	 */
 	constructor(layer) {
 		super();
-		if (new.target === Renderer) {
+		if (new.target === RendererComponent) {
 			throw new TypeError('cannot create instance of abstract class.');
 		}
 		this.setLayer(layer);

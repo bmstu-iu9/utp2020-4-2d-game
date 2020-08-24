@@ -1,9 +1,9 @@
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import SpriteSheet from './SpriteSheet.js';
 import Vector2d from '../mathematics/Vector2d.js';
 import Camera from './Camera.js';
 
-export default class TileMap extends Renderer {
+export default class TileMap extends RendererComponent {
 	/**
 	 * @param {number}      tileWidth   Ширина одной плитки.
 	 * @param {number}      tileHeight  Высота одной плитки.
