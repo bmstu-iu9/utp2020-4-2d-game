@@ -4,16 +4,13 @@ import Collider from './physics/Collider.js';
 import Collision from './physics/Collision.js';
 import Screen from './graphics/Screen.js';
 import Input from './Input.js';
+import Renderer from './graphics/webgl/Renderer.js';
 
 export default class Game {
 	/**
 	 * @type {HTMLCanvasElement}
 	 */
 	static canvas;
-	/**
-	 * @type {CanvasRenderingContext2D}
-	 */
-	static context;
 	/**
 	 * @type {HTMLDivElement}
 	 */
@@ -31,11 +28,11 @@ export default class Game {
 
 	static start(scene, canvasId, uiHostId) {
 		Game.canvas = document.getElementById(canvasId);
-		Game.context = Game.canvas.getContext('2d');
 		Game.uiHost = document.getElementById(uiHostId);
 
 		Screen.initialize(Game.canvas);
 		Input.initialize();
+		Renderer.initialize(Game.canvas);
 
 		Game.deltaTime = 0;
 		Game.lastFrameTime = performance.now();
@@ -129,11 +126,6 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
-		Scene.current.draw(Game.context);
-		if (Game.shouldStopLoop()) {
-			Game.lastFrameTime = performance.now();
-			return;
-		}
 	
 		Game.lastFrameTime = performance.now();
 	
@@ -146,5 +138,6 @@ export default class Game {
 		}
 		Screen.destroy();
 		Input.destroy();
+		Renderer.destroy();
 	}
 }
