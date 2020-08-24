@@ -84,9 +84,7 @@ export default class Scene {
 		this.disabledObjects = new Set();
 		this.onStart();
 		if (this.camera == null) {
-			this.addObject(new Camera({
-				name: 'main',
-			}));
+			console.warn('there is no camera');
 		}
 		this.isStarted = true;
 	}

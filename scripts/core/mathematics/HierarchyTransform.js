@@ -2,6 +2,7 @@ import Transform from './Transform.js';
 import HierarchyObject from '../HierarchyObject.js';
 import Vector2d from './Vector2d.js';
 import Matrix3x3 from './Matrix3x3.js';
+import Maths from './Maths.js';
 
 export default class HierarchyTransform extends Transform {
 	/**
@@ -18,7 +19,7 @@ export default class HierarchyTransform extends Transform {
 		rotation = 0,
 		scale = new Vector2d(1, 1)
 	) {
-		super(isStatic, position, rotation, scale);
+		super();
 		if (!(hierarchyObject instanceof HierarchyObject)) {
 			throw new TypeError('invalid parameter "hierarchyObject". Expected an instance of HierarchyObject class.');
 		}
@@ -30,12 +31,17 @@ export default class HierarchyTransform extends Transform {
 		 * @type {number}
 		 */
 		this.localRotation = this.clampAngle(rotation);
-		this.localAngle = this.localRotation / Math.PI * 180;
+		this.localAngle = Maths.toRadians(this.localRotation);
 		/**
 		 * @type {Vector2d}
 		 */
 		this.localScale = scale;
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.localMatrix = null;
 		this.hierarchyObject = hierarchyObject;
+		this.isStatic = isStatic;
 		this.isDirty = true;
 		this.updateMatrices();
 	}
@@ -63,6 +69,9 @@ export default class HierarchyTransform extends Transform {
 			}
 		} else {
 			if (this.isDirty || parent.transform.isDirty || isForceUpdate) {
+				/**
+				 * @type {Matrix3x3}
+				 */
 				this.worldMatrix = parent.transform.worldMatrix.multiply(
 					this.localMatrix,
 					this.worldMatrix != this.localMatrix ? this.worldMatrix : null,
@@ -85,7 +94,7 @@ export default class HierarchyTransform extends Transform {
 				signY * new Vector2d(this.worldMatrix[3], this.worldMatrix[4]).length(),
 			);
 		}
-		this.angle = this.rotation / Math.PI * 180;
+		this.angle = Maths.toDegrees(this.rotation);
 		this.hierarchyObject.children.forEach(child => child.transform.updateMatrices(true));
 		this.isDirty = false;
 	}
@@ -143,7 +152,7 @@ export default class HierarchyTransform extends Transform {
 		this.isDirty = true;
 		const delta = this.rotation - angle;
 		this.localRotation = this.clampAngle(this.localRotation - delta);
-		this.localAngle = this.localRotation / Math.PI * 180;
+		this.localAngle = Maths.toDegrees(this.localRotation);
 		this.updateMatrices();
 	}
 
@@ -162,16 +171,8 @@ export default class HierarchyTransform extends Transform {
 		}
 		this.isDirty = true;
 		this.localRotation = this.clampAngle(angle);
-		this.localAngle = this.localRotation / Math.PI * 180;
+		this.localAngle = Maths.toDegrees(this.localRotation);
 		this.updateMatrices();
-	}
-
-	/**
-	 * Не поддерживается. Использовать setLocalScale(scale) для изменения масштаба.
-	 * Причина: потеря точности в мировом масштабе.
-	 */
-	setScale() {
-		throw new Error('unsupported.');
 	}
 
 	/**

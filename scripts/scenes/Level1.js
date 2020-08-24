@@ -260,7 +260,7 @@ class Follower extends CORE.CameraComponent {
 	constructor(target) {
 		super();
 		this.target = target;
-		this.floor = 1.3;
+		this.floor = 0.5;
 	}
 	
 	setFloor(y) {
@@ -273,8 +273,8 @@ class Follower extends CORE.CameraComponent {
 		if (position.y < this.floor) {
 			position = new CORE.Vector2d(position.x, this.floor);
 		}
-		if (position.x < 0.4) {
-			position = new CORE.Vector2d(0.4, position.y);
+		if (position.x < -0.8) {
+			position = new CORE.Vector2d(-0.8, position.y);
 		}
 		this.transform.setPosition(position);
 	}
@@ -589,7 +589,8 @@ export default class Level1 extends CORE.Scene {
 		this.createHouse();
 		this.addObject(new CORE.Camera({
 			name: 'camera',
-			scale: new CORE.Vector2d(0.8, 0.8),
+			width: 1280,
+			height: 720,
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
 				new Follower(this.hero),

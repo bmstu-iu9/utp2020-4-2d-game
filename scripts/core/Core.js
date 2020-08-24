@@ -34,6 +34,7 @@ export { default as GameObject } from './GameObject.js';
 export { default as HierarchyObject } from './HierarchyObject.js';
 export { default as Transform } from './mathematics/Transform.js';
 export { default as HierarchyTransform } from './mathematics/HierarchyTransform.js';
+export { default as CameraTransform } from './mathematics/CameraTransform.js';
 export { default as TransformComponent } from './TransformComponent.js';
 export { default as AchievementSystem } from './AchievementSystem.js';
 export { default as Game } from './Game.js';
