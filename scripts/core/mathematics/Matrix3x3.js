@@ -207,6 +207,34 @@ export default class Matrix3x3 extends Float32Array {
 	}
 
 	/**
+	 * @return {Matrix3x3} Возвращает обратную матрицу данной (если матрица не обратима, возвращает null).
+	 */
+	inverse(outMatrix) {
+		if (outMatrix != null && !(outMatrix instanceof Matrix3x3)) {
+			throw new TypeError('invalid parameter "outMatrix". Expected an instance of Matrix3x3 class.');
+		}
+		const k1 = this[4] * this[8] - this[7] * this[5];
+		const k2 = this[3] * this[8] - this[6] * this[5];
+		const k3 = this[3] * this[7] - this[6] * this[4];
+		const det = this[0] * k1 - this[1] * k2 + this[2] * k3;
+		if (det === 0) {
+			return null;
+		}
+		const invDet = 1 / det;
+		const result = outMatrix || new Matrix3x3();
+		result[0] = k1 * invDet;
+		result[3] = -k2 * invDet;
+		result[6] = k3 * invDet;
+		result[1] = (this[7] * this[2] - this[1] * this[8]) * invDet;
+		result[4] = (this[0] * this[8] - this[6] * this[2]) * invDet;
+		result[7] = (this[6] * this[1] - this[0] * this[7]) * invDet;
+		result[2] = (this[1] * this[5] - this[4] * this[2]) * invDet;
+		result[5] = (this[3] * this[2] - this[0] * this[5]) * invDet;
+		result[8] = (this[0] * this[4] - this[3] * this[1]) * invDet;
+		return result;
+	}
+
+	/**
 	 * Умножает данную матрицу на матрицу 3x3.
 	 * 
 	 * @param {Matrix3x3} matrix    Матрица 3x3, на которую надо умножить.
