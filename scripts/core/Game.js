@@ -4,6 +4,7 @@ import Collider from './physics/Collider.js';
 import Collision from './physics/Collision.js';
 import Screen from './graphics/Screen.js';
 import Input from './Input.js';
+import Animator from './animations/Animator.js';
 
 export default class Game {
 	/**
@@ -112,6 +113,7 @@ export default class Game {
 			}
 			collisions.forEach(collision => collision.positionalCorrection());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
+			Animator.animators.forEach(animator => animator.process(Game.step));
 		}
 	
 		Scene.current.forEachEnabledGameObject(gameObject => gameObject.update(timestep));
