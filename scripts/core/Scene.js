@@ -21,7 +21,6 @@ export default class Scene {
 		this.isStarted = false;
 		this.isInitialized = false;
 		this.isDestroyed = false;
-		this.objectsToDestroy = new Set();
 		/**
 		 * @type {Set<ComponentObject>}
 		 */
@@ -61,7 +60,7 @@ export default class Scene {
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
-		this.resources = new Resources(this);
+		this.resources = new Resourses();
 		this.onInitialize();
 		this.isInitialized = true;
 		this.resources.loadAll(() => {
@@ -139,8 +138,10 @@ export default class Scene {
 		this.onDestroy();
 		this.resources.destroy();
 		this.resources = null;
-		this.objectsToDestroy.forEach(obj => obj.destroy());
 		this.isDestroyed = true;
+		if (Scene.current === this) {
+			Scene.current = null;
+		}
 	}
 
 	/**
@@ -340,6 +341,13 @@ export default class Scene {
 		this.throwIfNotInitialized();
 		this.stop();
 		this.start();
+	}
+
+	/**
+	 * Перезагружает сцену. Все ресурсы заново загружаются.
+	 */
+	hardReload() {
+		Scene.changeScene(this.constructor);
 	}
 
 	/**

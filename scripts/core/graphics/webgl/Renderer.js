@@ -9,15 +9,15 @@ export default class Renderer {
 	 * @param {HTMLCanvasElement} canvas
 	 */
 	static initialize(canvas) {
-		this.gl = canvas.getContext('webgl');
-		if (this.gl == null) {
+		Renderer.gl = canvas.getContext('webgl');
+		if (Renderer.gl == null) {
 			throw new Error('cannot use webgl.');
 		}
 
-		this.maxTextureSlots = this.gl.getParameter(this.gl.MAX_TEXTURE_IMAGE_UNITS);
+		Renderer.maxTextureSlots = Renderer.gl.getParameter(Renderer.gl.MAX_TEXTURE_IMAGE_UNITS);
 	}
 
 	static destroy() {
-		this.gl = null;
+		Renderer.gl = null;
 	}
 }

@@ -1,19 +1,19 @@
 import Renderer from './Renderer.js';
-import Scene from '../../Scene.js';
+import Resources from '../../Resources.js';
 
 export default class Texture {
 	static maxWidth = 4096;
 	static maxHeight = 4096;
 
 	/**
-	 * @param {Scene}            scene         Сцена, на которой будет использоваться текстура.
+	 * @param {Resources}        resources     Место для хранения данной текстуры.
 	 * @param {HTMLImageElement} image         Изображение, которое будет использоваться в текстуре.
 	 * @param {number}           pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
 	 * @param {boolean}          isPixelImage  Если указано true, то для масштабирования текстуры используется алгоритм NEAREST, иначе LINEAR.
 	 */
-	constructor(scene, image, pixelsPerUnit = 100, isPixelImage = true) {
-		if (!(scene instanceof Scene)) {
-			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
+	constructor(resources, image, pixelsPerUnit = 100, isPixelImage = true) {
+		if (!(resources instanceof Resources)) {
+			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
 		}
 
 		if (!(image instanceof HTMLImageElement)) {
@@ -42,8 +42,6 @@ export default class Texture {
 
 		this.image = image;
 		this.pixelsPerUnit = pixelsPerUnit;
-		scene.objectsToDestroy.add(this);
-		this.scene = scene;
 
 		const gl = Renderer.gl;
 		this.textureId = gl.createTexture();
@@ -54,6 +52,9 @@ export default class Texture {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+		resources.objectsToDestroy.add(this);
+		this.resources = resources;
 	}
 
 	/**
@@ -105,12 +106,13 @@ export default class Texture {
 	}
 
 	destroy() {
-		if (this.texture == null) {
+		if (this.textureId == null) {
 			return;
 		}
 
-		this.scene.objectsToDestroy.delete(this);
+		this.resources.objectsToDestroy.delete(this);
+		this.resources = null;
 		Renderer.gl.deleteTexture(this.textureId);
-		this.texture = null;
+		this.textureId = null;
 	}
 }

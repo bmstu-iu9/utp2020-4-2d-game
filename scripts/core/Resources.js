@@ -4,15 +4,9 @@ import Scene from './Scene.js';
 import Shader from './graphics/webgl/Shader.js';
 
 export default class Resources {
-	/**
-	 * @param {Scene} scene Сцена, которая содержит данные ресурсы.
-	 */
-	constructor(scene) {
-		if (!(scene instanceof Scene)) {
-			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
-		}
+	constructor() {
+		this.objectsToDestroy = new Set();
 
-		this.scene = scene;
 		this.imageLoadQueue = {};
 		this.textureCreationQueue = {};
 		this.soundLoadQueue = {};
@@ -258,7 +252,7 @@ export default class Resources {
 
 							count--;
 							this.textures[id] = new Texture(
-								this.scene,
+								this,
 								this.loadedImages[properties.imageId],
 								properties.pixelsPerUnit,
 								properties.isPixelImage,
@@ -309,7 +303,7 @@ export default class Resources {
 			fetch(path)
 				.then(response => response.text())
 				.then(text => {
-					this.loadedShaders[id] = Shader.fromText(this.scene, id, text);
+					this.loadedShaders[id] = Shader.fromText(this, id, text);
 					count--;
 					if (count === 0 && onload != null) {
 						onload();
@@ -370,6 +364,10 @@ export default class Resources {
 
 	destroy() {
 		this.throwIfDestroyed();
+
+		this.objectsToDestroy.forEach(obj => obj.destroy());
+		delete this.objectsToDestroy;
+
 		delete this.imageLoadQueue;
 		delete this.textureCreationQueue;
 		delete this.soundLoadQueue;

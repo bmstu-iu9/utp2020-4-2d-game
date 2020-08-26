@@ -1,7 +1,7 @@
 import Renderer from './Renderer.js';
-import Scene from '../../Scene.js';
 import Matrix2x2 from '../../mathematics/Matrix2x2.js';
 import Matrix3x3 from '../../mathematics/Matrix3x3.js';
+import Resources from '../../Resources.js';
 
 class ShaderError extends Error {
 	constructor(shaderName, message) {
@@ -26,14 +26,14 @@ const createShader = (name, gl, type, source) => {
 
 export default class Shader {
 	/**
-	 * @param {Scene}  scene          Сцена, на которой будет использоваться шейдер.
-	 * @param {string} name           Название шейдера.
-	 * @param {string} vertexSource   Код вершинного шейдера.
-	 * @param {string} fragmentSource Код фрагментного шейдера.
+	 * @param {Resources} resources      Место для хранения данного шейдера.
+	 * @param {string}    name           Название шейдера.
+	 * @param {string}    vertexSource   Код вершинного шейдера.
+	 * @param {string}    fragmentSource Код фрагментного шейдера.
 	 */
-	constructor(scene, name, vertexSource, fragmentSource) {
-		if (!(scene instanceof Scene)) {
-			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
+	constructor(resources, name, vertexSource, fragmentSource) {
+		if (!(resources instanceof Resources)) {
+			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
 		}
 
 		if (typeof name !== 'string') {
@@ -77,8 +77,8 @@ export default class Shader {
 		gl.deleteShader(vertexShader);
 		gl.deleteShader(fragmentShader);
 
-		scene.objectsToDestroy.add(this);
-		this.scene = scene;
+		resources.objectsToDestroy.add(this);
+		this.resources = resources;
 		this.name = name;
 	}
 
@@ -296,21 +296,23 @@ export default class Shader {
 		if (this.programId == null) {
 			return;
 		}
+
 		Renderer.gl.deleteProgram(this.programId);
 		this.programId = null;
-		this.scene.objectsToDestroy.delete(this);
+		this.resources.objectsToDestroy.delete(this);
+		this.resources = null;
 	}
 
 	/**
 	 * Создает шейдер из кода, который представлен текстом.
 	 * 
-	 * @param {Scene}  scene  Сцена, на которой будет использоваться шейдер.
-	 * @param {string} name   Название шейдера.
-	 * @param {string} source Код шейдера.
+	 * @param {Resources} resources Место для хранения данного шейдера.
+	 * @param {string}    name      Название шейдера.
+	 * @param {string}    source    Код шейдера.
 	 */
-	static fromText(scene, name, source) {
-		if (!(scene instanceof Scene)) {
-			throw new TypeError('invalid parameter "scene". Expected an instance of Scene class.');
+	static fromText(resources, name, source) {
+		if (!(resources instanceof Resources)) {
+			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
 		}
 
 		if (typeof name !== 'string') {
@@ -385,6 +387,6 @@ export default class Shader {
 			throw new ShaderError('no fragment shader.');
 		}
 
-		return new Shader(scene, name, vertexSource, fragmentSource);
+		return new Shader(resources, name, vertexSource, fragmentSource);
 	}
 }

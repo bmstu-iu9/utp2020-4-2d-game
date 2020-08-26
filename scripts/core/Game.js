@@ -5,6 +5,7 @@ import Collision from './physics/Collision.js';
 import Screen from './graphics/Screen.js';
 import Input from './Input.js';
 import Renderer from './graphics/webgl/Renderer.js';
+import Resources from './Resources.js'; 
 
 export default class Game {
 	/**
@@ -25,6 +26,11 @@ export default class Game {
 	 * @type {number}
 	 */
 	static lastFrameTime;
+	/**
+	 * @type {Resources}
+	 */
+	static resources;
+	static isActive = false;
 
 	static start(scene, canvasId, uiHostId) {
 		Game.canvas = document.getElementById(canvasId);
@@ -33,17 +39,23 @@ export default class Game {
 		Screen.initialize(Game.canvas);
 		Input.initialize();
 		Renderer.initialize(Game.canvas);
+		Game.resources = new Resources();
 
-		Game.deltaTime = 0;
-		Game.lastFrameTime = performance.now();
+		Game.resources.addShaderInLoadQueue('texture', 'scripts/core/graphics/webgl/internal_shaders/Texture.glsl');
 
-		Scene.changeScene(scene);
-		requestAnimationFrame(Game.loop);
+		Game.resources.loadAll(() => {
+			Game.deltaTime = 0;
+			Game.lastFrameTime = performance.now();
+
+			Game.isActive = true;
+			Scene.changeScene(scene);
+			requestAnimationFrame(Game.loop);
+		});
 	}
 
 	static shouldStopLoop() {
 		if (Scene.current == null) {
-			closeGame();
+			this.closeGame();
 			return true;
 		}
 		if (!Scene.current.isStarted || !Scene.current.isInitialized) {
@@ -133,9 +145,17 @@ export default class Game {
 	}
 
 	static closeGame() {
+		if (!Game.isActive) {
+			return;
+		}
+		Game.isActive = false;
 		if (Scene.current != null && !Scene.current.isDestroyed) {
 			Scene.current.destroy();
 		}
+		Game.canvas = null;
+		Game.uiHost = null;
+		Game.resources.destroy();
+		Game.resources = null;
 		Screen.destroy();
 		Input.destroy();
 		Renderer.destroy();
