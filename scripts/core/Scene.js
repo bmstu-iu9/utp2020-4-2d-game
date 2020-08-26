@@ -14,10 +14,14 @@ export default class Scene {
 		if (new.target === Scene) {
 			throw new TypeError('cannot create instance of abstract class');
 		}
-		this.resources = new Resourses();
+		/**
+		 * @type {Resources}
+		 */
+		this.resources = null;
 		this.isStarted = false;
 		this.isInitialized = false;
 		this.isDestroyed = false;
+		this.objectsToDestroy = new Set();
 		/**
 		 * @type {Set<ComponentObject>}
 		 */
@@ -57,7 +61,7 @@ export default class Scene {
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
-		this.resources = new Resources();
+		this.resources = new Resources(this);
 		this.onInitialize();
 		this.isInitialized = true;
 		this.resources.loadAll(() => {
@@ -133,9 +137,10 @@ export default class Scene {
 		}
 		this.stop();
 		this.onDestroy();
-		this.isDestroyed = true;
 		this.resources.destroy();
 		this.resources = null;
+		this.objectsToDestroy.forEach(obj => obj.destroy());
+		this.isDestroyed = true;
 	}
 
 	/**

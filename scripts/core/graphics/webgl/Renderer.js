@@ -3,6 +3,7 @@ export default class Renderer {
 	 * @type {WebGLRenderingContext}
 	 */
 	static gl;
+	static maxTextureSlots;
 
 	/**
 	 * @param {HTMLCanvasElement} canvas
@@ -12,6 +13,8 @@ export default class Renderer {
 		if (this.gl == null) {
 			throw new Error('cannot use webgl.');
 		}
+
+		this.maxTextureSlots = this.gl.getParameter(this.gl.MAX_TEXTURE_IMAGE_UNITS);
 	}
 
 	static destroy() {

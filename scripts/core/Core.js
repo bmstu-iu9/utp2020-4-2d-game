@@ -14,6 +14,7 @@ export { default as Camera } from './graphics/Camera.js';
 export { default as CameraComponent } from './graphics/CameraComponent.js';
 export { default as Renderer } from './graphics/webgl/Renderer.js';
 export { default as RendererComponent } from './graphics/RendererComponent.js';
+export { default as Texture } from './graphics/webgl/Texture.js';
 export { default as Sprite } from './graphics/Sprite.js';
 export { default as SpriteRenderer } from './graphics/SpriteRenderer.js';
 export { default as BoxCollider} from './physics/BoxCollider.js';
