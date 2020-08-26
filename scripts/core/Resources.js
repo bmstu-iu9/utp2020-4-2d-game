@@ -1,6 +1,7 @@
 import Sound from './sounds/Sound.js';
 import Texture from './graphics/webgl/Texture.js';
 import Scene from './Scene.js';
+import Shader from './graphics/webgl/Shader.js';
 
 export default class Resources {
 	/**
@@ -13,13 +14,16 @@ export default class Resources {
 
 		this.scene = scene;
 		this.imageLoadQueue = {};
+		this.textureCreationQueue = {};
 		this.soundLoadQueue = {};
 		this.textLoadQueue = {};
-		this.textureCreationQueue = {};
+		this.shaderLoadQueue = {};
+		
 		this.loadedImages = {};
+		this.textures = {};
 		this.loadedSounds = {};
 		this.loadedTexts = {};
-		this.textures = {};
+		this.loadedShaders = {};
 		/**
 		 * @type {AudioContext}
 		 */
@@ -62,6 +66,53 @@ export default class Resources {
 		}
 
 		this.imageLoadQueue[id] = path;
+	}
+
+	/**
+	 * Создает текстуру после загрузки всех изображений.
+	 * 
+	 * @param {string} id            ID по которому можно будет получить текстуру после ее создания.
+	 * @param {string} imageId       ID изображения, из которого надо сделать текстуру.
+	 * @param {number} pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
+	 */
+	createTextureAfterLoad(id, imageId, pixelsPerUnit = 100, isPixelImage = true) {
+		if (typeof id !== 'string') {
+			throw new TypeError('invalid parameter "id". Expected a string.');
+		}
+
+		if (id.trim() === '') {
+			throw new TypeError('invalid parameter "id". Expected a non-empty string.');
+		}
+
+		if (this.textureCreationQueue[id] != null) {
+			throw new Error(`texture with id "${id}" is already in the queue.`);
+		}
+
+		if (this.textures[id] != null) {
+			throw new Error(`texture with id "${id}" is already loaded.`);
+		}
+
+		if (typeof imageId !== 'string') {
+			throw new TypeError('invalid parameter "imageId". Expected a string.');
+		}
+
+		if (imageId.trim() === '') {
+			throw new TypeError('invalid parameter "imageId". Expected a non-empty string.');
+		}
+
+		if (typeof pixelsPerUnit !== 'number') {
+			throw new TypeError('invalid parameter "pixelsPerUnit". Expected a number.');
+		}
+
+		if (pixelsPerUnit < 1) {
+			throw new Error('invalid parameter "pixelsPerUnit". Value must be greater than 0.');
+		}
+
+		if (typeof isPixelImage !== 'boolean') {
+			throw new TypeError('invalid parameter "isPixelImage". Expected a boolean value.');
+		}
+
+		this.textureCreationQueue[id] = {imageId, pixelsPerUnit, isPixelImage};
 	}
 
 	/**
@@ -127,13 +178,13 @@ export default class Resources {
 	}
 
 	/**
-	 * Создает текстуру после загрузки всех изображений.
+	 * Добавляет шейдер в очередь загрузки.
 	 * 
-	 * @param {string} id            ID по которому можно будет получить текстуру после ее создания.
-	 * @param {string} imageId       ID изображения, из которого надо сделать текстуру.
-	 * @param {number} pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
+	 * @param {string} id   ID по которому можно будет получить шейдер после загрузки.
+	 * @param {string} path Путь к текстовому файлу, в котором содержится код шейдера.
 	 */
-	createTextureAfterLoad(id, imageId, pixelsPerUnit = 100, isPixelImage = true) {
+	addShaderInLoadQueue(id, path) {
+		this.throwIfDestroyed();
 		if (typeof id !== 'string') {
 			throw new TypeError('invalid parameter "id". Expected a string.');
 		}
@@ -142,35 +193,19 @@ export default class Resources {
 			throw new TypeError('invalid parameter "id". Expected a non-empty string.');
 		}
 
-		if (this.textureCreationQueue[id] != null) {
-			throw new Error(`texture with id "${id}" is already in the queue.`);
+		if (typeof path !== 'string') {
+			throw new TypeError('invalid parameter "path". Expected a string.');
 		}
 
-		if (this.textures[id] != null) {
-			throw new Error(`texture with id "${id}" is already loaded.`);
+		if (this.shaderLoadQueue[id] != null) {
+			throw new Error(`shader with id "${id}" is already in the queue.`);
 		}
 
-		if (typeof imageId !== 'string') {
-			throw new TypeError('invalid parameter "imageId". Expected a string.');
+		if (this.loadedShaders[id] != null) {
+			throw new Error(`shader with id "${id}" is already loaded.`);
 		}
 
-		if (imageId.trim() === '') {
-			throw new TypeError('invalid parameter "imageId". Expected a non-empty string.');
-		}
-
-		if (typeof pixelsPerUnit !== 'number') {
-			throw new TypeError('invalid parameter "pixelsPerUnit". Expected a number.');
-		}
-
-		if (pixelsPerUnit < 1) {
-			throw new Error('invalid parameter "pixelsPerUnit". Value must be greater than 0.');
-		}
-
-		if (typeof isPixelImage !== 'boolean') {
-			throw new TypeError('invalid parameter "isPixelImage". Expected a boolean value.');
-		}
-
-		this.textureCreationQueue[id] = {imageId, pixelsPerUnit, isPixelImage};
+		this.shaderLoadQueue[id] = path;
 	}
 
 	/**
@@ -184,15 +219,22 @@ export default class Resources {
 			throw new TypeError('invalid parameter "onload". Expected a function.');
 		}
 
-		const imageEntries = Object.entries(this.imageLoadQueue);
+		const images = Object.entries(this.imageLoadQueue);
 		this.imageLoadQueue = {};
-		const soundEntries = Object.entries(this.soundLoadQueue);
-		this.soundLoadQueue = {};
-		const textEntries = Object.entries(this.textLoadQueue);
-		this.textLoadQueue = {};
-		const textureEntries = Object.entries(this.textureCreationQueue);
+
+		const textures = Object.entries(this.textureCreationQueue);
 		this.textureCreationQueue = {};
-		let count = imageEntries.length + soundEntries.length + textEntries.length + textureEntries.length;
+
+		const sounds = Object.entries(this.soundLoadQueue);
+		this.soundLoadQueue = {};
+
+		const texts = Object.entries(this.textLoadQueue);
+		this.textLoadQueue = {};
+
+		const shaders = Object.entries(this.shaderLoadQueue);
+		this.shaderLoadQueue = {};
+		
+		let count = images.length + textures.length + sounds.length + texts.length + shaders.length;
 		if (count === 0) {
 			if (onload != null) {
 				onload();
@@ -200,20 +242,20 @@ export default class Resources {
 			return;
 		}
 
-		let imageCount = imageEntries.length;
-		imageEntries.forEach(([id, path]) => {
+		let imageCount = images.length;
+		images.forEach(([id, path]) => {
 			const image = new Image();
 			image.onload = () => {
 				count--;
 				imageCount--;
 				this.loadedImages[id] = image;
 				if (imageCount === 0) {
-					if (textureEntries.length !== 0) {
-						textureEntries.forEach(([id, properties]) => {
+					if (textures.length !== 0) {
+						textures.forEach(([id, properties]) => {
 							if (this.loadedImages[properties.imageId] == null) {
 								throw new Error(`cannot create texture with id "${id}". Reason: image with id "${properties.imageId}" was not found.`);
 							}
-				
+
 							count--;
 							this.textures[id] = new Texture(
 								this.scene,
@@ -238,7 +280,7 @@ export default class Resources {
 			image.src = path;
 		});
 
-		soundEntries.forEach(([id, path]) => {
+		sounds.forEach(([id, path]) => {
 			fetch(path)
 				.then(response => response.arrayBuffer())
 				.then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
@@ -251,11 +293,23 @@ export default class Resources {
 				});
 		});
 
-		textEntries.forEach(([id, path]) => {
+		texts.forEach(([id, path]) => {
 			fetch(path)
 				.then(response => response.text())
 				.then(text => {
 					this.loadedTexts[id] = text;
+					count--;
+					if (count === 0 && onload != null) {
+						onload();
+					}
+				});
+		});
+
+		shaders.forEach(([id, path]) => {
+			fetch(path)
+				.then(response => response.text())
+				.then(text => {
+					this.loadedShaders[id] = Shader.fromText(this.scene, id, text);
 					count--;
 					if (count === 0 && onload != null) {
 						onload();
@@ -304,16 +358,29 @@ export default class Resources {
 		return this.textures[id];
 	}
 
+	/**
+	 * @param {string} id ID шейдера.
+	 * 
+	 * @return {Sound} Возвращает шейдер по переданному id.
+	 */
+	getShader(id) {
+		this.throwIfDestroyed();
+		return this.loadedShaders[id];
+	}
+
 	destroy() {
 		this.throwIfDestroyed();
 		delete this.imageLoadQueue;
+		delete this.textureCreationQueue;
 		delete this.soundLoadQueue;
 		delete this.textLoadQueue;
-		delete this.textureCreationQueue;
+		delete this.shaderLoadQueue;
+
 		delete this.loadedImages;
+		delete this.textures;
 		delete this.loadedSounds;
 		delete this.loadedTexts;
-		delete this.textures;
+		delete this.loadedShaders;
 		this.isDestroyed = true;
 	}
 }
