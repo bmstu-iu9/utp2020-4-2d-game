@@ -83,7 +83,7 @@ export default class Shader {
 	}
 
 	throwIfDestroyed() {
-		if (this.isDestroyed) {
+		if (this.programId == null) {
 			throw new Error('shader is destroyed.');
 		}
 	}
