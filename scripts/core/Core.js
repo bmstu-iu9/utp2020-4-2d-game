@@ -13,6 +13,7 @@ export { default as Scene } from './Scene.js';
 export { default as Camera } from './graphics/Camera.js';
 export { default as CameraComponent } from './graphics/CameraComponent.js';
 export { default as Attribute } from './graphics/webgl/Attribute.js';
+export { default as Attributes } from './graphics/webgl/Attributes.js';
 export { default as IndexBuffer } from './graphics/webgl/IndexBuffer.js';
 export { default as Renderer } from './graphics/webgl/Renderer.js';
 export { default as RendererComponent } from './graphics/RendererComponent.js';
