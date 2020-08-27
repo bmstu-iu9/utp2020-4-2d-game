@@ -15,6 +15,7 @@ export { default as CameraComponent } from './graphics/CameraComponent.js';
 export { default as Attribute } from './graphics/webgl/Attribute.js';
 export { default as Attributes } from './graphics/webgl/Attributes.js';
 export { default as IndexBuffer } from './graphics/webgl/IndexBuffer.js';
+export { default as VertexBuffer } from './graphics/webgl/VertexBuffer.js';
 export { default as Renderer } from './graphics/webgl/Renderer.js';
 export { default as RendererComponent } from './graphics/RendererComponent.js';
 export { default as Texture } from './graphics/webgl/Texture.js';
