@@ -134,11 +134,12 @@ export default class ParticleSystem extends Renderer {
 				(particle.colorEnd.rgba[0] * (1 - life) + particle.colorBegin.rgba[0] * life) * 255,
 				(particle.colorEnd.rgba[1] * (1 - life) + particle.colorBegin.rgba[1] * life) * 255,
 				(particle.colorEnd.rgba[2] * (1 - life) + particle.colorBegin.rgba[2] * life) * 255,
+				(particle.colorEnd.rgba[3] * (1 - life) + particle.colorBegin.rgba[3] * life) * 255,
 			);
 			let size = particle.sizeEnd * (1 - life) + particle.sizeBegin * life;
 			context.save();
-			context.globalAlpha *= life;
-			context.fillStyle = color.rgbaString();
+			context.fillStyle = color.rgbString();
+			context.globalAlpha = color.rgba[3];
 			context.translate(
 				offset.x + particle.position.x * 100 + this.transform.position.x * 100,
 				offset.y - particle.position.y * 100 - this.transform.position.y * 100
