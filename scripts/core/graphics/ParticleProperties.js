@@ -8,8 +8,8 @@ export default class ParticleProperties {
 	 * @param {Vector2d} settings.positionVariation        Допустимое изменение начальной позиции частицы.
 	 * @param {Vector2d} settings.velocity                 Начальная скорость частицы.
 	 * @param {Vector2d} settings.velocityVariation        Допустимое изменение начальной скорости частицы.
-	 * @param {number}   settings.rotation                 Начальный поворот  размер частицы.
-	 * @param {number}   settings.rotationVariation        Допустимое изменение начальной угловой скорости частицы.
+	 * @param {number}   settings.rotation                 Начальный поворот частицы.
+	 * @param {number}   settings.rotationVariation        Допустимое изменение начального поворота частицы.
 	 * @param {number}   settings.angularVelocity          Начальная угловая скорость частицы.
 	 * @param {number}   settings.angularVelocityVariation Допустимое изменение начальной угловой скорости частицы.
 	 * @param {Color}    settings.colorBegin               Начальный цвет частицы.
