@@ -340,7 +340,7 @@ export default class Shader {
 		for (let i = 0; i < lines.length; i++) {
 			let line = lines[i];
 			if (line.startsWith('#type')) {
-				const elements = line.split(/\s+/, 2);
+				const elements = line.split(/\s+/);
 				if (elements.length !== 2) {
 					throw new ShaderError(name, `Unexpected instruction: ${line}. Expected shader type. Line: ${i + 1}. Column: 0.`);
 				}
@@ -352,6 +352,8 @@ export default class Shader {
 
 					usedStates |= states.vertex;
 					state = states.vertex;
+					vertexSource += '\n';
+					fragmentSource += '\n';
 				} else if (elements[1] === 'fragment') {
 					if ((usedStates & states.fragment) !== 0) {
 						throw new ShaderError(name, `Unexpected instruction: ${line}. Fragment shader already defined. Line: ${i + 1}. Column: 0.`);
@@ -359,12 +361,18 @@ export default class Shader {
 
 					usedStates |= states.fragment;
 					state = states.fragment;
+					vertexSource += '\n';
+					let getTextureFunction = 'precision mediump float;';
+					getTextureFunction += `uniform sampler2D u_Textures[${Renderer.maxTextureSlots}];`;
+					getTextureFunction += 'vec4 core_GetTextureColor(float texIndex, vec2 texCoords) {';
+					for (let i = 0; i < Renderer.maxTextureSlots; i++) {
+						getTextureFunction += `if (texIndex == ${i}.0) { return texture2D(u_Textures[${i}], texCoords); } else `;
+					}
+					getTextureFunction += '{ return vec4(0.0, 0.0, 0.0, 0.0); } }\n';
+					fragmentSource += getTextureFunction;
 				} else {
 					throw new ShaderError(name, `Unexpected instruction: ${line}. Wrong shader type. Line: ${i + 1}. Column: 0.`);
 				}
-
-				vertexSource += '\n';
-				fragmentSource += '\n';
 			} else {
 				switch (state) {
 					case states.vertex:

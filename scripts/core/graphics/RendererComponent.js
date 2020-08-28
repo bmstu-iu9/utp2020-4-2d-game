@@ -32,10 +32,9 @@ export default class RendererComponent extends GameComponent {
 	/**
 	 * Что-то отрисовывается (зависит от реализации).
 	 * 
-	 * @param {Camera}                   camera  Камера, в которой будет происходить отрисовка.
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
+	 * @param {Camera} camera Камера, в которой будет происходить отрисовка.
 	 */
-	draw(camera, context) {
+	draw(camera) {
 		throw new Error('not implemented.');
 	}
 }

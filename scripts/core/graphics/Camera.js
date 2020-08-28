@@ -6,6 +6,7 @@ import Component from '../Component.js';
 import Color from './Color.js';
 import Matrix3x3 from '../mathematics/Matrix3x3.js';
 import CameraTransform from '../mathematics/CameraTransform.js';
+import Renderer from './webgl/Renderer.js';
 
 export default class Camera extends ComponentObject {
 	/**
@@ -185,29 +186,16 @@ export default class Camera extends ComponentObject {
 	/**
 	 * Отрисовывает объекты, которые попадают в данную камеру.
 	 * 
-	 * @param {RendererComponent[]}      renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
-	 * @param {CanvasRenderingContext2D} context   Контекст, в котором будет происходить отрисовка.
+	 * @param {RendererComponent[]} renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
 	 */
-	draw(renderers, context) {
+	draw(renderers) {
 		this.throwIfNotInitialized();
 		this.throwIfDestroyed();
-		context.imageSmoothingEnabled = false;
-		context.mozImageSmoothingEnabled = false;
-		context.webkitImageSmoothingEnabled = false;
-		const size = Screen.getSize();
-		context.fillStyle = this.clearColor.rgbString();
-		context.fillRect(0, 0, size.x, size.y);
-		
-		context.translate(size.x / 2, size.y / 2);
-		context.scale(this.transform.scale.x, this.transform.scale.y);
-		context.rotate(-this.transform.rotation);
-		context.translate(-size.x / 2, -size.y / 2);
+		Renderer.clear(0, 0, Screen.getSize(), this.clearColor);
+		Renderer.begin(this);
 
-		renderers.forEach(renderer => renderer.draw(this, context));
+		renderers.forEach(renderer => renderer.draw(this));
 
-		context.translate(size.x / 2, size.y / 2);
-		context.rotate(this.transform.rotation);
-		context.scale(1 / this.transform.scale.x, 1 / this.transform.scale.y);
-		context.translate(-size.x / 2, -size.y / 2);
+		Renderer.end();
 	}
 }

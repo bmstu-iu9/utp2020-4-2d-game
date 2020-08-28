@@ -107,8 +107,8 @@ export default class Matrix3x3 extends Float32Array {
 		const cos = Math.cos(angle);
 		const sin = Math.sin(angle);
 		result[0] = cos;
-		result[1] = sin;
-		result[3] = -sin;
+		result[1] = -sin;
+		result[3] = sin;
 		result[4] = cos;
 		result[8] = 1;
 		if (outMatrix != null) {
@@ -154,7 +154,7 @@ export default class Matrix3x3 extends Float32Array {
 	 */
 	static ofTranslationRotationScaling(translation, angle, scaling, outMatrix = null) {
 		const buffer = new Matrix3x3();
-		outMatrix = Matrix3x3.ofTranslation(translation.x, -translation.y, outMatrix);
+		outMatrix = Matrix3x3.ofTranslation(translation.x, translation.y, outMatrix);
 		outMatrix.multiply(Matrix3x3.ofRotation(angle, buffer), outMatrix);
 		return outMatrix.multiply(Matrix3x3.ofScaling(scaling.x, scaling.y, buffer), outMatrix);
 	}

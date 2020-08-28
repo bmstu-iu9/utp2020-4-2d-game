@@ -56,6 +56,7 @@ export default class CameraTransform extends Transform {
 			 */
 			this.worldMatrix = translation.multiply(Matrix3x3.ofRotation(this.rotation), this.worldMatrix);
 			this.camera.updateViewProjectionMatrix();
+			this.changeId = {};
 		}
 	}
 

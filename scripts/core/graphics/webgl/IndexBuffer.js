@@ -2,7 +2,7 @@ import Renderer from './Renderer.js';
 
 export default class IndexBuffer {
 	/**
-	 * @param {Uint8Array | Uint16Array | Uint32Array} indices Индексы вершин.
+	 * @param {Uint8Array | Uint16Array} indices Индексы вершин.
 	 */
 	constructor(indices) {
 		const gl = Renderer.gl;
@@ -10,10 +10,8 @@ export default class IndexBuffer {
 			this.type = gl.UNSIGNED_BYTE;
 		} else if (indices instanceof Uint16Array) {
 			this.type = gl.UNSIGNED_SHORT;
-		} else if (indices instanceof Uint32Array) {
-			this.type = gl.UNSIGNED_INT;
 		} else {
-			throw new TypeError('invalid parameter "indices". Expected an instance of Uint8Array or Uint16Array or Uint32Array class.');
+			throw new TypeError('invalid parameter "indices". Expected an instance of Uint8Array or Uint16Array class.');
 		}
 
 		this.bufferId = gl.createBuffer();

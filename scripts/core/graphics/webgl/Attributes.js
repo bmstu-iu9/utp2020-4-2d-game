@@ -11,6 +11,7 @@ export default class Attributes {
 		this.storage = [];
 		let offset = 0;
 		this.stride = 0;
+		this.size = 0;
 		for (let attribute of attributes) {
 			if (typeof attribute !== 'object') {
 				throw new TypeError('invalid attribute. Expected an object.');
@@ -25,6 +26,8 @@ export default class Attributes {
 			}
 	
 			const byteSize = Attribute.TypeToByteSize(attribute.type);
+			const size = Attribute.TypeToSize(attribute.type);
+			this.size += size;
 			this.stride += byteSize;
 			this.storage.push(new Attribute(attribute.name, attribute.type, offset));
 			offset += byteSize;

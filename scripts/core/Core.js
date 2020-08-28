@@ -1,3 +1,4 @@
+export { default as Scene } from './Scene.js';
 export { default as Vector2d } from './mathematics/Vector2d.js';
 export { default as Matrix2x2 } from './mathematics/Matrix2x2.js';
 export { default as Matrix3x3 } from './mathematics/Matrix3x3.js';
@@ -9,7 +10,6 @@ export { default as SpriteSheet } from './graphics/SpriteSheet.js';
 export { default as Color } from './graphics/Color.js';
 export { default as Rect } from './graphics/Rect.js';
 export { default as Screen } from './graphics/Screen.js';
-export { default as Scene } from './Scene.js';
 export { default as Camera } from './graphics/Camera.js';
 export { default as CameraComponent } from './graphics/CameraComponent.js';
 export { default as Attribute } from './graphics/webgl/Attribute.js';

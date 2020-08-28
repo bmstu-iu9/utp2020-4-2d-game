@@ -15,6 +15,7 @@ export default class Transform {
 		 * @type {Matrix3x3}
 		 */
 		this.worldMatrix = null;
+		this.changeId = {};
 	}
 
 	/**

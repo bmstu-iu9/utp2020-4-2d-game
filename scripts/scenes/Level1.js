@@ -273,8 +273,8 @@ class Follower extends CORE.CameraComponent {
 		if (position.y < this.floor) {
 			position = new CORE.Vector2d(position.x, this.floor);
 		}
-		if (position.x < -0.8) {
-			position = new CORE.Vector2d(-0.8, position.y);
+		if (position.x < -0.7) {
+			position = new CORE.Vector2d(-0.7, position.y);
 		}
 		this.transform.setPosition(position);
 	}
@@ -287,6 +287,7 @@ class Collector extends CORE.GameComponent {
 	}
 
 	onTriggerEnter(collider) {
+		console.log('test');
 		if (collider.gameObject.name === 'coin') {
 			this.coinsCount++;
 			console.log('coins: ' + this.coinsCount + ' / 5');
@@ -331,26 +332,30 @@ class Mover extends CORE.GameComponent {
 
 export default class Level1 extends CORE.Scene {
 	onInitialize() {
-		this.resources.addImageInLoadQueue('hero', 'resources/hero.png');
-		this.resources.addImageInLoadQueue('platform', 'resources/platform.png');
-		this.resources.addImageInLoadQueue('enemy', 'resources/platform.png');
-		this.resources.addImageInLoadQueue('ladder', 'resources/ladder.png');
-		this.resources.addImageInLoadQueue('house', 'resources/house.png');
-		this.resources.addImageInLoadQueue('ball', 'resources/ball.png');
-		this.resources.addImageInLoadQueue('coin', 'resources/coin.png');
-		this.resources.addImageInLoadQueue('spike', 'resources/spike.png');
-		this.resources.addImageInLoadQueue('rail', 'resources/rail.png');
+		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
+		this.resources.addTextureInLoadQueue('platform', 'resources/platform.png');
+		this.resources.addTextureInLoadQueue('enemy', 'resources/platform.png');
+		this.resources.addTextureInLoadQueue('ladder', 'resources/ladder.png');
+		this.resources.addTextureInLoadQueue('house', 'resources/house.png');
+		this.resources.addTextureInLoadQueue('ball', 'resources/ball.png');
+		this.resources.addTextureInLoadQueue('coin', 'resources/coin.png');
+		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png', 31);
+		this.resources.addTextureInLoadQueue('rail', 'resources/rail.png');
 		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
 	}
 
-	createPlatform(position, scale) {
+	createPlatform(position, scale, color = CORE.Color.white) {
 		this.addObject(new CORE.GameObject({
 			name: 'platform',
 			isStatic: true,
 			scale: scale,
 			position: position,
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('platform')), -3),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('platform')),
+					color: color,
+					layer: -3,
+				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0.6),
 				}),
@@ -372,7 +377,10 @@ export default class Level1 extends CORE.Scene {
 					name: 'ladder-sprite',
 					position: new CORE.Vector2d(0, -0.3),
 					components: [
-						new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('ladder')), -1),
+						new CORE.SpriteRenderer({
+							sprite: new CORE.Sprite(this.resources.getTexture('ladder')),
+							layer: -1,
+						}),
 					]
 				})
 			]
@@ -389,7 +397,10 @@ export default class Level1 extends CORE.Scene {
 					name: 'ladder-sprite',
 					position: new CORE.Vector2d(0, -0.3),
 					components: [
-						new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('ladder')), -1),
+						new CORE.SpriteRenderer({
+							sprite: new CORE.Sprite(this.resources.getTexture('ladder')),
+							layer: -1,
+						}),
 					]
 				})
 			]
@@ -411,7 +422,10 @@ export default class Level1 extends CORE.Scene {
 			scale: new CORE.Vector2d(15, 1),
 			isStatic: true,
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('platform')), 2),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('platform')),
+					layer: 2,
+				}),
 			],
 		}));
 		this.createCoin(new CORE.Vector2d(32, 8.5));
@@ -421,7 +435,10 @@ export default class Level1 extends CORE.Scene {
 			scale: new CORE.Vector2d(15, 15),
 			position: new CORE.Vector2d(30, 0),
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('house')), -4),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('house')),
+					layer: -4,
+				}),
 			],
 		}));
 	}
@@ -432,7 +449,10 @@ export default class Level1 extends CORE.Scene {
 			isStatic: true,
 			position: position,
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('coin')), 2),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('coin')),
+					layer: 2,
+				}),
 				new CORE.CircleCollider(0.5),
 			],
 		}));
@@ -461,36 +481,38 @@ export default class Level1 extends CORE.Scene {
 			rotation: rotation,
 			scale: new CORE.Vector2d(size, 1),
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('rail')), 2),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('rail')),
+					layer: 2,
+				}),
 			],
 		}));
 		const min = -0.45;
 		const max = 0.45;
-		let left = a.transform.transformPoint(new CORE.Vector2d(min, 0.06));
-		left = new CORE.Vector2d(left.x, -left.y);
-		let right = a.transform.transformPoint(new CORE.Vector2d(max, 0.06));
-		right = new CORE.Vector2d(right.x, -right.y);
+		let left = a.transform.transformPoint(new CORE.Vector2d(min, -0.04));
+		let right = a.transform.transformPoint(new CORE.Vector2d(max, -0.04));
 		let spawn = null;
 		if (isRandom) {
-			let spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), 0.06));
-			spawn = new CORE.Vector2d(spawn.x, -spawn.y);
+			spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), -0.04));
 		} else {
-			spawn = a.transform.transformPoint(new CORE.Vector2d(0, 0.06));
-			spawn = new CORE.Vector2d(spawn.x, -spawn.y);
+			spawn = a.transform.transformPoint(new CORE.Vector2d(0, -0.04));
 		}
 		this.addObject(new CORE.GameObject({
 			name: 'spike',
-			scale: new CORE.Vector2d(2, 2),
+			scale: new CORE.Vector2d(0.65, 0.65),
 			rotation: rotation,
 			position: spawn,
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('spike')), 2),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('spike')),
+					layer: 3,
+				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
 					isKinematic: true,
 				}),
 				new Mover(speed, left, right),
-				new CORE.BoxCollider(0.31 / 2, 0.48),
+				new CORE.BoxCollider(1, 2),
 			],
 		}));
 	}
@@ -501,7 +523,10 @@ export default class Level1 extends CORE.Scene {
 				name: 'ball',
 				position: new CORE.Vector2d(position.x + (i * 2), position.y),
 				components: [
-					new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('ball')), 3),
+					new CORE.SpriteRenderer({
+						sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+						layer: 3,
+					}),
 					new CORE.CircleCollider(0.5),
 					new CORE.RigidBody({
 						material: new CORE.Material(0.5, 0.5),
@@ -514,7 +539,10 @@ export default class Level1 extends CORE.Scene {
 			name: 'ball',
 			position: position.subtract(new CORE.Vector2d(2, 0)),
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('ball')), 3),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+					layer: 3,
+				}),
 				new CORE.CircleCollider(0.5),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.1, 0.5),
@@ -528,9 +556,12 @@ export default class Level1 extends CORE.Scene {
 		for (let i = -15; i < 15; i++) {
 			this.addObject(new CORE.GameObject({
 				name: 'ball',
-				position: new CORE.Vector2d(this.hero.transform.position.x + (i * 2), 10),
+				position: new CORE.Vector2d(this.hero.transform.position.x + i, this.hero.transform.position.y + 5),
 				components: [
-					new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('ball')), 3),
+					new CORE.SpriteRenderer({
+						sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+						layer: 3,
+					}),
 					new CORE.CircleCollider(0.5),
 					new CORE.RigidBody({
 						material: new CORE.Material(0.5, 0.5),
@@ -547,9 +578,12 @@ export default class Level1 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(1, 1),
-			position: new CORE.Vector2d(0, -2),
+			position: new CORE.Vector2d(105, 4),
 			components: [
-				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('hero'))),
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(this.resources.getTexture('hero')),
+					color: new CORE.Color(255, 255, 255, 140),
+				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
 					gravityScale: 3,
@@ -585,12 +619,13 @@ export default class Level1 extends CORE.Scene {
 		this.createRailSpike(3, new CORE.Vector2d(73, 3.5), 5)
 		this.createPlatform(new CORE.Vector2d(87, -2), new CORE.Vector2d(10, 10));
 		this.createCoin(new CORE.Vector2d(107, 5));
-		this.createPlatform(new CORE.Vector2d(106, -2), new CORE.Vector2d(20, 10));
+		this.createPlatform(new CORE.Vector2d(106, -2), new CORE.Vector2d(20, 10), new CORE.Color(150, 255, 150));
 		this.createHouse();
 		this.addObject(new CORE.Camera({
 			name: 'camera',
 			width: 1280,
 			height: 720,
+			zoom: 4,
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
 				new Follower(this.hero),

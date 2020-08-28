@@ -85,7 +85,7 @@ export default class HierarchyTransform extends Transform {
 			this.rotation = this.localRotation;
 			this.scale = this.localScale;
 		} else {
-			this.position = new Vector2d(this.worldMatrix[6], -this.worldMatrix[7]);
+			this.position = new Vector2d(this.worldMatrix[6], this.worldMatrix[7]);
 			this.rotation = this.clampAngle(Math.atan2(this.worldMatrix[1], this.worldMatrix[0]));
 			let signX = Math.sign(this.localScale.x * parent.transform.scale.x);
 			let signY = Math.sign(this.localScale.y * parent.transform.scale.y);
@@ -97,6 +97,7 @@ export default class HierarchyTransform extends Transform {
 		this.angle = Maths.toDegrees(this.rotation);
 		this.hierarchyObject.children.forEach(child => child.transform.updateMatrices(true));
 		this.isDirty = false;
+		this.changeId = {};
 	}
 
 	/**

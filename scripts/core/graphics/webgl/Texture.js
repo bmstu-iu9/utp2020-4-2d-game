@@ -1,5 +1,6 @@
 import Renderer from './Renderer.js';
 import Resources from '../../Resources.js';
+import Matrix3x3 from '../../mathematics/Matrix3x3.js';
 
 export default class Texture {
 	static maxWidth = 4096;
@@ -40,7 +41,8 @@ export default class Texture {
 			throw new TypeError('invalid parameter "isPixelImage". Expected a boolean value.');
 		}
 
-		this.image = image;
+		this.width = image.width;
+		this.height = image.height;
 		this.pixelsPerUnit = pixelsPerUnit;
 
 		const gl = Renderer.gl;
@@ -58,29 +60,12 @@ export default class Texture {
 	}
 
 	/**
-	 * Устанавливает количество пикселей текстуры на одну условную единицу камеры.
-	 * 
-	 * @param {number} value Новое значение.
-	 */
-	setPixelsPerUnit(value) {
-		if (typeof value != 'number') {
-			throw new TypeError('invalid parameter "value". Expected a number.');
-		}
-
-		if (value < 1) {
-			throw new Error('invalid parameter "value". Value must be greater than 0.');
-		}
-
-		this.pixelsPerUnit = value;
-	}
-
-	/**
 	 * Привязывает текстуру к переданному слоту.
 	 * 
 	 * @param {number} slot Слот, к которому привяжется текстура.
 	 */
 	bind(slot) {
-		if (this.texture == null) {
+		if (this.textureId == null) {
 			throw new Error('texture is destroyed.');
 		}
 

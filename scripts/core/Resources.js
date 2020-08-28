@@ -8,6 +8,7 @@ export default class Resources {
 		this.objectsToDestroy = new Set();
 
 		this.imageLoadQueue = {};
+		this.textureLoadQueue = {};
 		this.textureCreationQueue = {};
 		this.soundLoadQueue = {};
 		this.textLoadQueue = {};
@@ -63,19 +64,74 @@ export default class Resources {
 	}
 
 	/**
-	 * Создает текстуру после загрузки всех изображений.
+	 * Загружает изображение и делает из него текстуру.
 	 * 
 	 * @param {string} id            ID по которому можно будет получить текстуру после ее создания.
-	 * @param {string} imageId       ID изображения, из которого надо сделать текстуру.
+	 * @param {string} path          Путь к изображению, которое будет использоваться в текстуре.
 	 * @param {number} pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
+	 * @param {boolean} isPixelImage Если указано true, то для масштабирования текстуры используется алгоритм NEAREST, иначе LINEAR.
 	 */
-	createTextureAfterLoad(id, imageId, pixelsPerUnit = 100, isPixelImage = true) {
+	addTextureInLoadQueue(id, path, pixelsPerUnit = 100, isPixelImage = true) {
+		this.throwIfDestroyed();
 		if (typeof id !== 'string') {
 			throw new TypeError('invalid parameter "id". Expected a string.');
 		}
 
 		if (id.trim() === '') {
 			throw new TypeError('invalid parameter "id". Expected a non-empty string.');
+		}
+
+		if (this.textureLoadQueue[id] != null) {
+			throw new Error(`texture with id "${id}" is already in the queue.`);
+		}
+
+		if (this.textureCreationQueue[id] != null) {
+			throw new Error(`texture with id "${id}" is already in the queue.`);
+		}
+
+		if (this.textures[id] != null) {
+			throw new Error(`texture with id "${id}" is already loaded.`);
+		}
+
+		if (typeof path !== 'string') {
+			throw new TypeError('invalid parameter "path". Expected a string.');
+		}
+
+		if (typeof pixelsPerUnit !== 'number') {
+			throw new TypeError('invalid parameter "pixelsPerUnit". Expected a number.');
+		}
+
+		if (pixelsPerUnit < 1) {
+			throw new Error('invalid parameter "pixelsPerUnit". Value must be greater than 0.');
+		}
+
+		if (typeof isPixelImage !== 'boolean') {
+			throw new TypeError('invalid parameter "isPixelImage". Expected a boolean value.');
+		}
+
+		this.textureLoadQueue[id] = {path, pixelsPerUnit, isPixelImage};
+	}
+
+	/**
+	 * Создает текстуру после загрузки всех изображений.
+	 * 
+	 * @param {string}  id            ID по которому можно будет получить текстуру после ее создания.
+	 * @param {string}  imageId       ID изображения, из которого надо сделать текстуру.
+	 * @param {number}  pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
+	 * @param {boolean} isPixelImage  Если указано true, то для масштабирования текстуры используется алгоритм NEAREST, иначе LINEAR.
+	 */
+	createTextureAfterLoad(id, imageId, pixelsPerUnit = 100, isPixelImage = true) {
+		this.throwIfDestroyed();
+		if (typeof id !== 'string') {
+			throw new TypeError('invalid parameter "id". Expected a string.');
+		}
+
+		if (id.trim() === '') {
+			throw new TypeError('invalid parameter "id". Expected a non-empty string.');
+		}
+
+		if (this.textureLoadQueue[id] != null) {
+			throw new Error(`texture with id "${id}" is already in the queue.`);
 		}
 
 		if (this.textureCreationQueue[id] != null) {
@@ -219,6 +275,9 @@ export default class Resources {
 		const textures = Object.entries(this.textureCreationQueue);
 		this.textureCreationQueue = {};
 
+		const texturesToLoad = Object.entries(this.textureLoadQueue);
+		this.textLoadQueue = {};
+
 		const sounds = Object.entries(this.soundLoadQueue);
 		this.soundLoadQueue = {};
 
@@ -228,7 +287,8 @@ export default class Resources {
 		const shaders = Object.entries(this.shaderLoadQueue);
 		this.shaderLoadQueue = {};
 		
-		let count = images.length + textures.length + sounds.length + texts.length + shaders.length;
+		let count = images.length + sounds.length + texts.length + shaders.length;
+		count += textures.length + texturesToLoad.length;
 		if (count === 0) {
 			if (onload != null) {
 				onload();
@@ -272,6 +332,28 @@ export default class Resources {
 			}
 			
 			image.src = path;
+		});
+
+		texturesToLoad.forEach(([id, properties]) => {
+			const image = new Image();
+			image.onload = () => {
+				count--;
+				this.textures[id] = new Texture(
+					this,
+					image,
+					properties.pixelsPerUnit,
+					properties.isPixelImage,
+				);
+				if (count === 0 && onload != null) {
+					onload();
+				}
+			}
+
+			image.onerror = () => {
+				throw new Error(`cannot load texture with id "${id}" from "${properties.path}".`);
+			}
+
+			image.src = properties.path;
 		});
 
 		sounds.forEach(([id, path]) => {

@@ -32,13 +32,13 @@ export default class Game {
 	static resources;
 	static isActive = false;
 
-	static start(scene, canvasId, uiHostId) {
+	static start(scene, canvasId, uiHostId, maxQuadCount = 5000) {
 		Game.canvas = document.getElementById(canvasId);
 		Game.uiHost = document.getElementById(uiHostId);
 
 		Screen.initialize(Game.canvas);
 		Input.initialize();
-		Renderer.initialize(Game.canvas);
+		Renderer.initialize(Game.canvas, maxQuadCount);
 		Game.resources = new Resources();
 
 		Game.resources.addShaderInLoadQueue('texture', 'scripts/core/graphics/webgl/internal_shaders/Texture.glsl');
@@ -138,6 +138,13 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+		const start = performance.now();
+		Scene.current.draw();
+		if (Game.shouldStopLoop()) {
+			Game.lastFrameTime = performance.now();
+			return;
+		}
+		Game.drawTime = performance.now() - start;
 	
 		Game.lastFrameTime = performance.now();
 	

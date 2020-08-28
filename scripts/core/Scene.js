@@ -8,6 +8,7 @@ import Color from './graphics/Color.js';
 import Screen from './graphics/Screen.js';
 import HierarchyObject from './HierarchyObject.js';
 import UIObject from './ui/UIObject.js';
+import Renderer from './graphics/webgl/Renderer.js';
 
 export default class Scene {
 	constructor() {
@@ -304,11 +305,9 @@ export default class Scene {
 	}
 
 	/**
-	 * Отрисовывает игровые объекты в передаваемом контексте.
-	 * 
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
+	 * Отрисовывает все игровые объекты на сцене.
 	 */
-	draw(context) {
+	draw() {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
 		this.processBuffer();
@@ -325,11 +324,10 @@ export default class Scene {
 			}
 			this.camera.draw(renderers.sort((renderer, otherRenderer) => {
 				return renderer.layer - otherRenderer.layer;
-			}), context);
+			}));
 		} else {
 			const size = Screen.getSize();
-			context.fillStyle = Color.black.rgbString();
-			context.fillRect(0, 0, size.x, size.y);
+			Renderer.clear(0, 0, size, Color.black);
 		}
 	}
 
