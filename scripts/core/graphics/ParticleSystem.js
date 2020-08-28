@@ -61,6 +61,10 @@ export default class ParticleSystem extends Renderer {
 			throw new TypeError('invalid parameter "poolSize". Expected a number.');
 		}
 
+		if (poolSize <= 0) {
+			throw RangeError('invalid value "poolSize". Expected a number greater than 0.');
+		}
+
 		if (typeof lifeTime !== 'number') {
 			throw new TypeError('invalid parameter "lifeTime". Expected a number.');
 		}
@@ -71,19 +75,15 @@ export default class ParticleSystem extends Renderer {
 
 		super(layer);
 		this.poolSize = poolSize;
-		if (poolSize <= 0) {
-			this.firstElement = null;
-		} else {
-			this.firstElement = new ListElement();
-			let previous = this.firstElement;
-			for (let i = 1; i < poolSize; i++) {
-				const listElement = new ListElement(this.firstElement, previous);
-				previous.next = listElement;
-				previous = listElement;
-			}
-			this.firstElement.previous = previous;
+		this.firstElement = new ListElement();
+		let previous = this.firstElement;
+		for (let i = 1; i < poolSize; i++) {
+			const listElement = new ListElement(this.firstElement, previous);
+			previous.next = listElement;
+			previous = listElement;
 		}
-
+		
+		this.firstElement.previous = previous;
 		this.freeElement = this.firstElement;
 		this.particleProperties = particleProperties;
 		this.particlesPerFrame = particlesPerFrame;
@@ -93,11 +93,8 @@ export default class ParticleSystem extends Renderer {
 	}
 
 	onFixedUpdate(fixedDeltaTime) {
-		for (let element = this.firstElement, i = 0; i < this.poolSize; i++, element = element.next) {
+		for (let element = this.firstElement, i = 0; i < this.activeParticles; i++, element = element.next) {
 			const particle = element.particle;
-			if (!particle.active) {
-				break;
-			}
 
 			particle.lifeRemaining -= fixedDeltaTime;
 			if (particle.lifeRemaining <= 0) {
@@ -125,9 +122,6 @@ export default class ParticleSystem extends Renderer {
 		const first = this.freeElement.previous;
 		for (let element = first, i = 0; i < this.activeParticles; i++, element = element.previous) {
 			const particle = element.particle;
-			if (!particle.active){
-				break;
-			}
 
 			let life = particle.lifeRemaining / this.lifeTime;
 			let color = new Color(
@@ -159,6 +153,7 @@ export default class ParticleSystem extends Renderer {
 		if (this.freeElement === null || this.freeElement.particle.active) {
 			return;
 		}
+
 		const particle = this.freeElement.particle;
 		particle.active = true;
 		particle.position = new Vector2d(particleProperties.position.x, particleProperties.position.y);
