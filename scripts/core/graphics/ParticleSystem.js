@@ -71,7 +71,7 @@ export default class ParticleSystem extends Renderer {
 
 		super(layer);
 		this.poolSize = poolSize;
-		if (poolSize < 0) {
+		if (poolSize <= 0) {
 			this.firstElement = null;
 		} else {
 			this.firstElement = new ListElement();
