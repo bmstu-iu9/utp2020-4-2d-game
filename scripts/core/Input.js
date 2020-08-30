@@ -50,22 +50,14 @@ export default class Input {
 	 * @access private
 	 */
 	static handleKeyDown(event) {
-		if (event.defaultPrevented) {
-			return;
-		}
 		Input.unprocessedKeysDown.add(event.code.toUpperCase());
-		event.preventDefault();
 	}
 
 	/**
 	 * @access private
 	 */
 	static handleKeyUp(event) {
-		if (event.defaultPrevented) {
-			return;
-		}
 		Input.unprocessedKeysUp.add(event.code.toUpperCase());
-		event.preventDefault();
 	}
 
 	/**
@@ -88,43 +80,37 @@ export default class Input {
 	 * @access private
 	 */
 	static handleMouseDown(event) {
-		if (event.defaultPrevented) {
-			return;
-		}
 		if (Screen.canvas == null) {
 			Input.mousePosition = Vector2d.zero;
 			return;
 		}
+
 		const x = event.pageX - Screen.canvas.offsetLeft;
 		const y = event.pageY - Screen.canvas.offsetTop;
 		if (x < 0 || x > Screen.canvas.clientWidth || y < 0 || y > Screen.canvas.clientHeight) {
 			return;
 		}
+
 		Input.unprocessedMousePosition = new Vector2d(x, y);
 		Input.unprocessedMouseButtonsDown.add(event.button);
-		event.preventDefault();
 	}
 
 	/**
 	 * @access private
 	 */
 	static handleMouseUp(event) {
-		if (event.defaultPrevented) {
-			return;
-		}
 		if (Screen.canvas == null) {
 			Input.mousePosition = Vector2d.zero;
 			return;
 		}
+
 		Input.unprocessedMouseButtonsUp.add(event.button);
-		if (Input.mousePressedButtons.has(event.button)) {
-			event.preventDefault();
-		}
 		const x = event.pageX - Screen.canvas.offsetLeft;
 		const y = event.pageY - Screen.canvas.offsetTop;
 		if (x < 0 || x > Screen.canvas.clientWidth || y < 0 || y > Screen.canvas.clientHeight) {
 			return;
 		}
+
 		Input.unprocessedMousePosition = new Vector2d(x, y);
 	}
 
@@ -132,29 +118,28 @@ export default class Input {
 	 * @access private
 	 */
 	static handleMouseMove(event) {
-		if (event.defaultPrevented) {
-			return;
-		}
 		if (Screen.canvas == null) {
 			Input.mousePosition = Vector2d.zero;
 			return;
 		}
+
 		const x = event.pageX - Screen.canvas.offsetLeft;
 		const y = event.pageY - Screen.canvas.offsetTop;
 		if (x < 0 || x > Screen.canvas.clientWidth || y < 0 || y > Screen.canvas.clientHeight) {
 			return;
 		}
+
 		Input.unprocessedMousePosition = new Vector2d(x, y);
-		event.preventDefault();
 	}
 
 	/**
 	 * @access private
 	 */
 	static handleContextMenu(event) {
-		if (event.defaultPrevented || Screen.canvas == null) {
+		if (Screen.canvas == null) {
 			return;
 		}
+
 		if (Screen.getCanvasRect().contains(event.pageX, event.pageY)) {
 			event.preventDefault();
 		}
@@ -243,6 +228,7 @@ export default class Input {
 		if (typeof key !== 'string') {
 			throw new TypeError('invalid parameter "key". Expected a string.');
 		}
+
 		return Input.keysDown.has(key.toUpperCase());
 	}
 
@@ -255,6 +241,7 @@ export default class Input {
 		if (typeof key !== 'string') {
 			throw new TypeError('invalid parameter "key". Expected a string.');
 		}
+
 		return Input.pressedKeys.has(key.toUpperCase());
 	}
 
@@ -267,6 +254,7 @@ export default class Input {
 		if (typeof key !== 'string') {
 			throw new TypeError('invalid parameter "key". Expected a string.');
 		}
+
 		return Input.keysUp.has(key.toUpperCase());
 	}
 
@@ -279,6 +267,7 @@ export default class Input {
 		if (typeof button !== 'number') {
 			throw new TypeError('invalid parameter "button". Expected a number.');
 		}
+
 		return Input.mouseButtonsDown.has(button);
 	}
 
@@ -291,6 +280,7 @@ export default class Input {
 		if (typeof button !== 'number') {
 			throw new TypeError('invalid parameter "button". Expected a number.');
 		}
+
 		return Input.mousePressedButtons.has(button);
 	}
 
@@ -303,6 +293,7 @@ export default class Input {
 		if (typeof button !== 'number') {
 			throw new TypeError('invalid parameter "button". Expected a number.');
 		}
+		
 		return Input.mouseButtonsUp.has(button);
 	}
 
