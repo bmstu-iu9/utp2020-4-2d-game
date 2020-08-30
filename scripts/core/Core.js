@@ -22,6 +22,8 @@ export { default as Texture } from './graphics/webgl/Texture.js';
 export { default as Shader } from './graphics/webgl/Shader.js';
 export { default as Sprite } from './graphics/Sprite.js';
 export { default as SpriteRenderer } from './graphics/SpriteRenderer.js';
+export { default as ParticleProperties } from './graphics/ParticleProperties.js';
+export { default as ParticleSystem } from './graphics/ParticleSystem.js';
 export { default as BoxCollider} from './physics/BoxCollider.js';
 export { default as CircleCollider } from './physics/CircleCollider.js';
 export { default as Collider} from './physics/Collider.js';

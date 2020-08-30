@@ -2,7 +2,7 @@
 	margin: unset;
 }
 
-body, html, #container, #openedMenu {
+body, html, #container, #menu {
     height:100%;
 	min-height:100%;
 	width: 100%;
@@ -37,7 +37,7 @@ body, html, #container, #openedMenu {
 	justify-content: space-between;
 }
 
-#closeButton {
+#menuButton {
 	background-color:  cornflowerblue;
 	width: 5%;
 	height: 5%;
@@ -49,7 +49,6 @@ body, html, #container, #openedMenu {
 	width: 10%;
 	height: 10%;
 	padding-left: 10px;
-	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: flex-start;
@@ -60,8 +59,7 @@ body, html, #container, #openedMenu {
 	flex-direction: row;
 }
 
-#openMenu {
-	display: none;
+#menu {
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;

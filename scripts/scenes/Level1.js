@@ -38,6 +38,56 @@ class UILifeCount extends CORE.UIComponent {
 	}
 }
 
+class UIMenuButton extends CORE.UIComponent {
+	onInitialize() {
+		const component = this;
+		this.uiObject.addEventListener('click', () => {
+			if (component.uiObject.htmlObject.style.display == 'flex') {
+				document.getElementById(`countsContainer`).style.display = 'none';
+				component.uiObject.htmlObject.style.display = 'none';
+				document.getElementById(`menu`).style.display = 'flex';
+			}
+		});
+	}
+}
+
+class UICloseButton extends CORE.UIComponent {
+	onInitialize() {
+		const component = this;
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`menu`).style.display == 'flex') {
+				document.getElementById(`menu`).style.display = 'none';
+				document.getElementById(`countsContainer`).style.display = 'flex';
+				document.getElementById(`menuButton`).style.display = 'flex';
+			}
+		});
+	}
+}
+
+class UIAboutButton extends CORE.UIComponent {
+	onInitialize() {
+		const component = this;
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`about`).style.display == 'none') {
+				document.getElementById(`audio`).style.display = 'none';
+				document.getElementById(`about`).style.display = 'block';
+			}
+		});
+	}
+}
+
+class UIAudioButton extends CORE.UIComponent {
+	onInitialize() {
+		const component = this;
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`audio`).style.display == 'none') {
+				document.getElementById(`about`).style.display = 'none';
+				document.getElementById(`audio`).style.display = 'flex';
+			}
+		});
+	}
+}
+
 class Rotater extends CORE.GameComponent {
 	constructor(speed) {
 		super();
@@ -632,8 +682,7 @@ export default class Level1 extends CORE.Scene {
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
-		this.addObject(ui);
-		ui.addChild(new CORE.UIObject({
+		const countsContainer = new CORE.UIObject({
 			tag: 'div',
 			id: 'countsContainer',
 			children: [
@@ -674,38 +723,43 @@ export default class Level1 extends CORE.Scene {
 					],
 				}),
 			],
-		}));
-		ui.addChild(new CORE.UIObject({
+		});
+		const menuButton = new CORE.UIObject({
 			tag: 'button',
-			id: 'closeButton',
+			id: 'menuButton',
 			innerText: 'Меню',
-		}));
-		ui.addChild(new CORE.UIObject({
+			components: [
+				new UIMenuButton(),
+			],
+		});
+		const about = new CORE.UIObject({
 			tag: 'div',
-			id: 'openMenu',
+			id: 'about',
+			innerHTML: '<h1>IndieDevs</h1><hr><h2>Игра-платформер</h2><hr><p>Демо-версия игры, где показаны возможности ядра и некоторые основные механики (механики передвижения, собирания монеток, смерти).</p><h2>Описание демо-версии игры:</h2><hr><ol><li>У игрока есть 3 жизни, при потере которых игра начинается сначала.</li><li>Жизни теряются при столкновении с шипами, прыжке с высокой платформы.</li><li>При падении в пропасть игра начинается сначала.</li><li>Игра считается пройденной при подбирании всех монеток на уровне (их всего 5).</li></ol><h2>Команда</h2><hr><ul><li>Игорь Бахтин (капитан) <a href="https://github.com/igor-vgs">@igor-vgs</a></li><li>Дмитрий Балакин (разработчик ядра игры) <a href="https://github.com/Trequend">@Trequend</a></li><li>Егор Смирнов (разработчик ядра игры) <a href="https://github.com/SmEgDm">@SmEgDm</a></li><li>Александра Пастухова <a href="https://github.com/caapricorn">@caapricorn</a></li><li>Гиорги Шаликиани <a href="https://github.com/gioshek">@gioshek</a></li><li>Лада Еникеева <a href="https://github.com/l-en">@l-en</a></li><li>Азамат Гимазов <a href="https://github.com/Azarolol">@Azarolol</a></li><li>Владислав Бровкин <a href="https://github.com/vladb000">@vladb000</a></li></ul><h2>Инструкция пользователя:</h2><hr><ul type="disc"><li>A, D - движение влево и вправо</li><li>W, S - движение вверх и вниз по лестнице</li><li>Space - прыжок</li></ul>',
+		});
+		const audio = new CORE.UIObject({
+			tag: 'div',
+			id: 'audio',
 			children: [
 				new CORE.UIObject({
-					tag: 'div',
-					id: 'about',
-					innerHTML: this.resources.getText('description'),
-				}),
-				new CORE.UIObject({
-					tag: 'div',
-					id: 'audio',
-					children: [
-						new CORE.UIObject({
-							name: 'volume',
-							tag: 'input',
-							attributes: [
-								{name: 'type', value: 'range'},
-								{name: 'min', value: '0'},
-								{name: 'max', value: '100'},
-								{name: 'step', value: '1'},
-								{name: 'value', value: '50'},
-							],
-						}),
+					name: 'volume',
+					tag: 'input',
+					attributes: [
+						{name: 'type', value: 'range'},
+						{name: 'min', value: '0'},
+						{name: 'max', value: '100'},
+						{name: 'step', value: '1'},
+						{name: 'value', value: '50'},
 					],
 				}),
+			],
+		});
+		const menu = new CORE.UIObject({
+			tag: 'div',
+			id: 'menu',
+			children: [
+				about,
+				audio,
 				new CORE.UIObject({
 					tag: 'ul',
 					id: 'navbar',
@@ -717,7 +771,11 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									name: 'about',
+									id: 'aboutButton',
 									innerText: 'Об игре',
+									components: [
+										new UIAboutButton(),
+									],
 								}),	
 							],
 						}),
@@ -728,7 +786,11 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									name: 'audio',
+									id: 'audioButton',
 									innerText: 'Звук',
+									components: [
+										new UIAudioButton(),
+									],
 								}),
 							],
 						}),
@@ -739,13 +801,25 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									innerText: 'Закрыть',
-									id: 'closeMenu',
+									id: 'closeButton',
+									components: [
+										new UICloseButton(),
+									]
 								}),
 							],
 						}),
 					],
 				}),
 			],
-		}));
+		});
+		this.addObject(ui);
+		ui.addChild(countsContainer);
+		ui.addChild(menuButton);
+		ui.addChild(menu);
+		countsContainer.htmlObject.style.display = 'flex';
+		menuButton.htmlObject.style.display = 'flex';
+		menu.htmlObject.style.display = 'none';
+		about.htmlObject.style.display = 'block';
+		audio.htmlObject.style.display = 'none';
 	}
 }
