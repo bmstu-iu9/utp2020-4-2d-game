@@ -33,6 +33,13 @@ class RendererData {
 		}
 		this.indexBuffer = new IndexBuffer(indices);
 
+		const imageData = new ImageData(1, 1);
+		imageData.data[0] = imageData.data[1] = imageData.data[2] = imageData.data[3] = 0;
+		this.whiteTexture = new Texture(Game.resources, imageData, 1);
+		for (let i = 0; i < maxTextureSlots; i++) {
+			this.whiteTexture.bind(i);
+		}
+
 		/**
 		 * @type {number[]}
 		 */
@@ -67,8 +74,9 @@ class RendererData {
 	reset() {
 		this.quadIndex = 0;
 		for (let i = 0; i < this.textureIndex; i++) {
-			this.textureSlots[i] = null;
+			this.whiteTexture.bind(i);
 		}
+
 		this.textureIndex = 0;
 		this.offset = 0;
 	}

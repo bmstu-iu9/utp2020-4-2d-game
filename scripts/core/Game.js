@@ -36,10 +36,10 @@ export default class Game {
 		Game.canvas = document.getElementById(canvasId);
 		Game.uiHost = document.getElementById(uiHostId);
 
+		Game.resources = new Resources();
 		Screen.initialize(Game.canvas);
 		Input.initialize();
 		Renderer.initialize(Game.canvas, maxQuadCount);
-		Game.resources = new Resources();
 
 		Game.resources.addShaderInLoadQueue('texture', 'scripts/core/graphics/webgl/internal_shaders/Texture.glsl');
 
