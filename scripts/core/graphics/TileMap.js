@@ -9,17 +9,23 @@ import Color from './Color.js';
 
 export default class TileMap extends RendererComponent {
 	/**
-	 * @param {object}      settings             Настройки.
-	 * @param {SpriteSheet} settings.spriteSheet Лист, который содержит используемые в карте спрайты.
-	 * @param {string[][]}  settings.map         Двумерный массив строк (элементы могут быть null), из которого будет построен TileMap.
-	 * @param {Color}       settings.color       Цвет карты.
-	 * @param {number}      settings.layer       Слой отрисовки.
+	 * @param {object}        settings              Настройки.
+	 * @param {SpriteSheet[]} settings.spriteSheets Список листов, которые содержат используемые в карте спрайты.
+	 * @param {string[][]}    settings.map          Двумерный массив строк (элементы могут быть null), из которого будет построен TileMap.
+	 * @param {Color}         settings.color        Цвет карты.
+	 * @param {number}        settings.layer        Слой отрисовки.
 	 */
-	constructor({spriteSheet, map, color = Color.white, layer = 0}) {
+	constructor({spriteSheets, map, color = Color.white, layer = 0}) {
 		super(layer);
-		if (!(spriteSheet instanceof SpriteSheet)) {
-			throw new TypeError('invalid parameter "spriteSheet". Expected an instance of SpriteSheet class.');
+		if (!Array.isArray(spriteSheets)) {
+			throw new TypeError('invalid parameter "spriteSheet". Expected an array.');
 		}
+
+		spriteSheets.forEach(spriteSheet => {
+			if (!(spriteSheet instanceof SpriteSheet)) {
+				throw new TypeError('invalid array element. Expected an instance of SpriteSheet class.');
+			}
+		});
 
 		if (!Array.isArray(map)) {
 			throw new TypeError('invalid parameter "map". Expected an array.');
@@ -64,7 +70,7 @@ export default class TileMap extends RendererComponent {
 					throw new TypeError('invalid sprite name. Expected a string.');
 				}
 
-				const sprite = spriteSheet.get(name);
+				const sprite = spriteSheets.find(spriteSheet => spriteSheet.get(name) != null).get(name);
 				if (sprite == null) {
 					throw new Error(`unexpected sprite name "${name}".`);
 				}
