@@ -1,15 +1,20 @@
 import ComponentObject from '../ComponentObject.js';
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import Vector2d from '../mathematics/Vector2d.js';
-import Transform from '../mathematics/Transform.js';
 import Screen from './Screen.js';
 import Component from '../Component.js';
 import Color from './Color.js';
+import Matrix3x3 from '../mathematics/Matrix3x3.js';
+import CameraTransform from '../mathematics/CameraTransform.js';
+import Renderer from './webgl/Renderer.js';
 
 export default class Camera extends ComponentObject {
 	/**
 	 * @param {object}      settings            Настройки камеры.
 	 * @param {string}      settings.name       Название камеры.
+	 * @param {number}      settings.width      Ширина камеры в пикселях.
+	 * @param {number}      settings.height     Высота камеры в пикселях.
+	 * @param {number}      settings.zoom       Половина высоты камеры в условных единицах.
 	 * @param {Color}       settings.clearColor Цвет фона.
 	 * @param {boolean}     settings.isEnabled  Влючена ли камера.
 	 * @param {boolean}     settings.isStatic   Должна ли камера быть статичной.
@@ -20,6 +25,9 @@ export default class Camera extends ComponentObject {
 	 */
 	constructor({
 		name,
+		width,
+		height,
+		zoom = 1,
 		clearColor = Color.black,
 		isEnabled = true,
 		isStatic = false,
@@ -35,6 +43,15 @@ export default class Camera extends ComponentObject {
 		if (name.trim() === '') {
 			throw new Error('invalid parameter "name". Expected a non-empty string.');
 		}
+		if (typeof width !== 'number') {
+			throw new TypeError('invalid parameter "width". Expected a number.');
+		}
+		if (typeof height !== 'number') {
+			throw new TypeError('invalid parameter "height". Expected a number.');
+		}
+		if (typeof zoom !== 'number') {
+			throw new TypeError('invalid parameter "zoom". Expected a number.');
+		}
 		if (!(clearColor instanceof Color)) {
 			throw new TypeError('invalid parameter "clearColor". Expected an instance of Color class.');
 		}
@@ -47,8 +64,95 @@ export default class Camera extends ComponentObject {
 
 		this.name = name;
 		this.clearColor = clearColor;
-		this.transform = new Transform(isStatic, position, rotation, scale);
+		this.width = width;
+		this.height = height;
+		this.aspectRatio = width / height;
+		this.zoom = zoom;
+		this.projectionMatrix = Matrix3x3.ofOrthographicProjection(
+			-this.aspectRatio * zoom,
+			this.aspectRatio * zoom,
+			-zoom,
+			zoom,
+			this.projectionMatrix,
+		);
+		this.transform = new CameraTransform(this, isStatic, position, rotation, scale);
+		this.transform.updateMatrices();
 		components.forEach(component => this.addComponent(component));
+	}
+
+	updateViewProjectionMatrix() {
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.viewMatrix = this.transform.worldMatrix.inverse(this.viewMatrix);
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.viewProjectionMatrix = this.projectionMatrix.multiply(this.viewMatrix, this.viewProjectionMatrix);
+	}
+
+	updateProjectionMatrix() {
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.viewProjectionMatrix = this.projectionMatrix.multiply(this.viewMatrix, this.viewProjectionMatrix);
+	}
+
+	/**
+	 * Устанавливает матрицу проекции.
+	 * 
+	 * @param {number} width  Ширина камеры в пикселях.
+	 * @param {number} height Высота камеры в пикселях.
+	 * @param {number} zoom   Половина высоты камеры в условных единицах.
+	 */
+	setProjection(width, height, zoom) {
+		if (typeof width !== 'number') {
+			throw new TypeError('invalid parameter "width". Expected a number.');
+		}
+		if (typeof height !== 'number') {
+			throw new TypeError('invalid parameter "height". Expected a number.');
+		}
+		if (typeof zoom !== 'number') {
+			throw new TypeError('invalid parameter "zoom". Expected a number.');
+		}
+		this.width = width;
+		this.height = height;
+		this.aspectRatio = width / height;
+		this.zoom = zoom;
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.projectionMatrix = Matrix3x3.ofOrthographicProjection(
+			-this.aspectRatio * zoom,
+			this.aspectRatio * zoom,
+			-zoom,
+			zoom,
+			this.projectionMatrix,
+		);
+		this.updateProjectionMatrix();
+	}
+
+	/**
+	 * Устанавливает высоту камеры в условных единицах.
+	 * 
+	 * @param {number} zoom Половина высоты камеры в условных единицах.
+	 */
+	setZoom(zoom) {
+		if (typeof zoom !== 'number') {
+			throw new TypeError('invalid parameter "zoom". Expected a number.');
+		}
+		this.zoom = zoom;
+		/**
+		 * @type {Matrix3x3}
+		 */
+		this.projectionMatrix = Matrix3x3.ofOrthographicProjection(
+			-this.aspectRatio * zoom,
+			this.aspectRatio * zoom,
+			-zoom,
+			zoom,
+			this.projectionMatrix,
+		);
+		this.updateProjectionMatrix();
 	}
 
 	/**
@@ -82,29 +186,16 @@ export default class Camera extends ComponentObject {
 	/**
 	 * Отрисовывает объекты, которые попадают в данную камеру.
 	 * 
-	 * @param {Renderer[]}               renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
-	 * @param {CanvasRenderingContext2D} context   Контекст, в котором будет происходить отрисовка.
+	 * @param {RendererComponent[]} renderers Компоненты игровых объектов, которые будут что-то отрисовывать.
 	 */
-	draw(renderers, context) {
+	draw(renderers) {
 		this.throwIfNotInitialized();
 		this.throwIfDestroyed();
-		context.imageSmoothingEnabled = false;
-		context.mozImageSmoothingEnabled = false;
-		context.webkitImageSmoothingEnabled = false;
-		const size = Screen.getSize();
-		context.fillStyle = this.clearColor.rgbString();
-		context.fillRect(0, 0, size.x, size.y);
-		
-		context.translate(size.x / 2, size.y / 2);
-		context.scale(this.transform.scale.x, this.transform.scale.y);
-		context.rotate(-this.transform.rotation);
-		context.translate(-size.x / 2, -size.y / 2);
+		Renderer.clear(0, 0, Screen.getSize(), this.clearColor);
+		Renderer.begin(this);
 
-		renderers.forEach(renderer => renderer.draw(this, context));
+		renderers.forEach(renderer => renderer.draw(this));
 
-		context.translate(size.x / 2, size.y / 2);
-		context.rotate(this.transform.rotation);
-		context.scale(1 / this.transform.scale.x, 1 / this.transform.scale.y);
-		context.translate(-size.x / 2, -size.y / 2);
+		Renderer.end();
 	}
 }

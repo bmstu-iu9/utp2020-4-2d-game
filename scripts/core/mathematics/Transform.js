@@ -2,41 +2,20 @@ import Vector2d from './Vector2d.js';
 import Matrix3x3 from './Matrix3x3.js';
 
 export default class Transform {
-	/**
-	 * @param {boolean}  isStatic Является ли преобразование статичным.
-	 * @param {Vector2d} position Позиция.
-	 * @param {number}   rotation Угол поворота в радианах.
-	 * @param {Vector2d} scale    Масштаб.
-	 */
-	constructor(isStatic = false, position = Vector2d.zero, rotation = 0, scale = new Vector2d(1, 1)) {
-		if (typeof isStatic !== 'boolean') {
-			throw new TypeError('invalid parameter "isStatic". Expected a boolean value.');
+	constructor() {
+		if (new.target === Transform) {
+			throw new TypeError('cannot create instance of abstract class.');
 		}
-		if (!(position instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
-		}
-		if (typeof rotation !== 'number') {
-			throw new TypeError('invalid parameter "rotation". Expected a number.');
-		}
-		if (!(scale instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
-		}
+		this.position = Vector2d.zero;
+		this.rotation = 0;
+		this.angle = 0;
+		this.scale = new Vector2d(1, 1);
+		this.isStatic = false;
 		/**
-		 * @type {Vector2d}
+		 * @type {Matrix3x3}
 		 */
-		this.position = position;
-		/**
-		 * @type {number}
-		 */
-		this.rotation = this.clampAngle(rotation);
-		this.angle = this.rotation / Math.PI * 180;
-		/**
-		 * @type {Vector2d}
-		 */
-		this.scale = scale;
-		this.isStatic = isStatic;
-		this.isDirty = true;
-		this.updateMatrices();
+		this.worldMatrix = null;
+		this.changeId = {};
 	}
 
 	/**
@@ -68,40 +47,12 @@ export default class Transform {
 	}
 
 	/**
-	 * Обновляет матрицы преобразования.
-	 */
-	updateMatrices() {
-		if (!this.isDirty) {
-			return;
-		}
-		/**
-		 * @type {Matrix3x3}
-		 */
-		this.worldMatrix = Matrix3x3.ofTranslationRotationScaling(
-			this.position,
-			this.rotation,
-			this.scale,
-			this.worldMatrix,
-		);
-		this.isDirty = false;
-	}
-
-	/**
 	 * Изменяет позицию.
 	 * 
 	 * @param {Vector2d} position Новая позиция.
 	 */
 	setPosition(position) {
-		this.throwIfStatic();
-		if (!(position instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "position". Expected an instance of Vector2d class.');
-		}
-		if (this.position.equals(position)) {
-			return;
-		}
-		this.isDirty = true;
-		this.position = position;
-		this.updateMatrices();
+		throw new Error('not implemented.');
 	}
 
 	/**
@@ -110,35 +61,7 @@ export default class Transform {
 	 * @param {number} angle Новый угол поворота в радианах.
 	 */
 	setRotation(angle) {
-		this.throwIfStatic();
-		if (typeof angle !== 'number') {
-			throw new TypeError('invalid parameter "angle". Expected a number.');
-		}
-		if (this.angle === angle) {
-			return;
-		}
-		this.isDirty = true;
-		this.rotation = this.clampAngle(angle);
-		this.angle = this.rotation / Math.PI * 180;
-		this.updateMatrices();
-	}
-
-	/**
-	 * Изменяет масштаб.
-	 * 
-	 * @param {Vector2d} scale Новый масштаб.
-	 */
-	setScale(scale) {
-		this.throwIfStatic();
-		if (!(scale instanceof Vector2d)) {
-			throw new TypeError('invalid parameter "scale". Expected an instance of Vector2d class.');
-		}
-		if (this.scale.equals(scale)) {
-			return;
-		}
-		this.isDirty = true;
-		this.scale = scale;
-		this.updateMatrices();
+		throw new Error('not implemented.');
 	}
 
 	/**

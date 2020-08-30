@@ -107,8 +107,8 @@ export default class Matrix3x3 extends Float32Array {
 		const cos = Math.cos(angle);
 		const sin = Math.sin(angle);
 		result[0] = cos;
-		result[1] = sin;
-		result[3] = -sin;
+		result[1] = -sin;
+		result[3] = sin;
 		result[4] = cos;
 		result[8] = 1;
 		if (outMatrix != null) {
@@ -154,9 +154,46 @@ export default class Matrix3x3 extends Float32Array {
 	 */
 	static ofTranslationRotationScaling(translation, angle, scaling, outMatrix = null) {
 		const buffer = new Matrix3x3();
-		outMatrix = Matrix3x3.ofTranslation(translation.x, -translation.y, outMatrix);
+		outMatrix = Matrix3x3.ofTranslation(translation.x, translation.y, outMatrix);
 		outMatrix.multiply(Matrix3x3.ofRotation(angle, buffer), outMatrix);
 		return outMatrix.multiply(Matrix3x3.ofScaling(scaling.x, scaling.y, buffer), outMatrix);
+	}
+
+	/**
+	 * @param {number}    left      Левая граница экрана.
+	 * @param {number}    right     Правая граница экрана.
+	 * @param {number}    bottom    Нижняя граница экрана.
+	 * @param {number}    top       Верхняя граница экрана.
+	 * @param {Matrix3x3} outMatrix Матрица 3x3, в которую можно записать результат.
+	 * 
+	 * @return {Matrix3x3} Возвращает матрицу ортографической проекции.
+	 */
+	static ofOrthographicProjection(left, right, bottom, top, outMatrix) {
+		if (outMatrix != null && !(outMatrix instanceof Matrix3x3)) {
+			throw new TypeError('invalid parameter "outMatrix". Expected an instance of Matrix3x3 class.');
+		}
+		if (typeof left != 'number') {
+			throw new TypeError('invalid parameter "left". Expected a number.');
+		}
+		if (typeof right != 'number') {
+			throw new TypeError('invalid parameter "right". Expected a number.');
+		}
+		if (typeof bottom != 'number') {
+			throw new TypeError('invalid parameter "bottom". Expected a number.');
+		}
+		if (typeof top != 'number') {
+			throw new TypeError('invalid parameter "top". Expected a number.');
+		}
+		const result = outMatrix || new Matrix3x3();
+		result[0] = 2 / (right - left);
+		result[4] = 2 / (top - bottom);
+		result[6] = -(right + left) / (right - left);
+		result[7] = -(top + bottom) / (top - bottom);
+		result[8] = 1;
+		if (outMatrix != null) {
+			result[1] = result[2] = result[3] = result[5] = 0;
+		}
+		return result;
 	}
 
 	/**
@@ -167,6 +204,34 @@ export default class Matrix3x3 extends Float32Array {
 		const k2 = this[1] * (this[3] * this[8] - this[6] * this[5]);
 		const k3 = this[2] * (this[3] * this[7] - this[6] * this[4]);
 		return k1 - k2 + k3;
+	}
+
+	/**
+	 * @return {Matrix3x3} Возвращает обратную матрицу данной (если матрица не обратима, возвращает null).
+	 */
+	inverse(outMatrix) {
+		if (outMatrix != null && !(outMatrix instanceof Matrix3x3)) {
+			throw new TypeError('invalid parameter "outMatrix". Expected an instance of Matrix3x3 class.');
+		}
+		const k1 = this[4] * this[8] - this[7] * this[5];
+		const k2 = this[3] * this[8] - this[6] * this[5];
+		const k3 = this[3] * this[7] - this[6] * this[4];
+		const det = this[0] * k1 - this[1] * k2 + this[2] * k3;
+		if (det === 0) {
+			return null;
+		}
+		const invDet = 1 / det;
+		const result = outMatrix || new Matrix3x3();
+		result[0] = k1 * invDet;
+		result[3] = -k2 * invDet;
+		result[6] = k3 * invDet;
+		result[1] = (this[7] * this[2] - this[1] * this[8]) * invDet;
+		result[4] = (this[0] * this[8] - this[6] * this[2]) * invDet;
+		result[7] = (this[6] * this[1] - this[0] * this[7]) * invDet;
+		result[2] = (this[1] * this[5] - this[4] * this[2]) * invDet;
+		result[5] = (this[3] * this[2] - this[0] * this[5]) * invDet;
+		result[8] = (this[0] * this[4] - this[3] * this[1]) * invDet;
+		return result;
 	}
 
 	/**

@@ -2,19 +2,23 @@ import Resourses from './Resources.js';
 import GameObject from './GameObject.js';
 import Camera from './graphics/Camera.js';
 import Resources from './Resources.js';
-import Renderer from './graphics/Renderer.js';
+import RendererComponent from './graphics/RendererComponent.js';
 import ComponentObject from './ComponentObject.js';
 import Color from './graphics/Color.js';
 import Screen from './graphics/Screen.js';
 import HierarchyObject from './HierarchyObject.js';
 import UIObject from './ui/UIObject.js';
+import Renderer from './graphics/webgl/Renderer.js';
 
 export default class Scene {
 	constructor() {
 		if (new.target === Scene) {
 			throw new TypeError('cannot create instance of abstract class');
 		}
-		this.resources = new Resourses();
+		/**
+		 * @type {Resources}
+		 */
+		this.resources = null;
 		this.isStarted = false;
 		this.isInitialized = false;
 		this.isDestroyed = false;
@@ -57,7 +61,7 @@ export default class Scene {
 		if (this.isInitialized) {
 			throw new Error('already initialized.');
 		}
-		this.resources = new Resources();
+		this.resources = new Resourses();
 		this.onInitialize();
 		this.isInitialized = true;
 		this.resources.loadAll(() => {
@@ -84,9 +88,7 @@ export default class Scene {
 		this.disabledObjects = new Set();
 		this.onStart();
 		if (this.camera == null) {
-			this.addObject(new Camera({
-				name: 'main',
-			}));
+			console.warn('there is no camera');
 		}
 		this.isStarted = true;
 	}
@@ -135,9 +137,12 @@ export default class Scene {
 		}
 		this.stop();
 		this.onDestroy();
-		this.isDestroyed = true;
 		this.resources.destroy();
 		this.resources = null;
+		this.isDestroyed = true;
+		if (Scene.current === this) {
+			Scene.current = null;
+		}
 	}
 
 	/**
@@ -300,11 +305,9 @@ export default class Scene {
 	}
 
 	/**
-	 * Отрисовывает игровые объекты в передаваемом контексте.
-	 * 
-	 * @param {CanvasRenderingContext2D} context Контекст, в котором будет происходить отрисовка.
+	 * Отрисовывает все игровые объекты на сцене.
 	 */
-	draw(context) {
+	draw() {
 		this.throwIfDestroyed();
 		this.throwIfNotInitialized();
 		this.processBuffer();
@@ -314,18 +317,17 @@ export default class Scene {
 		if (this.camera != null && this.camera.isActive()) {
 			const renderers = [];
 			for (let componentObject of this.enabledObjects.values()) {
-				const renderer = componentObject.getComponent(Renderer);
+				const renderer = componentObject.getComponent(RendererComponent);
 				if (renderer != null) {
 					renderers.push(renderer);
 				}
 			}
 			this.camera.draw(renderers.sort((renderer, otherRenderer) => {
 				return renderer.layer - otherRenderer.layer;
-			}), context);
+			}));
 		} else {
 			const size = Screen.getSize();
-			context.fillStyle = Color.black.rgbString();
-			context.fillRect(0, 0, size.x, size.y);
+			Renderer.clear(0, 0, size, Color.black);
 		}
 	}
 
@@ -337,6 +339,13 @@ export default class Scene {
 		this.throwIfNotInitialized();
 		this.stop();
 		this.start();
+	}
+
+	/**
+	 * Перезагружает сцену. Все ресурсы заново загружаются.
+	 */
+	hardReload() {
+		Scene.changeScene(this.constructor);
 	}
 
 	/**
