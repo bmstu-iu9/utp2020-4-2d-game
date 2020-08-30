@@ -110,7 +110,7 @@ export default class VertexBuffer {
 	 */
 	unbind() {
 		const gl = Renderer.gl;
-		gl.bindBuffer(gl.ARRAY_BUFFER, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	}
 
 	destroy() {

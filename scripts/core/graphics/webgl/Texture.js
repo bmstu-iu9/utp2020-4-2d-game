@@ -7,18 +7,18 @@ export default class Texture {
 	static maxHeight = 4096;
 
 	/**
-	 * @param {Resources}        resources     Место для хранения данной текстуры.
-	 * @param {HTMLImageElement} image         Изображение, которое будет использоваться в текстуре.
-	 * @param {number}           pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
-	 * @param {boolean}          isPixelImage  Если указано true, то для масштабирования текстуры используется алгоритм NEAREST, иначе LINEAR.
+	 * @param {Resources}                    resources     Место для хранения данной текстуры.
+	 * @param {HTMLImageElement | ImageData} image         Изображение, которое будет использоваться в текстуре.
+	 * @param {number}                       pixelsPerUnit Количество пикселей текстуры на одну условную единицу камеры.
+	 * @param {boolean}                      isPixelImage  Если указано true, то для масштабирования текстуры используется алгоритм NEAREST, иначе LINEAR.
 	 */
 	constructor(resources, image, pixelsPerUnit = 100, isPixelImage = true) {
 		if (!(resources instanceof Resources)) {
 			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
 		}
 
-		if (!(image instanceof HTMLImageElement)) {
-			throw new TypeError('invalid parameter "image". Expected an instance of HTMLImageElement class.');
+		if (!(image instanceof HTMLImageElement || image instanceof ImageData)) {
+			throw new TypeError('invalid parameter "image". Expected an instance of HTMLImageElement or ImageData class.');
 		}
 
 		if (image.width > Texture.maxWidth) {
@@ -87,7 +87,7 @@ export default class Texture {
 	 */
 	unbind() {
 		const gl = Renderer.gl;
-		gl.bindTexture(gl.TEXTURE_2D, 0);
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	destroy() {

@@ -107,7 +107,7 @@ export default class TileMap extends RendererComponent {
 	 * @return {Matrix3x3} Возвращает матрицу преобразований для каждого спрайта в карте.
 	 */
 	getModelMatrices() {
-		if (this.changeId != this.transform.changeId) {
+		if (this.changeId !== this.transform.changeId) {
 			const worldMatrix = this.transform.worldMatrix;
 			for (let i = 0; i < this.height; i++) {
 				for (let j = 0; j < this.map[i].length; j++) {

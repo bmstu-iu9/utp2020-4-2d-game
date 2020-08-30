@@ -36,7 +36,7 @@ export default class IndexBuffer {
 	 */
 	unbind() {
 		const gl = Renderer.gl;
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}
 
 	destroy() {

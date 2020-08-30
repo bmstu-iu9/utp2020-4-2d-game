@@ -100,7 +100,7 @@ export default class Shader {
 	 * Выключает шейдер.
 	 */
 	unbind() {
-		Renderer.gl.useProgram(0);
+		Renderer.gl.useProgram(null);
 	}
 
 	/**
