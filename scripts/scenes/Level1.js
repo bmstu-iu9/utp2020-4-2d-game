@@ -628,7 +628,7 @@ export default class Level1 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(1, 1),
-			position: new CORE.Vector2d(105, 4),
+			position: new CORE.Vector2d(36, 0.5),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: new CORE.Sprite(this.resources.getTexture('hero')),
@@ -644,6 +644,7 @@ export default class Level1 extends CORE.Scene {
 				new Player(3, 10),
 			],
 		});
+		this.createBall(new CORE.Vector2d(38.5, 2));
 		this.createPlatform(new CORE.Vector2d(-3, 2), new CORE.Vector2d(10, 1));
 		this.createPlatform(new CORE.Vector2d(-7.3, 0), new CORE.Vector2d(1, 100));
 		this.createRailSpike(5, new CORE.Vector2d(-3, -2), 4);

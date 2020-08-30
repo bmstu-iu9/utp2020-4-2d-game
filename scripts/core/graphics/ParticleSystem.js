@@ -1,4 +1,4 @@
-import Renderer from './Renderer.js';
+import RendererComponent from './RendererComponent.js';
 import Vector2d from '../mathematics/Vector2d.js';
 import Color from './Color.js';
 import Maths from '../mathematics/Maths.js';
@@ -27,7 +27,7 @@ class Particle{
 	}
 }
 
-export default class ParticleSystem extends Renderer {
+export default class ParticleSystem extends RendererComponent {
 	/**
 	 * @param {object}             settings                    Настройки системы частицы.
 	 * @param {ParticleProperties} settings.particleProperties Настройки частицы.
