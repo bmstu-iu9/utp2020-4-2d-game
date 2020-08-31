@@ -139,15 +139,6 @@ class Player extends CORE.GameComponent {
 					this.rigidBody.addForce(new CORE.Vector2d(75, 800));
 				}
 			}
-		} else {
-			if (this.rigidBody.velocity.y < -20) {
-				this.lifeCount--;
-				console.log('lives left: ' + this.lifeCount);
-				if (this.lifeCount <= 0) {
-					console.log('lose');
-					this.gameObject.scene.reload();
-				}
-			}
 		}
 	}
 
@@ -270,10 +261,10 @@ class Controller extends CORE.GameComponent {
 					this.changeState('idle');
 				}
 				if (CORE.Input.getKeyDown('Space')) {
-					this.rigidBody.addForce(new CORE.Vector2d(0, 550));
+					this.rigidBody.addForce(new CORE.Vector2d(0, 1300));
 				}
 			}
-		if (this.transform.position.y < -5) {
+		if (this.transform.position.y < -20) {
 			this.gameObject.scene.reload();
 		}
 	}
@@ -283,7 +274,7 @@ class Follower extends CORE.CameraComponent {
 	constructor(target) {
 		super();
 		this.target = target;
-		this.floor = 1.4;
+		this.floor = 1.5;
 	}
 	
 	setFloor(y) {
@@ -296,8 +287,8 @@ class Follower extends CORE.CameraComponent {
 		if (position.y < this.floor) {
 			position = new CORE.Vector2d(position.x, this.floor);
 		}
-		if (position.x < 0.4) {
-			position = new CORE.Vector2d(0.4, position.y);
+		if (position.x < -40) {
+			position = new CORE.Vector2d(-40, position.y);
 		}
 		this.transform.setPosition(position);
 	}
@@ -406,19 +397,15 @@ export default class Level1 extends CORE.Scene {
 				}),
 			],
 		}));
-		const min = -0.45;
-		const max = 0.45;
-		let left = a.transform.transformPoint(new CORE.Vector2d(min, 0.06));
-		left = new CORE.Vector2d(left.x, -left.y);
-		let right = a.transform.transformPoint(new CORE.Vector2d(max, 0.06));
-		right = new CORE.Vector2d(right.x, -right.y);
+		const min = -0.42;
+		const max = 0.42;
+		const left = a.transform.transformPoint(new CORE.Vector2d(min, -0.05));
+		const right = a.transform.transformPoint(new CORE.Vector2d(max, -0.05));
 		let spawn = null;
 		if (isRandom) {
-			let spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), 0.06));
-			spawn = new CORE.Vector2d(spawn.x, -spawn.y);
+			spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), -0.05));
 		} else {
-			spawn = a.transform.transformPoint(new CORE.Vector2d(0, 0.06));
-			spawn = new CORE.Vector2d(spawn.x, -spawn.y);
+			spawn = a.transform.transformPoint(new CORE.Vector2d(0, -0.05));
 		}
 		this.addObject(new CORE.GameObject({
 			name: 'spike',
@@ -504,15 +491,13 @@ export default class Level1 extends CORE.Scene {
 			['finish1', new CORE.Rect(128, 80, 76, 28)],
 			['finish2', new CORE.Rect(128, 108, 76, 28)]
 		)
-		this.createRailSpike(5, new CORE.Vector2d(50, -0.8), 4)
-		this.createRailSpike(3, new CORE.Vector2d(55, -0.8), 5)
-		this.createCoin(new CORE.Vector2d(55, 0));
+		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4)
+		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
 		this.finish = new CORE.GameObject({
 			name: 'finish',
-			scale: new CORE.Vector2d(4, 4),
-			position: new CORE.Vector2d(60, 0),
+			position: new CORE.Vector2d(28.4, 1.2),
 			components: [
-				new CORE.SpriteRenderer({sprite: ss.get('finish1')}),
+				new CORE.SpriteRenderer({sprite: ss.get('finish1'), layer: -1}),
 				new CORE.Animator([
 					['finish', new CORE.Animation(0.09, true, [
 						new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
@@ -526,14 +511,14 @@ export default class Level1 extends CORE.Scene {
 		});
 		this.hero = new CORE.GameObject({
 			name: 'hero',
-			position: new CORE.Vector2d(-3.5, 4),
+			position: new CORE.Vector2d(-16, 2),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: ss.get('hero'),
 				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
-					gravityScale: 0,
+					gravityScale: 3,
 				}),
 				new CORE.Animator([
 					['walk', new CORE.Animation(0.7, true, [
@@ -550,7 +535,7 @@ export default class Level1 extends CORE.Scene {
 						new CORE.SpriteKeyFrame(ss.get('hero'), 0),
 					])],
 				], 'idle'),
-				new CORE.BoxCollider(1, 2),
+				new CORE.BoxCollider(0.8, 2),
 				new Controller(),
 				new Collector(),
 				new Player(5, new CORE.Vector2d(-3.5, 4)),
@@ -577,187 +562,186 @@ export default class Level1 extends CORE.Scene {
 				})
 			],
 		}));
-		this.addObject(new CORE.GameObject({
-			name: 'littlebushes',
-			position: new CORE.Vector2d(10.5, -1.5),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						['littlebush', null, null, null, null, null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'bushes',
-			position: new CORE.Vector2d(15, -1),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss], 
-					map: [
-						['bush', null, null, null, null, null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'bushes',
-			position: new CORE.Vector2d(25, -0.4),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						[null, null, null, null, null, null, null, null, 'bush', null, null, null, 'bush', 'bush'],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'trees',
-			position: new CORE.Vector2d(33, 1.7),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						[null, null, null, null, null, 'tree', null, null, 'tree', null, 'tree'],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'trees',
-			position: new CORE.Vector2d(33, 0.7),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						['tree', null, null, null, null, null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'trees',
-			position: new CORE.Vector2d(45, 5.8),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						['littletree', null, null, null, null, null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'trees',
-			position: new CORE.Vector2d(25.5, 5.7),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						['littletree', null, null, null, null, null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'littlebushes',
+		// 	position: new CORE.Vector2d(10.5, -1.5),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				['littlebush', null, null, null, null, null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'bushes',
+		// 	position: new CORE.Vector2d(15, -1),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss], 
+		// 			map: [
+		// 				['bush', null, null, null, null, null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'bushes',
+		// 	position: new CORE.Vector2d(25, -0.4),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				[null, null, null, null, null, null, null, null, 'bush', null, null, null, 'bush', 'bush'],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'trees',
+		// 	position: new CORE.Vector2d(33, 1.7),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				[null, null, null, null, null, 'tree', null, null, 'tree', null, 'tree'],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'trees',
+		// 	position: new CORE.Vector2d(33, 0.7),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				['tree', null, null, null, null, null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'trees',
+		// 	position: new CORE.Vector2d(45, 5.8),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				['littletree', null, null, null, null, null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'trees',
+		// 	position: new CORE.Vector2d(25.5, 5.7),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				['littletree', null, null, null, null, null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
 		this.addObject(new CORE.GameObject({
 			name: 'platform',
-			position: new CORE.Vector2d(33.8, -0.6),
 			isStatic: true,
 			components: [
 				new CORE.TileMap({
-					spriteSheets: [ss], 
+					spriteSheets: [ss],
 					map: [
-						['1', '2', '2', '2', '2', '2', '2', '3', null, null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '3'],
+						['1', '2', '2', '2', '2', '2', '2', '3', null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '2', '3'],
 						['01', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
 						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '3'],
-						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '2', '2', '2', '2', '2', '3'],
+						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '3'],
 						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '2', '2', '2', '2', '3', null, null, null, null, null, '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3'],
 						['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', null, null, null, '1', '2', '2', '2', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', null, null, null, null, null, '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01'  ],
 						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '01', '01', '01', '01' ]
 					],
 				}),
 				new CORE.RigidBody({
-					material: new CORE.Material(0.5, 0)
+					material: new CORE.Material(0.5, 0),
 				}),
 				new CORE.TileMapCollider()
 			]
 		}))
 		this.addObject(new CORE.GameObject({
-			name: 'platform',
-			position: new CORE.Vector2d(5.8, 0.4),
+			name: 'background',
 			isStatic: true,
+			position: new CORE.Vector2d(-19, 0),
 			components: [
 				new CORE.TileMap({
 					spriteSheets: [ss],
+					layer: -1,
 					map: [
-						[null, null, null, null, null, null, null, null, null, null, null],
-						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '01', '01', '01', '01', '01', '01'],
-						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '00', '00', '00', '00', '00', '00'],
-						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '00', '00', null, null, null, null],
-						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '00', '00', '01', '01', '01', '01', '01', '01'],
-						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '00', '00', '00', '00', '00', '00']
+						['01', '01', '01', '01', '01', '01', '01'],
+						['00', '00', '00', '00', '00', '00', '00'],
+						['00', '00', '00', '00'],
+						['00', '00', '00', '01', '01', '01', '01', '01', '01'],
+						['00', '00', '00', '00', '00', '00', '00', '00', '00'],
 					],
 				}),
 			]
 		}))
-		this.addObject(new CORE.GameObject({
-			name: 'bushes',
-			position: new CORE.Vector2d(15, -1),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets:  [ss], 
-					map: [
-						[null, null, null, null, 'bush', null, null, null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'bushes',
-			position: new CORE.Vector2d(13, 1.1),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss], 
-					map: [
-						[null, null, null, null, null, null, 'bush', null, null, null, null],
-					],
-				}),
-			]
-		}))
-		this.addObject(new CORE.GameObject({
-			name: 'littlebushes',
-			position: new CORE.Vector2d(12.3, 0.5),
-			isStatic: true,
-			components: [
-				new CORE.TileMap({
-					spriteSheets: [ss],
-					map: [
-						[null, null, null, null, null, null, 'littlebush', null, null, null, null],
-					],
-				}),
-			]
-		}))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'bushes',
+		// 	position: new CORE.Vector2d(15, -1),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets:  [ss], 
+		// 			map: [
+		// 				[null, null, null, null, 'bush', null, null, null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'bushes',
+		// 	position: new CORE.Vector2d(13, 1.1),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss], 
+		// 			map: [
+		// 				[null, null, null, null, null, null, 'bush', null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
+		// this.addObject(new CORE.GameObject({
+		// 	name: 'littlebushes',
+		// 	position: new CORE.Vector2d(12.3, 0.5),
+		// 	isStatic: true,
+		// 	components: [
+		// 		new CORE.TileMap({
+		// 			spriteSheets: [ss],
+		// 			map: [
+		// 				[null, null, null, null, null, null, 'littlebush', null, null, null, null],
+		// 			],
+		// 		}),
+		// 	]
+		// }))
 		this.addObject(new CORE.GameObject({
 			name: 'ladders',
-			position: new CORE.Vector2d(12.5, 0.5),
+			position: new CORE.Vector2d(-23, 2),
 			components: [
-				new CORE.BoxCollider(0.1, 4),
+				new CORE.BoxCollider(0.2, 3.05),
 			],
 			children: [
 				new CORE.GameObject({
 					name: 'ladder-sprite',
-					position: new CORE.Vector2d(0, 0),
+					position: new CORE.Vector2d(1, -1),
 					components: [
 						new CORE.TileMap({
 							spriteSheets: [ss],
@@ -774,21 +758,21 @@ export default class Level1 extends CORE.Scene {
 			]
 		}));
 		this.addObject(this.hero);
-		this.createRailSpike(3.5, new CORE.Vector2d(-3, -1.8), 4);
-		this.createRailSpike(2, new CORE.Vector2d(-6.3, -0.1), 4, Math.PI / 2);
-		this.createRailSpike(3.5, new CORE.Vector2d(-3, 1.6), 4, Math.PI);
-		this.createCoin(new CORE.Vector2d(-6, -1.5));
-		this.createCoin(new CORE.Vector2d(16, 4));
-		this.createCoin(new CORE.Vector2d(24, 4));
-		this.createBall(new CORE.Vector2d(-2, 3));
-		this.createCoin(new CORE.Vector2d(50.5, 0));
+		this.createRailSpike(3.5, new CORE.Vector2d(-38, -1), 4);
+		this.createRailSpike(2, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
+		this.createRailSpike(3.5, new CORE.Vector2d(-38, 2), 4, Math.PI);
+		this.createCoin(new CORE.Vector2d(-40.6, -0.8)); // -34.6; 0.7
+		this.createCoin(new CORE.Vector2d(-18.6, 4.7));
+		this.createCoin(new CORE.Vector2d(-10.6, 4.7));
+		this.createCoin(new CORE.Vector2d(20.4, 0.7));
+		this.createCoin(new CORE.Vector2d(15.9, 0.7));
+		this.createBall(new CORE.Vector2d(-38.6, 4.4));
 		this.addObject(new CORE.GameObject({
-			name: 'ball',
-			scale: new CORE.Vector2d(6,6),
-			position: new CORE.Vector2d(35, 0),
+			name: 'box',
+			position: new CORE.Vector2d(0.4, 0.7),
 			components: [
 				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(0.15, 0.15),
+				new CORE.BoxCollider(1, 1),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0.5),
 					gravityScale: 5,
@@ -797,12 +781,11 @@ export default class Level1 extends CORE.Scene {
 			],
 		}));
 		this.addObject(new CORE.GameObject({
-			name: 'ball',
-			scale: new CORE.Vector2d(6,6),
-			position: new CORE.Vector2d(33, 0),
+			name: 'box',
+			position: new CORE.Vector2d(-1.6, 0.7),
 			components: [
 				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(0.15, 0.15),
+				new CORE.BoxCollider(1, 1),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0.5),
 					gravityScale: 5,
@@ -811,12 +794,11 @@ export default class Level1 extends CORE.Scene {
 			],
 		}));
 		this.addObject(new CORE.GameObject({
-			name: 'ball',
-			scale: new CORE.Vector2d(6,6),
-			position: new CORE.Vector2d(37, 0),
+			name: 'box',
+			position: new CORE.Vector2d(2.4, 0.7),
 			components: [
 				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(0.15, 0.15),
+				new CORE.BoxCollider(1, 1),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0.5),
 					gravityScale: 5,
