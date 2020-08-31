@@ -227,44 +227,47 @@ class Controller extends CORE.GameComponent {
 	}
 
 	onUpdate() {
-			if (this.isLadder) {
-				if (CORE.Input.getKeyPressed('KeyW')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
-				} else if (CORE.Input.getKeyPressed('KeyS')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
-				}
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(-1, 1));
-					this.changeState('walk');
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(1, 1));
-					this.changeState('walk');
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-					this.changeState('idle');
-				}
+		const follower = this.gameObject.scene.camera.getComponent(Follower);
+		follower.isLookDown = false;
+		if (this.isLadder) {
+			if (CORE.Input.getKeyPressed('KeyW') || CORE.Input.getKeyPressed('ArrowUp')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
+			} else if (CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
 			} else {
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(-1, 1));
-					this.changeState('walk');
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(1, 1));
-					this.changeState('walk');
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-					this.changeState('idle');
-				}
-				if (CORE.Input.getKeyDown('Space')) {
-					this.rigidBody.addForce(new CORE.Vector2d(0, 1300));
-				}
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
 			}
-		if (this.transform.position.y < -20) {
+			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+				this.changeState('walk');
+			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+				this.changeState('walk');
+			} else {
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
+				this.changeState('idle');
+			}
+		} else {
+			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+				this.changeState('walk');
+			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+				this.changeState('walk');
+			} else {
+				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
+				this.changeState('idle');
+			}
+			if (CORE.Input.getKeyDown('Space') || CORE.Input.getKeyDown('ArrowUp')) {
+				this.rigidBody.addForce(new CORE.Vector2d(0, 700));
+			}
+		}
+		if (this.transform.position.y < -6) {
 			this.gameObject.scene.reload();
 		}
 	}
@@ -275,6 +278,7 @@ class Follower extends CORE.CameraComponent {
 		super();
 		this.target = target;
 		this.floor = 1.5;
+		this.isLookDown = false;
 	}
 	
 	setFloor(y) {
@@ -284,6 +288,10 @@ class Follower extends CORE.CameraComponent {
 	onUpdate() {
 		let position = this.target.transform.position;
 		position = new CORE.Vector2d(position.x, position.y + 1.2);
+		if (this.isLookDown) {
+			position = position.subtract(new CORE.Vector2d(0, 2));
+		}
+
 		if (position.y < this.floor) {
 			position = new CORE.Vector2d(position.x, this.floor);
 		}
@@ -350,10 +358,38 @@ export default class Level1 extends CORE.Scene {
 		this.resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
 		this.resources.addSoundInLoadQueue('theme', 'resources/theme.mp3');
 		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
-		this.resources.addTextureInLoadQueue('tilemap', 'resources/map.png', 16);
+		this.resources.createTileMapSpriteSheet({
+			id: 'tileset',
+			path: 'resources/map.png',
+			pixelsPerUnit: 16,
+			tiles: [
+				['3', new CORE.Rect(16, 48, 16, 16)],
+				['1', new CORE.Rect(32, 48, 16, 16)],
+				['2', new CORE.Rect(48, 48, 16, 16)],
+				['01', new CORE.Rect(16, 64, 16, 16)],
+				['00', new CORE.Rect(64, 64, 16, 16)],
+				['ladders', new CORE.Rect(64, 48, 16, 16)],
+				['littlebush', new CORE.Rect(0, 32, 32, 16)],
+				['bush', new CORE.Rect(32, 16, 48, 32)],
+				['littletree', new CORE.Rect(80, 0, 64, 80)],
+				['tree', new CORE.Rect(144, 0, 70, 80)],
+				['hero', new CORE.Rect(0, 80, 16, 32)],
+				['walk', new CORE.Rect(16, 80, 16, 32)],
+				['walk1', new CORE.Rect(32, 80, 16, 32)],
+				['walk2', new CORE.Rect(48, 80, 16, 32)],
+				['walk3', new CORE.Rect(64, 80, 16, 32)],
+				['walk4', new CORE.Rect(80, 80, 16, 32)],
+				['walk5', new CORE.Rect(96, 80, 16, 32)],
+				['walk6', new CORE.Rect(112, 80, 16, 32)],
+				['box1', new CORE.Rect(0, 48, 16, 16)],
+				['box2', new CORE.Rect(0, 64, 16, 16)],
+				['finish1', new CORE.Rect(128, 80, 76, 28)],
+				['finish2', new CORE.Rect(128, 108, 76, 28)],
+			],
+		});
 	}
 
-	createCoin(position) {
+	createCoin(position, layer = 2) {
 		this.addObject(new CORE.GameObject({
 			name: 'coin',
 			isStatic: true,
@@ -361,7 +397,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: new CORE.Sprite(this.resources.getTexture('coin')),
-					layer: 2,
+					layer,
 				}),
 				new CORE.CircleCollider(0.5),
 			],
@@ -462,37 +498,101 @@ export default class Level1 extends CORE.Scene {
 		}));
 	}
 
+	createLittleBush(x, y, layer = 0, scaleX = 1, scaleY = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'littlebushes',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			scale: new CORE.Vector2d(scaleX, scaleY),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('littlebush'),
+				}),
+			],
+		}));
+	}
+
+	createBush(x, y, layer = 0) {
+		this.addObject(new CORE.GameObject({
+			name: 'bushes',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('bush'),
+				}),
+			],
+		}));
+	}
+
+	createTree(x, y, layer = -2, scaleX = 1, scaleY = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'trees',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			scale: new CORE.Vector2d(scaleX, scaleY),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('tree'),
+				}),
+			],
+		}));
+	}
+
+	createLittleTree(x, y, layer = -2) {
+		this.addObject(new CORE.GameObject({
+			name: 'littleTrees',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('littletree'),
+				}),
+			],
+		}));
+	}
+
+	createStaticBox(x, y, layer = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'staticBox',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('box2'),
+				}),
+			],
+		}));
+	}
+
+	createBox(x, y, layer = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'box',
+			position: new CORE.Vector2d(x, y),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('box1'),
+				}),
+				new CORE.BoxCollider(1, 1),
+				new CORE.RigidBody({
+					material: new CORE.Material(0.5, 0),
+					gravityScale: 5,
+				}),
+			],
+		}));
+	}
+
 	onStart() {
 		CORE.Screen.setSize(new CORE.Vector2d(1280, 720));
-		const ss = new CORE.SpriteSheet(
-			this.resources.getTexture('tilemap'),
-			['3', new CORE.Rect(16, 48, 16, 16)],
-			['1', new CORE.Rect(32, 48, 16, 16)],
-			['2', new CORE.Rect(48, 48, 16, 16)],
-			['01', new CORE.Rect(16, 64, 16, 16)],
-			['001', new CORE.Rect(16, 64, 3, 16)],
-			['00', new CORE.Rect(64, 64, 16, 16)],
-			['000', new CORE.Rect(64, 64, 3,16)],
-			['ladders', new CORE.Rect(64, 48, 16, 16)],
-			['littlebush', new CORE.Rect(0, 32, 32, 16)],
-			['bush', new CORE.Rect(32, 16, 48, 32)],
-			['littletree', new CORE.Rect(80, 0, 64, 80)],
-			['tree', new CORE.Rect(144, 0, 70, 80)],
-			['hero', new CORE.Rect(0, 80, 16, 32)],
-			['walk', new CORE.Rect(16, 80, 16, 32)],
-			['walk1', new CORE.Rect(32, 80, 16, 32)],
-			['walk2', new CORE.Rect(48, 80, 16, 32)],
-			['walk3', new CORE.Rect(64, 80, 16, 32)],
-			['walk4', new CORE.Rect(80, 80, 16, 32)],
-			['walk5', new CORE.Rect(96, 80, 16, 32)],
-			['walk6', new CORE.Rect(112, 80, 16, 32)],
-			['box1', new CORE.Rect(0, 48, 16, 16)],
-			['box2', new CORE.Rect(0, 64, 16, 16)],
-			['finish1', new CORE.Rect(128, 80, 76, 28)],
-			['finish2', new CORE.Rect(128, 108, 76, 28)]
-		)
 		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4)
 		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
+		const ss = this.resources.getTiles('tileset');
 		this.finish = new CORE.GameObject({
 			name: 'finish',
 			position: new CORE.Vector2d(28.4, 1.2),
@@ -511,7 +611,8 @@ export default class Level1 extends CORE.Scene {
 		});
 		this.hero = new CORE.GameObject({
 			name: 'hero',
-			position: new CORE.Vector2d(-16, 2),
+			scale: new CORE.Vector2d(0.8, 0.8),
+			position: new CORE.Vector2d(27, 0),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: ss.get('hero'),
@@ -545,7 +646,7 @@ export default class Level1 extends CORE.Scene {
 			name: 'sounds',
 			components: [
 				new CORE.AudioPlayer({
-					volume: 0.5,
+					volume: 0,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('nature'),
@@ -553,7 +654,7 @@ export default class Level1 extends CORE.Scene {
 					playOnInitialize: true
 				}),
 				new CORE.AudioPlayer({
-					volume: 0.5,
+					volume: 0,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('theme'),
@@ -562,97 +663,37 @@ export default class Level1 extends CORE.Scene {
 				})
 			],
 		}));
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'littlebushes',
-		// 	position: new CORE.Vector2d(10.5, -1.5),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				['littlebush', null, null, null, null, null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'bushes',
-		// 	position: new CORE.Vector2d(15, -1),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss], 
-		// 			map: [
-		// 				['bush', null, null, null, null, null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'bushes',
-		// 	position: new CORE.Vector2d(25, -0.4),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				[null, null, null, null, null, null, null, null, 'bush', null, null, null, 'bush', 'bush'],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'trees',
-		// 	position: new CORE.Vector2d(33, 1.7),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				[null, null, null, null, null, 'tree', null, null, 'tree', null, 'tree'],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'trees',
-		// 	position: new CORE.Vector2d(33, 0.7),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				['tree', null, null, null, null, null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'trees',
-		// 	position: new CORE.Vector2d(45, 5.8),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				['littletree', null, null, null, null, null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'trees',
-		// 	position: new CORE.Vector2d(25.5, 5.7),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				['littletree', null, null, null, null, null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
+		this.createBush(-40, -1);
+		this.createBush(-40, 4.5, -1);
+		this.createLittleBush(-38, 4, 8);
+		this.createLittleTree(-37.5, 5.5);
+		this.createLittleBush(-37, 4, -1);
+		this.createLittleBush(-36, 3.5, -1);
+		this.createBush(-34, -0.5);
+		this.createLittleBush(-32, -1, 3);
+		this.createTree(-32.8, 1.5);
+		this.createBush(-23, -0.5);
+		this.createBush(-23, 4.5)
+		this.createLittleBush(-22.2, -1.1, 1, 0.8, 0.8);
+		this.createTree(-21, 6, 2);
+		this.createLittleBush(-20.5, 4, 2);
+		this.createStaticBox(-20.2, 1);
+		this.createBush(-18, 1.2);
+		this.createLittleBush(-11, 2, 0, 1.25);
+		this.createLittleBush(-5.2, -0.25, 2, 0.5,0.5);
+		this.createTree(-5, 1.22, -2, 0.75, 0.75);
+		this.createTree(11.5, 2);
+		this.createTree(14.2, 1.5, 0, 0.75, 0.9);
+		this.createTree(19, 1.75, -3, 0.8, 0.6);
+		for (let i =0; i < 13; i += 3) {
+			this.createBush(10.5 + i, 0.5);
+		}
+		for (let i = 0; i < 13; i += 3) {
+			this.createLittleBush(9.5 + i, -0.1, 2);
+		}
+		for (let i = 0; i< 13; i += 5) {
+			this.createLittleTree(11 + i, 1.5);
+		}
 		this.addObject(new CORE.GameObject({
 			name: 'platform',
 			isStatic: true,
@@ -693,57 +734,20 @@ export default class Level1 extends CORE.Scene {
 				}),
 			]
 		}))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'bushes',
-		// 	position: new CORE.Vector2d(15, -1),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets:  [ss], 
-		// 			map: [
-		// 				[null, null, null, null, 'bush', null, null, null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'bushes',
-		// 	position: new CORE.Vector2d(13, 1.1),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss], 
-		// 			map: [
-		// 				[null, null, null, null, null, null, 'bush', null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
-		// this.addObject(new CORE.GameObject({
-		// 	name: 'littlebushes',
-		// 	position: new CORE.Vector2d(12.3, 0.5),
-		// 	isStatic: true,
-		// 	components: [
-		// 		new CORE.TileMap({
-		// 			spriteSheets: [ss],
-		// 			map: [
-		// 				[null, null, null, null, null, null, 'littlebush', null, null, null, null],
-		// 			],
-		// 		}),
-		// 	]
-		// }))
+
 		this.addObject(new CORE.GameObject({
 			name: 'ladders',
-			position: new CORE.Vector2d(-23, 2),
+			position: new CORE.Vector2d(-23, 1.8),
 			components: [
-				new CORE.BoxCollider(0.2, 3.05),
+				new CORE.BoxCollider(0.2, 3.5),
 			],
 			children: [
 				new CORE.GameObject({
 					name: 'ladder-sprite',
-					position: new CORE.Vector2d(1, -1),
+					position: new CORE.Vector2d(1, -0.8),
 					components: [
 						new CORE.TileMap({
+							color: new CORE.Color(240, 215, 175),
 							spriteSheets: [ss],
 							map: [
 								['ladders'],
@@ -761,52 +765,15 @@ export default class Level1 extends CORE.Scene {
 		this.createRailSpike(3.5, new CORE.Vector2d(-38, -1), 4);
 		this.createRailSpike(2, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
 		this.createRailSpike(3.5, new CORE.Vector2d(-38, 2), 4, Math.PI);
-		this.createCoin(new CORE.Vector2d(-40.6, -0.8)); // -34.6; 0.7
+		this.createCoin(new CORE.Vector2d(-40.6, -0.8), -3);
 		this.createCoin(new CORE.Vector2d(-18.6, 4.7));
-		this.createCoin(new CORE.Vector2d(-10.6, 4.7));
+		this.createCoin(new CORE.Vector2d(-11, 4));
 		this.createCoin(new CORE.Vector2d(20.4, 0.7));
 		this.createCoin(new CORE.Vector2d(15.9, 0.7));
 		this.createBall(new CORE.Vector2d(-38.6, 4.4));
-		this.addObject(new CORE.GameObject({
-			name: 'box',
-			position: new CORE.Vector2d(0.4, 0.7),
-			components: [
-				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(1, 1),
-				new CORE.RigidBody({
-					material: new CORE.Material(0.5, 0.5),
-					gravityScale: 5,
-					isKinematic: false
-				}),
-			],
-		}));
-		this.addObject(new CORE.GameObject({
-			name: 'box',
-			position: new CORE.Vector2d(-1.6, 0.7),
-			components: [
-				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(1, 1),
-				new CORE.RigidBody({
-					material: new CORE.Material(0.5, 0.5),
-					gravityScale: 5,
-					isKinematic: false
-				}),
-			],
-		}));
-		this.addObject(new CORE.GameObject({
-			name: 'box',
-			position: new CORE.Vector2d(2.4, 0.7),
-			components: [
-				new CORE.SpriteRenderer({sprite: ss.get('box1')}),
-				new CORE.BoxCollider(1, 1),
-				new CORE.RigidBody({
-					material: new CORE.Material(0.5, 0.5),
-					gravityScale: 5,
-					isKinematic: false
-				}),
-			],
-		}));
-		
+		this.createBox(0.4, 0.7);
+		this.createBox(-1.6, 0.7);
+		this.createBox(2.4, 0.7);
 		this.addObject(this.finish);
 		this.addObject(new CORE.Camera({
 			name: 'camera',
