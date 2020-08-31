@@ -3,6 +3,9 @@ import Vector2d from '../mathematics/Vector2d.js';
 import Color from './Color.js';
 import Maths from '../mathematics/Maths.js';
 import ParticleProperties from './ParticleProperties.js';
+import Renderer from './webgl/Renderer.js';
+import Texture from './webgl/Texture.js';
+import Matrix3x3 from '../mathematics/Matrix3x3.js';
 
 class ListElement{
 	constructor(next = this, previous = this) {
@@ -26,6 +29,13 @@ class Particle{
 		this.active = false;
 	}
 }
+
+const textureCoords = [
+	new Vector2d(0, 0),
+	new Vector2d(0, 1),
+	new Vector2d(1, 1),
+	new Vector2d(1, 0),
+];
 
 export default class ParticleSystem extends RendererComponent {
 	/**
@@ -92,6 +102,12 @@ export default class ParticleSystem extends RendererComponent {
 		this.lifeTime = lifeTime;
 	}
 
+	onInitialize() {
+		const imageData = new ImageData(1, 1);
+		imageData.data[0] = imageData.data[1] = imageData.data[2] = imageData.data[3] = 255;
+		this.texture = new Texture(this.gameObject.scene.resources, imageData, 1);
+	}
+
 	onFixedUpdate(fixedDeltaTime) {
 		for (let element = this.firstElement, i = 0; i < this.activeParticles; i++, element = element.next) {
 			const particle = element.particle;
@@ -117,9 +133,15 @@ export default class ParticleSystem extends RendererComponent {
 		}
 	}
 
-	draw(camera, context) {
-		const offset = camera.worldToCameraPosition(Vector2d.zero);
+	draw() {
 		const first = this.freeElement.previous;
+		const worldMatrix = this.transform.worldMatrix;
+		const translation = Matrix3x3.ofTranslation(0, 0);
+		const rotation = new Matrix3x3();
+		const tr = new Matrix3x3();
+		const scale = Matrix3x3.ofScaling(1, 1);
+		const trs = new Matrix3x3();
+		const modelMatrix = new Matrix3x3();
 		for (let element = first, i = 0; i < this.activeParticles; i++, element = element.previous) {
 			const particle = element.particle;
 
@@ -131,16 +153,14 @@ export default class ParticleSystem extends RendererComponent {
 				(particle.colorEnd.rgba[3] * (1 - life) + particle.colorBegin.rgba[3] * life) * 255,
 			);
 			let size = particle.sizeEnd * (1 - life) + particle.sizeBegin * life;
-			context.save();
-			context.fillStyle = color.rgbString();
-			context.globalAlpha = color.rgba[3];
-			context.translate(
-				offset.x + particle.position.x * 100 + this.transform.position.x * 100,
-				offset.y - particle.position.y * 100 - this.transform.position.y * 100
-			);
-			context.rotate(particle.rotation);
-			context.fillRect(-size / 2, - size / 2, size, size);
-			context.restore();
+			scale[0] = scale[4] = size;
+			translation[6] = particle.position.x;
+			translation[7] = particle.position.y;
+			Matrix3x3.ofRotation(particle.rotation, rotation);
+			translation.multiply(rotation, tr);
+			tr.multiply(scale, trs);
+			worldMatrix.multiply(trs, modelMatrix);
+			Renderer.drawQuad(modelMatrix, this.texture, textureCoords, color);
 		}
 	}
 
