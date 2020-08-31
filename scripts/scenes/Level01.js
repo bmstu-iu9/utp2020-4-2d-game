@@ -219,6 +219,7 @@ export default class Level01 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(4, 4),
+			position: new CORE.Vector2d(-3.5, 4),
 			components: [
 				new CORE.SpriteRenderer(ssh.get('walk')),
 				new CORE.RigidBody({

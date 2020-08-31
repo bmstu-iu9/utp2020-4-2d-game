@@ -1,7 +1,7 @@
 import * as CORE from '../core/Core.js';
 import * as MEFB from '../mechanics/For Bonus/MechsForBonus.js';
 
-export default class Test extends CORE.Scene {
+export default class bonus extends CORE.Scene {
 	onInitialize() {
 		this.resources.addImageInLoadQueue('graphic', 'resources/graphic.png');
 		this.resources.addImageInLoadQueue('ball', 'resources/ball.png');

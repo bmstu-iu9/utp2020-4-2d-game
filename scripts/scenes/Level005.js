@@ -219,6 +219,7 @@ export default class Level005 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(4, 4),
+			position: new CORE.Vector2d(-3.5, 0),
 			components: [
 				new CORE.SpriteRenderer(ssh.get('walk')),
 				new CORE.RigidBody({
@@ -392,7 +393,7 @@ export default class Level005 extends CORE.Scene {
 			scale: new CORE.Vector2d(0.5, 0.5),
 			components: [
 				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('extraLife'))),
-				new Door(Level01, this.hero),
+				new MECH.Door(Level01, this.hero),
 				new CORE.CircleCollider(2.27),
 			]
 		}));
