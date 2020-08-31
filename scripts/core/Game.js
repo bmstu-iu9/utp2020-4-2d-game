@@ -6,6 +6,7 @@ import Screen from './graphics/Screen.js';
 import Input from './Input.js';
 import Renderer from './graphics/webgl/Renderer.js';
 import Resources from './Resources.js'; 
+import Animator from './animations/Animator.js';
 
 export default class Game {
 	/**
@@ -121,6 +122,7 @@ export default class Game {
 			}
 			collisions.forEach(collision => collision.positionalCorrection());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
+			Animator.animators.forEach(animator => animator.process(Game.step));
 		}
 	
 		Scene.current.forEachEnabledGameObject(gameObject => gameObject.update(timestep));
