@@ -45,4 +45,8 @@ export { default as HierarchyTransform } from './mathematics/HierarchyTransform.
 export { default as CameraTransform } from './mathematics/CameraTransform.js';
 export { default as TransformComponent } from './TransformComponent.js';
 export { default as AchievementSystem } from './AchievementSystem.js';
+export { default as KeyFrame } from './animations/KeyFrame.js';
+export { default as SpriteKeyFrame } from './animations/SpriteKeyFrame.js';
+export { default as Animation } from './animations/Animation.js';
+export { default as Animator } from './animations/Animator.js';
 export { default as Game } from './Game.js';
