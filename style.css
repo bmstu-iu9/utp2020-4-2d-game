@@ -2,7 +2,7 @@
 	margin: unset;
 }
 
-body, html, #container, #openedMenu {
+body, html, #container, #menu {
     height:100%;
 	min-height:100%;
 	width: 100%;
@@ -32,12 +32,14 @@ body, html, #container, #openedMenu {
 }
 
 #ui {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 }
 
-#closeButton {
+#menuButton {
 	background-color:  cornflowerblue;
 	width: 5%;
 	height: 5%;
@@ -60,7 +62,7 @@ body, html, #container, #openedMenu {
 	flex-direction: row;
 }
 
-#openMenu {
+#menu {
 	display: none;
 	flex-direction: row;
 	justify-content: space-between;
@@ -107,4 +109,24 @@ body, html, #container, #openedMenu {
 
   #closeMenu {
 	display: none;
+}
+
+#mainMenu {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: stretch;
+	width: 100%;
+	height: 100%;
+	background-color: rgb(123, 184, 235);
+}
+
+#mainMenu button {
+	width: 100%;
+	height: 100%;
+}
+
+#mainMenu div {
+	width: 100%;
+	height: 15%;
 }

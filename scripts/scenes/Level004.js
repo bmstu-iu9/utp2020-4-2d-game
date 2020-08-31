@@ -335,8 +335,7 @@ export default class Level004 extends CORE.Scene {
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
-		this.addObject(ui);
-		ui.addChild(new CORE.UIObject({
+		const countsContainer = new CORE.UIObject({
 			tag: 'div',
 			id: 'countsContainer',
 			children: [
@@ -377,38 +376,43 @@ export default class Level004 extends CORE.Scene {
 					],
 				}),
 			],
-		}));
-		ui.addChild(new CORE.UIObject({
+		});
+		const menuButton = new CORE.UIObject({
 			tag: 'button',
-			id: 'closeButton',
+			id: 'menuButton',
 			innerText: 'Меню',
-		}));
-		ui.addChild(new CORE.UIObject({
+			components: [
+				new MECH.UIMenuButton(),
+			],
+		});
+		const about = new CORE.UIObject({
 			tag: 'div',
-			id: 'openMenu',
+			id: 'about',
+			innerHTML: this.resources.getText('description'),
+		});
+		const audio = new CORE.UIObject({
+			tag: 'div',
+			id: 'audio',
 			children: [
 				new CORE.UIObject({
-					tag: 'div',
-					id: 'about',
-					innerHTML: this.resources.getText('description'),
-				}),
-				new CORE.UIObject({
-					tag: 'div',
-					id: 'audio',
-					children: [
-						new CORE.UIObject({
-							name: 'volume',
-							tag: 'input',
-							attributes: [
-								{name: 'type', value: 'range'},
-								{name: 'min', value: '0'},
-								{name: 'max', value: '100'},
-								{name: 'step', value: '1'},
-								{name: 'value', value: '50'},
-							],
-						}),
+					name: 'volume',
+					tag: 'input',
+					attributes: [
+						{name: 'type', value: 'range'},
+						{name: 'min', value: '0'},
+						{name: 'max', value: '100'},
+						{name: 'step', value: '1'},
+						{name: 'value', value: '50'},
 					],
 				}),
+			],
+		});
+		const menu = new CORE.UIObject({
+			tag: 'div',
+			id: 'menu',
+			children: [
+				about,
+				audio,
 				new CORE.UIObject({
 					tag: 'ul',
 					id: 'navbar',
@@ -421,6 +425,9 @@ export default class Level004 extends CORE.Scene {
 									tag: 'button',
 									name: 'about',
 									innerText: 'Об игре',
+									components: [
+										new MECH.UIAboutButton(),
+									],
 								}),	
 							],
 						}),
@@ -432,6 +439,9 @@ export default class Level004 extends CORE.Scene {
 									tag: 'button',
 									name: 'audio',
 									innerText: 'Звук',
+									components: [
+										new MECH.UIAudioButton(),
+									],
 								}),
 							],
 						}),
@@ -443,12 +453,24 @@ export default class Level004 extends CORE.Scene {
 									tag: 'button',
 									innerText: 'Закрыть',
 									id: 'closeMenu',
+									components: [
+										new MECH.UICloseButton(),
+									],
 								}),
 							],
 						}),
 					],
 				}),
 			],
-		}));
+		});
+		this.addObject(ui);
+		ui.addChild(countsContainer);
+		ui.addChild(menuButton);
+		ui.addChild(menu);
+		countsContainer.htmlObject.style.display = 'flex';
+		menuButton.htmlObject.style.display = 'flex';
+		menu.htmlObject.style.display = 'none';
+		about.htmlObject.style.display = 'block';
+		audio.htmlObject.style.display = 'none';
 	}
 }
