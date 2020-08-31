@@ -4,6 +4,8 @@ import TileMap from '../graphics/TileMap.js';
 import BoxCollider from './BoxCollider.js';
 import Vector2d from '../mathematics/Vector2d.js';
 import GameObject from '../GameObject.js';
+import SpriteRenderer from '../graphics/SpriteRenderer.js';
+import Sprite from '../graphics/Sprite.js';
 
 class Edge {
 	constructor(direction, begin, end, id) {
@@ -382,8 +384,12 @@ export default class TileMapCollider extends GameComponent {
 			this.gameObject.addChild(new GameObject({
 				name: `collider - ${i}`,
 				position: new Vector2d(x, y),
+				scale: new Vector2d(rect.width, rect.height),
 				components: [
-					new BoxCollider(rect.width, rect.height),
+					//new BoxCollider(rect.width, rect.height),
+					new SpriteRenderer({
+						sprite: new Sprite(this.gameObject.scene.resources.getTexture('ball')),
+					})
 				],
 			}));
 		});
