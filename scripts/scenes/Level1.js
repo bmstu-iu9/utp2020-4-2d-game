@@ -1,358 +1,7 @@
 import * as CORE from '../core/Core.js';
+import * as MECH from '../mechanics/Mechanics.js'
 
-class UICoinsCount extends CORE.UIComponent {
-	constructor(hero) {
-		super();
-		this.hero = hero;
-		this.currentValue = null;
-	}
-
-	onInitialize() {
-		this.collector = this.hero.getComponent(Collector);
-	}
-
-	onUpdate() {
-		if (this.currentValue !== this.collector.coinsCount) {
-			this.uiObject.setInnerText(`${this.collector.coinsCount}`);
-			this.currentValue = this.collector.coinsCount;
-		}
-	}
-}
-
-class UILifeCount extends CORE.UIComponent {
-	constructor(hero) {
-		super();
-		this.hero = hero;
-		this.currentValue = null;
-	}
-
-	onInitialize() {
-		this.player = this.hero.getComponent(Player);
-	}
-
-	onUpdate() {
-		if (this.currentValue !== this.player.lifeCount) {
-			this.uiObject.setInnerText(`${this.player.lifeCount}`);
-			this.currentValue = this.player.lifeCount;
-		}
-	}
-}
-
-class Rotater extends CORE.GameComponent {
-	constructor(speed) {
-		super();
-		this.speed = speed;
-	}
-	
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-	}
-
-	onUpdate(delta) {
-		if (this.rigidBody.velocity.x > 0 || this.rigidBody.velocity.x < 0) {
-			this.transform.setRotation(
-				this.transform.rotation + (this.rigidBody.velocity.x / Math.PI) * this.speed * delta,
-			);
-		}
-		if (this.transform.position.y < -5) {
-			this.gameObject.destroy();
-		}
-	}
-}
-
-class InteractingObject extends CORE.GameComponent {
-	interact(gameObject) {
-
-	}
-}
-
-class Player extends CORE.GameComponent {
-	constructor(lifeCount, maxHungryCount) {
-		super();
-		this.lifeCount = lifeCount;
-		this.maxHungryCount = maxHungryCount;
-		this.hungryCount = maxHungryCount;
-		this.interactingObject = null;
-	}
-
-	increaseHunger() {
-		this.hungryCount--;
-		console.log('hunger: ' + this.hungryCount);
-		if (this.hungryCount <= 0) {
-			console.log('lose');
-			this.gameObject.scene.reload();
-		}
-	}
-
-	decreaseHunger(levelOfSatiety) {
-		this.hungryCount += levelOfSatiety;
-		if (this.hungryCount >= this.maxHungryCount) {
-			this.hungryCount = this.maxHungryCount;
-		}
-		console.log('hunger: ' + this.hungryCount);
-	}
-
-	onUpdate() {
-		if (!this.controller.isFreeze) {
-			if (CORE.Input.getKeyDown('KeyE') && this.interactingObject != null) {
-				this.interactingObject.interact(this.gameObject);
-			}
-		}
-	}
-
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-		/**
-		 * @type {Controller}
-		 */
-		this.controller = this.gameObject.getComponent(Controller);
-		if (this.controller == null) {
-			throw new Error('no controller.');
-		}
-	}
-
-	onCollisionEnter(collider) {
-		if (collider.gameObject.name === 'spike') {
-			this.lifeCount--;
-			console.log('lives left: ' + this.lifeCount);
-			if (this.lifeCount <= 0) {
-				console.log('lose');
-				this.gameObject.scene.reload();
-			} else {
-				this.controller.freeze();
-				this.rigidBody.setVelocity(new CORE.Vector2d(0, 0));
-				if (this.transform.position.x <= collider.transform.position.x) {
-					this.rigidBody.addForce(new CORE.Vector2d(-75, 800));
-				} else {
-					this.rigidBody.addForce(new CORE.Vector2d(75, 800));
-				}
-			}
-		} else {
-			if (this.rigidBody.velocity.y < -20) {
-				this.lifeCount--;
-				console.log('lives left: ' + this.lifeCount);
-				if (this.lifeCount <= 0) {
-					console.log('lose');
-					this.gameObject.scene.reload();
-				}
-			}
-		}
-	}
-
-	onTriggerExit(collider) {
-		if (this.interactingObject != null && collider.gameObject === this.interactingObject.gameObject) {
-			this.interactingObject = null;
-		}
-	}
-}
-
-class Controller extends CORE.GameComponent {
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-		/**
-		 * @type {Player}
-		 */
-		this.player = this.gameObject.getComponent(Player);
-		if (this.player == null) {
-			throw new Error('no player.');
-		}
-		this.isFreeze = false;
-		/**
-		 * @type {CORE.Animator}
-		 */
-		this.animator = this.gameObject.getComponent(CORE.Animator);
-		if (this.animator == null) {
-			throw new Error('no animator.');
-		}
-		this.state = 'idle';
-	}
-
-	changeState(state) {
-		if (this.state === state) {
-			return;
-		}
-		this.animator.play(state);
-		this.state = state;
-	}
-
-	freeze() {
-		if (!this.canJump) {
-			this.isFreeze = true;
-		}
-	}
-
-	onCollisionEnter(collider) {
-		if (collider.gameObject.name === 'platform' || collider.gameObject.name === 'roof') {
-			this.canJump = true;
-			this.isFreeze = false;
-		}
-	}
-
-	onCollisionExit(collider) {
-		if (
-			collider.gameObject.name === 'platform' 
-			&& this.gameObject.getComponent(CORE.Collider).collidersInContact.size === 1
-		) {
-			this.canJump = false;
-		}
-	}
-
-	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'ladders') {
-			this.isLadder = true;
-			this.rigidBody.setKinematic(true);
-		}
-	}
-
-	onTriggerExit(collider) {
-		if (collider.gameObject.name === 'ladders') {
-			this.isLadder = false;
-			this.rigidBody.setKinematic(false);
-		}
-	}
-
-	onFixedUpdate(delta) {
-		if (this.freezeTime > 0) {
-			this.freezeTime -= delta;
-		}
-	}
-
-	onUpdate() {
-			if (this.isLadder) {
-				if (CORE.Input.getKeyPressed('KeyW')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
-				} else if (CORE.Input.getKeyPressed('KeyS')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
-				}
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(-4, 4));
-					this.changeState('walk');
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(4, 4));
-					this.changeState('walk');
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-					this.changeState('idle');
-				}
-			} else {
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(-4, 4));
-					this.changeState('walk');
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
-					this.transform.setLocalScale(new CORE.Vector2d(4, 4));
-					this.changeState('walk');
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-					this.changeState('idle');
-				}
-				if (CORE.Input.getKeyDown('Space')) {
-					this.rigidBody.addForce(new CORE.Vector2d(0, 550));
-				}
-			}
-		if (this.transform.position.y < -5) {
-			this.gameObject.scene.reload();
-		}
-	}
-}
-
-class Follower extends CORE.CameraComponent {
-	constructor(target) {
-		super();
-		this.target = target;
-		this.floor = 1.4;
-	}
-	
-	setFloor(y) {
-		this.floor = y;
-	}
-
-	onUpdate() {
-		let position = this.target.transform.position;
-		position = new CORE.Vector2d(position.x, position.y + 1.2);
-		if (position.y < this.floor) {
-			position = new CORE.Vector2d(position.x, this.floor);
-		}
-		if (position.x < 0.4) {
-			position = new CORE.Vector2d(0.4, position.y);
-		}
-		this.transform.setPosition(position);
-	}
-}
-
-class Collector extends CORE.GameComponent {
-	constructor() {
-		super();
-		this.coinsCount = 0;
-	}
-
-	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'coin') {
-			this.coinsCount++;
-			console.log('coins: ' + this.coinsCount + ' / 5');
-			collider.gameObject.destroy();
-			if (this.coinsCount >= 5) {
-				this.gameObject.scene.createBallRain();
-			}
-		}
-	}
-}
-
-class Mover extends CORE.GameComponent {
-	constructor(speed, left, right) {
-		super();
-		this.speed = speed;
-		this.left = left;
-		this.right = right;
-		this.target = left;
-	}
-
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-	}
-
-	onFixedUpdate(delta) {
-		if (this.transform.position.equals(this.target)) {
-			if (this.target.equals(this.left)) {
-				this.target = this.right;
-			} else {
-				this.target = this.left;
-			}
-		}
-		this.rigidBody.moveTo(this.target, this.speed, delta);
-	}
-}
-
-export default class Test extends CORE.Scene {
+export default class Level001 extends CORE.Scene {
 	onInitialize() {
 		this.resources.addImageInLoadQueue('graphic', 'resources/graphic.png');
 		this.resources.addImageInLoadQueue('ball', 'resources/ball.png');
@@ -363,6 +12,11 @@ export default class Test extends CORE.Scene {
 		this.resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
 		this.resources.addSoundInLoadQueue('theme', 'resources/theme.mp3');
 		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
+		this.resources.addImageInLoadQueue('checkPoint', 'resources/checkPoint.png');
+		this.resources.addImageInLoadQueue('turrel', 'resources/turrel.png');
+		this.resources.addImageInLoadQueue('laser', 'resources/laser.png');
+		this.resources.addImageInLoadQueue('trampoline', 'resources/trampoline.png');
+		this.resources.addImageInLoadQueue('extraLife', 'resources/extraLife.png');
 	}
 
 	createCoin(position) {
@@ -428,7 +82,7 @@ export default class Test extends CORE.Scene {
 					material: new CORE.Material(0.5, 0),
 					isKinematic: true,
 				}),
-				new Mover(speed, left, right),
+				new MECH.Mover(speed, left, right),
 				new CORE.BoxCollider(0.31 / 2, 0.48),
 			],
 		}));
@@ -445,7 +99,7 @@ export default class Test extends CORE.Scene {
 					new CORE.RigidBody({
 						material: new CORE.Material(0.5, 0.5),
 					}),
-					new Rotater(3),
+					new MECH.Rotater(3),
 				],
 			}));
 		}
@@ -458,7 +112,7 @@ export default class Test extends CORE.Scene {
 				new CORE.RigidBody({
 					material: new CORE.Material(0.1, 0.5),
 				}),
-				new Rotater(3),
+				new MECH.Rotater(3),
 			],
 		}));
 	}
@@ -475,10 +129,70 @@ export default class Test extends CORE.Scene {
 						material: new CORE.Material(0.5, 0.5),
 						velocity: new CORE.Vector2d(-i, Math.random() * i * 2),
 					}),
-					new Rotater(3),
+					new MECH.Rotater(3),
 				],
 			}));
 		}
+	}
+
+	createCheckPoint(position) {
+		this.addObject(new CORE.GameObject({
+			name: 'checkPoint',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.5, 0.5),
+			position: position,
+			components: [
+				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('checkPoint')), 1),
+				new CORE.BoxCollider(1, 1),
+			],
+		}));
+	}
+
+	createTurrel(position, rotation, speed, timer) {
+		this.addObject(new CORE.GameObject({
+			name: 'turrel',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			rotation: rotation,
+			components: [
+				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('turrel')), 1),
+				new CORE.BoxCollider(4, 3.4),
+				new CORE.RigidBody({
+					material: new CORE.Material(1, 0),
+				}),
+				new MECH.Turrel(position, rotation, speed, timer),
+			],
+		}));
+	}
+
+	createTrampoline(position) {
+		this.addObject(new CORE.GameObject({
+			name: 'trampoline',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			components: [
+				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('trampoline')), 1),
+				new CORE.BoxCollider(5.14, 2.02),
+				new CORE.RigidBody({
+					material: new CORE.Material(1, 1),
+				}),
+			],
+		}));
+	}
+
+	createExtraLife(position) {
+		this.addObject(new CORE.GameObject({
+			name: 'extraLife',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			components: [
+				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('extraLife')), 1),
+				new CORE.CircleCollider(4.64 / 2),
+			],
+		}));
 	}
 
 	onStart() {
@@ -523,9 +237,9 @@ export default class Test extends CORE.Scene {
 					])],
 				], 'idle'),
 				new CORE.BoxCollider(0.16, 0.32),
-				new Controller(),
-				new Collector(),
-				new Player(3, 10),
+				new MECH.Controller(),
+				new MECH.Collector(),
+				new MECH.Player(5, new CORE.Vector2d(-3.5, 4)),
 			],
 		});
 		this.addObject(new CORE.GameObject({
@@ -590,9 +304,9 @@ export default class Test extends CORE.Scene {
 		this.addObject(new CORE.GameObject({
 			name: 'ladders',
 			scale: new CORE.Vector2d(1, 1),
-			position: new CORE.Vector2d(12.5, 1.41),
+			position: new CORE.Vector2d(12.5, 0.5),
 			components: [
-				new CORE.BoxCollider(0.1, 1),
+				new CORE.BoxCollider(0.1, 4),
 			],
 			children: [
 				new CORE.GameObject({
@@ -603,31 +317,46 @@ export default class Test extends CORE.Scene {
 							['ladders'],
 							['ladders'],
 							['ladders'],
-							['ladders']
+                            ['ladders'],
+                            ['ladders']
 						]),
 					]
 				})
 			]
 		}));
 		this.addObject(this.hero);
-		this.createRailSpike(5, new CORE.Vector2d(-3, -1.8), 4);
-		this.createRailSpike(3, new CORE.Vector2d(-6.3, -0.1), 4, Math.PI / 2);
-		this.createRailSpike(5, new CORE.Vector2d(-3, 1.6), 4, Math.PI);
+		this.createRailSpike(3.5, new CORE.Vector2d(-3, -1.8), 4);
+		this.createRailSpike(2, new CORE.Vector2d(-6.3, -0.1), 4, Math.PI / 2);
+		this.createRailSpike(3.5, new CORE.Vector2d(-3, 1.6), 4, Math.PI);
 		this.createCoin(new CORE.Vector2d(-6, -1.5));
 		this.createCoin(new CORE.Vector2d(16, 4));
+		this.createExtraLife(new CORE.Vector2d(17, 0.5));
 		this.createCoin(new CORE.Vector2d(24, 4));
+		this.createCheckPoint(new CORE.Vector2d(23, 3));
 		this.createBall(new CORE.Vector2d(-2, 3));
 		this.createBall(new CORE.Vector2d(35, 0));
 		this.createCoin(new CORE.Vector2d(50, 0));
-		this.createRailSpike(5, new CORE.Vector2d(50, -0.8), 4)
+		this.createTurrel(new CORE.Vector2d(60, 0), 0, 2.5, 5);
+		this.createRailSpike(2.5, new CORE.Vector2d(50, -0.8), 4)
 		this.createRailSpike(3, new CORE.Vector2d(55, -0.8), 5)
 		this.createCoin(new CORE.Vector2d(55, 0));
+		this.addObject(new CORE.GameObject({
+			name: 'door',
+			position: new CORE.Vector2d(65, 0),
+			scale: new CORE.Vector2d(0.5, 0.5),
+			components: [
+				new CORE.SpriteRenderer(new CORE.Sprite(this.resources.getImage('extraLife'))),
+				new MECH.Door(Level001, this.hero),
+				new CORE.CircleCollider(2.27),
+			]
+
+		}));
 		this.addObject(new CORE.Camera({
 			name: 'camera',
 			scale: new CORE.Vector2d(0.8, 0.8),
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
-				new Follower(this.hero),
+				new MECH.Follower(this.hero),
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
@@ -649,7 +378,7 @@ export default class Test extends CORE.Scene {
 							tag: 'div',
 							id: 'life',
 							components: [
-								new UILifeCount(this.hero),
+								new MECH.UILifeCount(this.hero),
 							],
 						}),
 					],
@@ -667,7 +396,7 @@ export default class Test extends CORE.Scene {
 							tag: 'div',
 							id: 'coins',
 							components: [
-								new UICoinsCount(this.hero),
+								new MECH.UICoinsCount(this.hero),
 							],
 						}),
 					],
