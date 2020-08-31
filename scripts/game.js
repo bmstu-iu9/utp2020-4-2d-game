@@ -1,4 +1,4 @@
 import { Game } from './core/Core.js';
-import Level05 from './scenes/Level05.js';
+import MainMenu from './scenes/MainMenu.js';
 
-Game.start(Level05, 'game', 'uiHost');
+Game.start(MainMenu, 'game', 'uiHost');
