@@ -351,32 +351,32 @@ export default class Level05 extends CORE.Scene {
 			]
 		}));
         this.addObject(this.hero);
-        /*this.createRailSpike(3, new CORE.Vector2d(4.5, 1.6), 18, Math.PI);
+        this.createRailSpike(3, new CORE.Vector2d(4.5, 1.6), 18, Math.PI);
         this.createTurrel(new CORE.Vector2d(14, -1.6), 0, 2, 4);
-        this.createTurrel(new CORE.Vector2d(14, -0.6), 0, 3, 3);*/
+        this.createTurrel(new CORE.Vector2d(14, -0.6), 0, 3, 3);
         this.createCoin(new CORE.Vector2d(15, 1));
         this.createTrampoline(new CORE.Vector2d(20, 0));
 		this.createCheckPoint(new CORE.Vector2d(30, 5));
 		this.createExtraLife(new CORE.Vector2d(39, -1));
-        //this.createRailSpike(2.5, new CORE.Vector2d(45, -1.7), 5);
-        //this.createRailSpike(3, new CORE.Vector2d(50.5, -1.7), 6);
+        this.createRailSpike(2.5, new CORE.Vector2d(45, -1.7), 5);
+        this.createRailSpike(3, new CORE.Vector2d(50.5, -1.7), 6);
         this.createCoin(new CORE.Vector2d(53, -1));
-        //this.createRailSpike(3, new CORE.Vector2d(55.5, -1.7), 4);
+        this.createRailSpike(3, new CORE.Vector2d(55.5, -1.7), 4);
         this.createTurrel(new CORE.Vector2d(60, -0.6), 0, 4, 4);
-        /*this.createTurrel(new CORE.Vector2d(62, -1.6), Math.PI / 2, 4, 1.5);
+        this.createTurrel(new CORE.Vector2d(62, -1.6), Math.PI / 2, 4, 1.5);
         this.createTurrel(new CORE.Vector2d(65.5, -1.6), Math.PI / 2, 4, 1.5);
-        this.createTurrel(new CORE.Vector2d(68.5, -1.6), Math.PI / 2, 4, 1.5);*/
+        this.createTurrel(new CORE.Vector2d(68.5, -1.6), Math.PI / 2, 4, 1.5);
         this.createCoin(new CORE.Vector2d(70, 1.5));
-        /*this.createTurrel(new CORE.Vector2d(71.5, -1.6), Math.PI / 2, 4, 1.5);
+        this.createTurrel(new CORE.Vector2d(71.5, -1.6), Math.PI / 2, 4, 1.5);
         this.createCheckPoint(new CORE.Vector2d(73, 1.5));
         this.createTurrel(new CORE.Vector2d(74.5, -1.6), Math.PI / 2, 4, 1.5);
         this.createRailSpike(2, new CORE.Vector2d(77.5, 3.2), 4);
-        this.createRailSpike(2.5, new CORE.Vector2d(81.5, 4.2), 4);*/
+        this.createRailSpike(2.5, new CORE.Vector2d(81.5, 4.2), 4);
         this.createCoin(new CORE.Vector2d(82, 4.5));
-		/*this.createRailSpike(2.7, new CORE.Vector2d(85.5, 5.2), 4);
-		this.createExtraLife(new CORE.Vector2d(91, -1));*/
+		this.createRailSpike(2.7, new CORE.Vector2d(85.5, 5.2), 4);
+		this.createExtraLife(new CORE.Vector2d(91, -1));
         this.createTrampoline(new CORE.Vector2d(98, -0.5));
-        /*this.createRailSpike(1.55, new CORE.Vector2d(104, 2.2), 3);
+        this.createRailSpike(1.55, new CORE.Vector2d(104, 2.2), 3);
         this.createTurrel(new CORE.Vector2d(106, -0.6), Math.PI / 2, 4, 2);
         this.createRailSpike(1.5, new CORE.Vector2d(108, 2.2), 3);
         this.createTurrel(new CORE.Vector2d(110, -0.6), Math.PI / 2, 4, 2);
@@ -385,7 +385,7 @@ export default class Level05 extends CORE.Scene {
         this.createRailSpike(1.55, new CORE.Vector2d(116, 2.2), 3);
         this.createTurrel(new CORE.Vector2d(120, -0.6), Math.PI / 2, 4, 2);
         this.createRailSpike(1.5, new CORE.Vector2d(122, 2.2), 3);
-		this.createTurrel(new CORE.Vector2d(124, -0.6), Math.PI / 2, 4, 2);*/
+		this.createTurrel(new CORE.Vector2d(124, -0.6), Math.PI / 2, 4, 2);
 		this.createCoin(new CORE.Vector2d(124, 2.5));
 		this.addObject(new CORE.GameObject({
 			name: 'door',
