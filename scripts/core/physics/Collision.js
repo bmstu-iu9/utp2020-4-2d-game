@@ -267,7 +267,7 @@ export default class Collision {
 		) {
 			return null;
 		}
-		const kSlop = 0.0008;
+		const kSlop = 0.008;
 		const percent = 0.2;
 		const correction = this.normal.multiply(
 			Math.max(this.depth - kSlop, 0) / (this.firstRigidBody.invMass + this.secondRigidBody.invMass) * percent,
