@@ -659,7 +659,7 @@ export default class Level1 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(0.8, 0.8),
-			position: new CORE.Vector2d(-36, 8),
+			position: new CORE.Vector2d(-30, -0.7),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: ss.get('hero'),
@@ -886,7 +886,7 @@ export default class Level1 extends CORE.Scene {
 		const about = new CORE.UIObject({
 			tag: 'div',
 			id: 'about',
-			innerHTML: `${this.resources.getText('description')}`,
+			innerHTML: this.resources.getText('description'),
 		});
 		const audio = new CORE.UIObject({
 			tag: 'div',
