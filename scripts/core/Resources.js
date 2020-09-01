@@ -290,8 +290,6 @@ export default class Resources {
 	createTileMapSpriteSheet({
 		 id,
 		 path,
-		 tileWidth,
-		 tileHeight,
 		 border = 1,
 		 tiles,
 		 pixelsPerUnit = 100,
@@ -315,18 +313,6 @@ export default class Resources {
 
 		if (typeof path !== 'string') {
 			throw new TypeError('invalid parameter "path". Expected a string.');
-		}
-
-		if (tileHeight == null && tileWidth == null) {
-			throw new Error('width or height must be specified');
-		}
-
-		if (tileWidth != null && (!Number.isInteger(tileWidth) || tileWidth <= 0)) {
-			throw new Error('invalid parameter "tileWidth". Value must be greater than 0.');
-		}
-
-		if (tileHeight != null && (!Number.isInteger(tileHeight) || tileHeight <= 0)) {
-			throw new Error('invalid parameter "tileHeight". Value must be greater than 0.');
 		}
 
 		if (!Number.isInteger(border) || border <= 0) {
@@ -358,8 +344,6 @@ export default class Resources {
 
 		this.tileMapSpriteSheetsLoadQueue[id] = {
 			path,
-			tileWidth,
-			tileHeight,
 			border,
 			tiles,
 			pixelsPerUnit,
@@ -385,7 +369,7 @@ export default class Resources {
 		this.textureCreationQueue = {};
 
 		const texturesToLoad = Object.entries(this.textureLoadQueue);
-		this.textLoadQueue = {};
+		this.textureLoadQueue = {};
 
 		const sounds = Object.entries(this.soundLoadQueue);
 		this.soundLoadQueue = {};
@@ -510,7 +494,6 @@ export default class Resources {
 			image.onload = () => {
 				count--;
 				let tiles = [];
-				let direction = properties.tileHeight != null ? 'leftToRight' : 'topToDown';
 				const canvas = document.createElement('canvas');
 				canvas.width = 4096;
 				canvas.height = 4096;
@@ -521,43 +504,28 @@ export default class Resources {
 				let imageData = context.getImageData(0, 0, width, height);
 				let maxWidth = 0;
 				let maxHeight = 0;
-				let columnHeight = direction === 'leftToRight' ? properties.tileHeight + 2 * properties.border : 0;
-				let rowWidth = direction === 'topToDown' ? properties.tileWidth + 2 * properties.border : 0;
+				let deltaWidth = 0;
+				let numberOfRows = 1;
 				for (let tile of properties.tiles){
 					let rect = tile[1];
-					if (direction === 'leftToRight') {
-						if (rowWidth + rect.width + 2 * properties.border > 4096) {
-							columnHeight += properties.tileHeight + 2 * properties.border;
-							if (rowWidth > maxWidth) {
-								maxWidth = rowWidth;
-							}
-
-							rowWidth = 0;
+					if (deltaWidth + rect.width + 2 * properties.border > 4096) {
+						numberOfRows++;
+						if (maxWidth < deltaWidth) {
+							maxWidth = deltaWidth;
 						}
+						deltaWidth = 0;
+					}
 
-						rowWidth += rect.width + 2 * properties.border;
-					} else {
-						if (columnHeight + rect.height + 2 * properties.border > 4096) {
-							rowWidth += properties.tileHeight + 2 * properties.border;
-							if (columnHeight > maxHeight) {
-								maxHeight = columnHeight;
-							}
-
-							columnHeight = 0;
-						}
-
-						columnHeight += rect.height + 2 * properties.border;
+					deltaWidth += rect.width + 2 * properties.border;
+					if (maxHeight < rect.height) {
+						maxHeight = rect.height + 2 * properties.border;
 					}
 				}
-
-				if (rowWidth > maxWidth) {
-					maxWidth = rowWidth;
+				if ( maxWidth< deltaWidth) {
+					maxWidth = deltaWidth;
 				}
 
-				if (columnHeight > maxHeight) {
-					maxHeight = columnHeight;
-				}
-
+				maxHeight *= numberOfRows;
 				const finalImageData = new ImageData(maxWidth, maxHeight);
 				let destX = 0;
 				let destY = 0;
@@ -658,21 +626,13 @@ export default class Resources {
 							properties.border,
 						);
 					}
-					if (direction === 'leftToRight') {
-						if (destX + rect.width + 2 * properties.border > 4096) {
-							destX = 0;
-							destY += properties.tileHeight + 2 * properties.border;
-						}
 
-						destX += rect.width + 2 * properties.border;
-					} else {
-						if (destY + rect.height + 2 * properties.border > 4096) {
-							destY = 0;
-							destX += properties.tileWidth + 2 * properties.border;
-						}
-
-						destY += rect.height + 2 * properties.border;
+					if (destX + rect.width + 2 * properties.border > 4096) {
+						destX = 0;
+						destY += maxHeight / numberOfRows + 2 * properties.border;
 					}
+
+					destX += rect.width + 2 * properties.border;
 				}
 
 				const texture = new Texture(this, finalImageData, properties.pixelsPerUnit, properties.isPixelImage);

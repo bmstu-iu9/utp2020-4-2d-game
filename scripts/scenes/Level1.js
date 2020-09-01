@@ -51,22 +51,8 @@ class UIMenuButton extends CORE.UIComponent {
 	}
 }
 
-class UICloseButton extends CORE.UIComponent {
-	onInitialize() {
-		const component = this;
-		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`menu`).style.display == 'flex') {
-				document.getElementById(`menu`).style.display = 'none';
-				document.getElementById(`countsContainer`).style.display = 'flex';
-				document.getElementById(`menuButton`).style.display = 'flex';
-			}
-		});
-	}
-}
-
 class UIAboutButton extends CORE.UIComponent {
 	onInitialize() {
-		const component = this;
 		this.uiObject.addEventListener('click', () => {
 			if (document.getElementById(`about`).style.display == 'none') {
 				document.getElementById(`audio`).style.display = 'none';
@@ -78,11 +64,22 @@ class UIAboutButton extends CORE.UIComponent {
 
 class UIAudioButton extends CORE.UIComponent {
 	onInitialize() {
-		const component = this;
 		this.uiObject.addEventListener('click', () => {
 			if (document.getElementById(`audio`).style.display == 'none') {
 				document.getElementById(`about`).style.display = 'none';
 				document.getElementById(`audio`).style.display = 'flex';
+			}
+		});
+	}
+}
+
+class UICloseButton extends CORE.UIComponent {
+	onInitialize() {
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`menu`).style.display == 'flex') {
+				document.getElementById(`menu`).style.display = 'none';
+				document.getElementById(`countsContainer`).style.display = 'flex';
+				document.getElementById(`menuButton`).style.display = 'flex';
 			}
 		});
 	}
@@ -189,15 +186,6 @@ class Player extends CORE.GameComponent {
 					this.rigidBody.addForce(new CORE.Vector2d(75, 800));
 				}
 			}
-		} else {
-			if (this.rigidBody.velocity.y < -20) {
-				this.lifeCount--;
-				console.log('lives left: ' + this.lifeCount);
-				if (this.lifeCount <= 0) {
-					console.log('lose');
-					this.gameObject.scene.reload();
-				}
-			}
 		}
 	}
 
@@ -225,6 +213,22 @@ class Controller extends CORE.GameComponent {
 			throw new Error('no player.');
 		}
 		this.isFreeze = false;
+		/**
+		 * @type {CORE.Animator}
+		 */
+		this.animator = this.gameObject.getComponent(CORE.Animator);
+		if (this.animator == null) {
+			throw new Error('no animator.');
+		}
+		this.state = 'idle';
+	}
+
+	changeState(state) {
+		if (this.state === state) {
+			return;
+		}
+		this.animator.play(state);
+		this.state = state;
 	}
 
 	freeze() {
@@ -250,14 +254,14 @@ class Controller extends CORE.GameComponent {
 	}
 
 	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'ladder') {
+		if (collider.gameObject.name === 'ladders') {
 			this.isLadder = true;
 			this.rigidBody.setKinematic(true);
 		}
 	}
 
 	onTriggerExit(collider) {
-		if (collider.gameObject.name === 'ladder') {
+		if (collider.gameObject.name === 'ladders') {
 			this.isLadder = false;
 			this.rigidBody.setKinematic(false);
 		}
@@ -270,37 +274,47 @@ class Controller extends CORE.GameComponent {
 	}
 
 	onUpdate() {
-		if (!this.isFreeze) {
-			if (this.isLadder) {
-				if (CORE.Input.getKeyPressed('KeyW')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
-				} else if (CORE.Input.getKeyPressed('KeyS')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
-				}
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-				}
+		const follower = this.gameObject.scene.camera.getComponent(Follower);
+		follower.isLookDown = false;
+		if (this.isLadder) {
+			if (CORE.Input.getKeyPressed('KeyW') || CORE.Input.getKeyPressed('ArrowUp')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
+			} else if (CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
 			} else {
-				if (CORE.Input.getKeyPressed('KeyA')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
-				} else if (CORE.Input.getKeyPressed('KeyD')) {
-					this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
-				} else {
-					this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-				}
-				if (CORE.Input.getKeyDown('Space') && this.canJump) {
-					this.rigidBody.addForce(new CORE.Vector2d(0, 750));
-					this.canJump = false;
-				}
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
+			}
+			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+				this.changeState('walk');
+			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+				this.changeState('walk');
+			} else {
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
+				this.changeState('idle');
+			}
+		} else {
+			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+				this.changeState('walk');
+			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
+				this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
+				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+				this.changeState('walk');
+			} else {
+				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
+				this.changeState('idle');
+			}
+			if (CORE.Input.getKeyDown('Space') || CORE.Input.getKeyDown('ArrowUp')) {
+				this.rigidBody.addForce(new CORE.Vector2d(0, 700));
 			}
 		}
-		if (this.transform.position.y < -5) {
+		if (this.transform.position.y < -6) {
 			this.gameObject.scene.reload();
 		}
 	}
@@ -310,7 +324,8 @@ class Follower extends CORE.CameraComponent {
 	constructor(target) {
 		super();
 		this.target = target;
-		this.floor = 0.5;
+		this.floor = 1.5;
+		this.isLookDown = false;
 	}
 	
 	setFloor(y) {
@@ -320,11 +335,15 @@ class Follower extends CORE.CameraComponent {
 	onUpdate() {
 		let position = this.target.transform.position;
 		position = new CORE.Vector2d(position.x, position.y + 1.2);
+		if (this.isLookDown) {
+			position = position.subtract(new CORE.Vector2d(0, 2));
+		}
+
 		if (position.y < this.floor) {
 			position = new CORE.Vector2d(position.x, this.floor);
 		}
-		if (position.x < -0.7) {
-			position = new CORE.Vector2d(-0.7, position.y);
+		if (position.x < -40) {
+			position = new CORE.Vector2d(-40, position.y);
 		}
 		this.transform.setPosition(position);
 	}
@@ -337,14 +356,10 @@ class Collector extends CORE.GameComponent {
 	}
 
 	onTriggerEnter(collider) {
-		console.log('test');
 		if (collider.gameObject.name === 'coin') {
 			this.coinsCount++;
 			console.log('coins: ' + this.coinsCount + ' / 5');
 			collider.gameObject.destroy();
-			if (this.coinsCount >= 5) {
-				this.gameObject.scene.createBallRain();
-			}
 		}
 	}
 }
@@ -382,118 +397,46 @@ class Mover extends CORE.GameComponent {
 
 export default class Level1 extends CORE.Scene {
 	onInitialize() {
-		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
-		this.resources.addTextureInLoadQueue('platform', 'resources/platform.png');
-		this.resources.addTextureInLoadQueue('enemy', 'resources/platform.png');
-		this.resources.addTextureInLoadQueue('ladder', 'resources/ladder.png');
-		this.resources.addTextureInLoadQueue('house', 'resources/house.png');
 		this.resources.addTextureInLoadQueue('ball', 'resources/ball.png');
 		this.resources.addTextureInLoadQueue('coin', 'resources/coin.png');
-		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png', 31);
+		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png');
 		this.resources.addTextureInLoadQueue('rail', 'resources/rail.png');
+		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
+		this.resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
+		this.resources.addSoundInLoadQueue('theme', 'resources/theme.mp3');
 		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
+		this.resources.createTileMapSpriteSheet({
+			id: 'tileset',
+			path: 'resources/map.png',
+			pixelsPerUnit: 16,
+			tiles: [
+				['3', new CORE.Rect(16, 48, 16, 16)],
+				['1', new CORE.Rect(32, 48, 16, 16)],
+				['2', new CORE.Rect(48, 48, 16, 16)],
+				['01', new CORE.Rect(16, 64, 16, 16)],
+				['00', new CORE.Rect(64, 64, 16, 16)],
+				['ladders', new CORE.Rect(64, 48, 16, 16)],
+				['littlebush', new CORE.Rect(0, 32, 32, 16)],
+				['bush', new CORE.Rect(32, 16, 48, 32)],
+				['littletree', new CORE.Rect(80, 0, 64, 80)],
+				['tree', new CORE.Rect(144, 0, 70, 80)],
+				['hero', new CORE.Rect(0, 80, 16, 32)],
+				['walk', new CORE.Rect(16, 80, 16, 32)],
+				['walk1', new CORE.Rect(32, 80, 16, 32)],
+				['walk2', new CORE.Rect(48, 80, 16, 32)],
+				['walk3', new CORE.Rect(64, 80, 16, 32)],
+				['walk4', new CORE.Rect(80, 80, 16, 32)],
+				['walk5', new CORE.Rect(96, 80, 16, 32)],
+				['walk6', new CORE.Rect(112, 80, 16, 32)],
+				['box1', new CORE.Rect(0, 48, 16, 16)],
+				['box2', new CORE.Rect(0, 64, 16, 16)],
+				['finish1', new CORE.Rect(128, 80, 76, 28)],
+				['finish2', new CORE.Rect(128, 108, 76, 28)],
+			],
+		});
 	}
 
-	createPlatform(position, scale, color = CORE.Color.white) {
-		this.addObject(new CORE.GameObject({
-			name: 'platform',
-			isStatic: true,
-			scale: scale,
-			position: position,
-			components: [
-				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('platform')),
-					color: color,
-					layer: -3,
-				}),
-				new CORE.RigidBody({
-					material: new CORE.Material(0.5, 0.6),
-				}),
-				new CORE.BoxCollider(1, 1),
-			],
-		}));
-	}
-
-	createHouse() {
-		this.addObject(new CORE.GameObject({
-			name: 'ladder',
-			scale: new CORE.Vector2d(1, 1.65),
-			position: new CORE.Vector2d(25, 5.5),
-			components: [
-				new CORE.BoxCollider(0.2, 2.48),
-			],
-			children: [
-				new CORE.GameObject({
-					name: 'ladder-sprite',
-					position: new CORE.Vector2d(0, -0.3),
-					components: [
-						new CORE.SpriteRenderer({
-							sprite: new CORE.Sprite(this.resources.getTexture('ladder')),
-							layer: -1,
-						}),
-					]
-				})
-			]
-		}));
-		this.addObject(new CORE.GameObject({
-			name: 'ladder',
-			scale: new CORE.Vector2d(1, 1.65),
-			position: new CORE.Vector2d(36, 5.5),
-			components: [
-				new CORE.BoxCollider(0.2, 2.48),
-			],
-			children: [
-				new CORE.GameObject({
-					name: 'ladder-sprite',
-					position: new CORE.Vector2d(0, -0.3),
-					components: [
-						new CORE.SpriteRenderer({
-							sprite: new CORE.Sprite(this.resources.getTexture('ladder')),
-							layer: -1,
-						}),
-					]
-				})
-			]
-		}));
-		this.addObject(new CORE.GameObject({
-			name: 'roof',
-			position: new CORE.Vector2d(30, 7),
-			isStatic: true,
-			components: [
-				new CORE.BoxCollider(15, 1),
-				new CORE.RigidBody({
-					material: new CORE.Material(0.2, 0.4),
-				}),
-			],
-		}));
-		this.addObject(new CORE.GameObject({
-			name: 'roof',
-			position: new CORE.Vector2d(30, 7.2),
-			scale: new CORE.Vector2d(15, 1),
-			isStatic: true,
-			components: [
-				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('platform')),
-					layer: 2,
-				}),
-			],
-		}));
-		this.createCoin(new CORE.Vector2d(32, 8.5));
-		this.addObject(new CORE.GameObject({
-			name: 'house',
-			isStatic: true,
-			scale: new CORE.Vector2d(15, 15),
-			position: new CORE.Vector2d(30, 0),
-			components: [
-				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('house')),
-					layer: -4,
-				}),
-			],
-		}));
-	}
-
-	createCoin(position) {
+	createCoin(position, layer = 2) {
 		this.addObject(new CORE.GameObject({
 			name: 'coin',
 			isStatic: true,
@@ -501,7 +444,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: new CORE.Sprite(this.resources.getTexture('coin')),
-					layer: 2,
+					layer,
 				}),
 				new CORE.CircleCollider(0.5),
 			],
@@ -537,32 +480,32 @@ export default class Level1 extends CORE.Scene {
 				}),
 			],
 		}));
-		const min = -0.45;
-		const max = 0.45;
-		let left = a.transform.transformPoint(new CORE.Vector2d(min, -0.04));
-		let right = a.transform.transformPoint(new CORE.Vector2d(max, -0.04));
+		const min = -0.42;
+		const max = 0.42;
+		const left = a.transform.transformPoint(new CORE.Vector2d(min, -0.05));
+		const right = a.transform.transformPoint(new CORE.Vector2d(max, -0.05));
 		let spawn = null;
 		if (isRandom) {
-			spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), -0.04));
+			spawn = a.transform.transformPoint(new CORE.Vector2d(min + Math.random() * (max - min), -0.05));
 		} else {
-			spawn = a.transform.transformPoint(new CORE.Vector2d(0, -0.04));
+			spawn = a.transform.transformPoint(new CORE.Vector2d(0, -0.05));
 		}
 		this.addObject(new CORE.GameObject({
 			name: 'spike',
-			scale: new CORE.Vector2d(0.65, 0.65),
+			scale: new CORE.Vector2d(2, 2),
 			rotation: rotation,
 			position: spawn,
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: new CORE.Sprite(this.resources.getTexture('spike')),
-					layer: 3,
+					layer: 2,
 				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
 					isKinematic: true,
 				}),
 				new Mover(speed, left, right),
-				new CORE.BoxCollider(1, 2),
+				new CORE.BoxCollider(0.31 / 2, 0.48),
 			],
 		}));
 	}
@@ -602,76 +545,283 @@ export default class Level1 extends CORE.Scene {
 		}));
 	}
 
-	createBallRain() {
-		for (let i = -15; i < 15; i++) {
-			this.addObject(new CORE.GameObject({
-				name: 'ball',
-				position: new CORE.Vector2d(this.hero.transform.position.x + i, this.hero.transform.position.y + 5),
-				components: [
-					new CORE.SpriteRenderer({
-						sprite: new CORE.Sprite(this.resources.getTexture('ball')),
-						layer: 3,
-					}),
-					new CORE.CircleCollider(0.5),
-					new CORE.RigidBody({
-						material: new CORE.Material(0.5, 0.5),
-						velocity: new CORE.Vector2d(-i, Math.random() * i * 2),
-					}),
-					new Rotater(3),
-				],
-			}));
-		}
+	createLittleBush(x, y, layer = 0, scaleX = 1, scaleY = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'littlebushes',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			scale: new CORE.Vector2d(scaleX, scaleY),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('littlebush'),
+				}),
+			],
+		}));
+	}
+
+	createBush(x, y, layer = 0) {
+		this.addObject(new CORE.GameObject({
+			name: 'bushes',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('bush'),
+				}),
+			],
+		}));
+	}
+
+	createTree(x, y, layer = -2, scaleX = 1, scaleY = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'trees',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			scale: new CORE.Vector2d(scaleX, scaleY),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('tree'),
+				}),
+			],
+		}));
+	}
+
+	createLittleTree(x, y, layer = -2) {
+		this.addObject(new CORE.GameObject({
+			name: 'littleTrees',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('littletree'),
+				}),
+			],
+		}));
+	}
+
+	createStaticBox(x, y, layer = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'staticBox',
+			position: new CORE.Vector2d(x, y),
+			isStatic: true,
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('box2'),
+				}),
+			],
+		}));
+	}
+
+	createBox(x, y, layer = 1) {
+		this.addObject(new CORE.GameObject({
+			name: 'box',
+			position: new CORE.Vector2d(x, y),
+			components: [
+				new CORE.SpriteRenderer({
+					layer,
+					sprite: this.resources.getTiles('tileset').get('box1'),
+				}),
+				new CORE.BoxCollider(1, 1),
+				new CORE.RigidBody({
+					material: new CORE.Material(0.5, 0),
+					gravityScale: 5,
+				}),
+			],
+		}));
 	}
 
 	onStart() {
 		CORE.Screen.setSize(new CORE.Vector2d(1280, 720));
+		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4)
+		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
+		const ss = this.resources.getTiles('tileset');
+		this.finish = new CORE.GameObject({
+			name: 'finish',
+			position: new CORE.Vector2d(28.4, 1.2),
+			components: [
+				new CORE.SpriteRenderer({sprite: ss.get('finish1'), layer: -1}),
+				new CORE.Animator([
+					['finish', new CORE.Animation(0.09, true, [
+						new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
+						new CORE.SpriteKeyFrame(ss.get('finish2'), 0.1)
+					])],
+					['idle', new CORE.Animation(1, false, [
+						new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
+					])],
+				], 'idle'),
+			],
+		});
 		this.hero = new CORE.GameObject({
 			name: 'hero',
-			scale: new CORE.Vector2d(1, 1),
-			position: new CORE.Vector2d(36, 0.5),
+			scale: new CORE.Vector2d(0.8, 0.8),
+			position: new CORE.Vector2d(-30, -0.7),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('hero')),
-					color: new CORE.Color(255, 255, 255, 140),
+					sprite: ss.get('hero'),
 				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
 					gravityScale: 3,
 				}),
-				new CORE.BoxCollider(1, 1),
+				new CORE.Animator([
+					['walk', new CORE.Animation(0.7, true, [
+						new CORE.SpriteKeyFrame(ss.get('walk'), 0.1),
+						new CORE.SpriteKeyFrame(ss.get('walk1'), 0.2),
+						new CORE.SpriteKeyFrame(ss.get('walk2'), 0.3),
+						new CORE.SpriteKeyFrame(ss.get('walk3'), 0.4),
+						new CORE.SpriteKeyFrame(ss.get('walk4'), 0.5),
+						new CORE.SpriteKeyFrame(ss.get('walk5'), 0.6),
+						new CORE.SpriteKeyFrame(ss.get('walk6'), 0.7),
+						
+					])],
+					['idle', new CORE.Animation(1, false, [
+						new CORE.SpriteKeyFrame(ss.get('hero'), 0),
+					])],
+				], 'idle'),
+				new CORE.BoxCollider(0.8, 2),
 				new Controller(),
 				new Collector(),
-				new Player(3, 10),
+				new Player(5, new CORE.Vector2d(-3.5, 4)),
 			],
 		});
-		this.createBall(new CORE.Vector2d(38.5, 2));
-		this.createPlatform(new CORE.Vector2d(-3, 2), new CORE.Vector2d(10, 1));
-		this.createPlatform(new CORE.Vector2d(-7.3, 0), new CORE.Vector2d(1, 100));
-		this.createRailSpike(5, new CORE.Vector2d(-3, -2), 4);
-		this.createRailSpike(3, new CORE.Vector2d(-6.3, -0.5), 4, Math.PI / 2);
-		this.createRailSpike(5, new CORE.Vector2d(-3, 1), 4, Math.PI);
+		this.addObject(new CORE.GameObject({
+			name: 'sounds',
+			components: [
+				new CORE.AudioPlayer({
+					volume: 0.025,
+					loop: true,
+					playbackRate: 1,
+					sound: this.resources.getSound('nature'),
+					isSpatialSound: false,
+					playOnInitialize: true
+				}),
+				new CORE.AudioPlayer({
+					volume: 0.025,
+					loop: true,
+					playbackRate: 1,
+					sound: this.resources.getSound('theme'),
+					isSpatialSound: false,
+					playOnInitialize: true
+				})
+			],
+		}));
+		this.createBush(-40, -1);
+		this.createBush(-40, 4.5, -1);
+		this.createLittleBush(-38, 4, 8);
+		this.createLittleTree(-37.5, 5.5);
+		this.createLittleBush(-37, 4, -1);
+		this.createLittleBush(-36, 3.5, -1);
+		this.createBush(-34, -0.5);
+		this.createLittleBush(-32, -1, 3);
+		this.createTree(-32.8, 1.5);
+		this.createBush(-23, -0.5);
+		this.createBush(-23, 4.5)
+		this.createLittleBush(-22.2, -1.1, 1, 0.8, 0.8);
+		this.createTree(-21, 6, 2);
+		this.createLittleBush(-20.5, 4, 2);
+		this.createStaticBox(-20.2, 1);
+		this.createBush(-18, 1.2);
+		this.createLittleBush(-11, 2, 0, 1.25);
+		this.createLittleBush(-5.2, -0.25, 2, 0.5,0.5);
+		this.createTree(-5, 1.22, -2, 0.75, 0.75);
+		this.createTree(11.5, 2);
+		this.createTree(14.2, 1.5, 0, 0.75, 0.9);
+		this.createTree(19, 1.75, -3, 0.8, 0.6);
+		for (let i =0; i < 13; i += 3) {
+			this.createBush(10.5 + i, 0.5);
+		}
+		for (let i = 0; i < 13; i += 3) {
+			this.createLittleBush(9.5 + i, -0.1, 2);
+		}
+		for (let i = 0; i< 13; i += 5) {
+			this.createLittleTree(11 + i, 1.5);
+		}
+		this.addObject(new CORE.GameObject({
+			name: 'platform',
+			isStatic: true,
+			components: [
+				new CORE.TileMap({
+					spriteSheets: [ss],
+					map: [
+						['1', '2', '2', '2', '2', '2', '2', '3', null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '2', '3'],
+						['01', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '3'],
+						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '3'],
+						['00', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '1', '2', '2', '2', '2', '2', '2', '2', '2', '3', null, null, null, null, null, '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3'],
+						['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', null, null, null, '1', '2', '2', '2', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', null, null, null, null, null, '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01', '01'  ],
+						[null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, '01', '01', '01', '01' ]
+					],
+				}),
+				new CORE.RigidBody({
+					material: new CORE.Material(0.5, 0),
+				}),
+				new CORE.TileMapCollider()
+			]
+		}))
+		this.addObject(new CORE.GameObject({
+			name: 'background',
+			isStatic: true,
+			position: new CORE.Vector2d(-19, 0),
+			components: [
+				new CORE.TileMap({
+					spriteSheets: [ss],
+					layer: -1,
+					map: [
+						['01', '01', '01', '01', '01', '01', '01'],
+						['00', '00', '00', '00', '00', '00', '00'],
+						['00', '00', '00', '00'],
+						['00', '00', '00', '01', '01', '01', '01', '01', '01'],
+						['00', '00', '00', '00', '00', '00', '00', '00', '00'],
+					],
+				}),
+			]
+		}))
+
+		this.addObject(new CORE.GameObject({
+			name: 'ladders',
+			position: new CORE.Vector2d(-23, 1.8),
+			components: [
+				new CORE.BoxCollider(0.2, 3.5),
+			],
+			children: [
+				new CORE.GameObject({
+					name: 'ladder-sprite',
+					position: new CORE.Vector2d(1, -0.8),
+					components: [
+						new CORE.TileMap({
+							color: new CORE.Color(240, 215, 175),
+							spriteSheets: [ss],
+							map: [
+								['ladders'],
+								['ladders'],
+								['ladders'],
+                            	['ladders'],
+                            	['ladders']
+							],
+						}),
+					]
+				})
+			]
+		}));
 		this.addObject(this.hero);
-		this.createBall(new CORE.Vector2d(-2, 3));
-		this.createCoin(new CORE.Vector2d(-6, -1.85));
-		this.createCoin(new CORE.Vector2d(16, 3));
-		this.createPlatform(new CORE.Vector2d(-3, -3), new CORE.Vector2d(10, 1));
-		this.createInvisibleWall(new CORE.Vector2d(-8.12, 0), new CORE.Vector2d(1, 1));
-		this.createPlatform(new CORE.Vector2d(8, -3), new CORE.Vector2d(5, 1));
-		this.createPlatform(new CORE.Vector2d(20, -2), new CORE.Vector2d(15, 4));
-		this.createBall(new CORE.Vector2d(40, 0));
-		this.createPlatform(new CORE.Vector2d(39.5, -2), new CORE.Vector2d(10, 4));
-		this.createPlatform(new CORE.Vector2d(48, 2), new CORE.Vector2d(3, 1));
-		this.createPlatform(new CORE.Vector2d(46, -4), new CORE.Vector2d(6, 4));
-		this.createCoin(new CORE.Vector2d(59, 3));
-		this.createRailSpike(5, new CORE.Vector2d(59, 0.5), 4)
-		this.createPlatform(new CORE.Vector2d(58, -2), new CORE.Vector2d(10, 4));
-		this.createPlatform(new CORE.Vector2d(65, 2), new CORE.Vector2d(3, 1));
-		this.createPlatform(new CORE.Vector2d(73, -2), new CORE.Vector2d(10, 10));
-		this.createRailSpike(3, new CORE.Vector2d(73, 3.5), 5)
-		this.createPlatform(new CORE.Vector2d(87, -2), new CORE.Vector2d(10, 10));
-		this.createCoin(new CORE.Vector2d(107, 5));
-		this.createPlatform(new CORE.Vector2d(106, -2), new CORE.Vector2d(20, 10), new CORE.Color(150, 255, 150));
-		this.createHouse();
+		this.createRailSpike(3.5, new CORE.Vector2d(-38, -1), 4);
+		this.createRailSpike(2, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
+		this.createRailSpike(3.5, new CORE.Vector2d(-38, 2), 4, Math.PI);
+		this.createCoin(new CORE.Vector2d(-40.6, -0.8), -3);
+		this.createCoin(new CORE.Vector2d(-18.6, 4.7));
+		this.createCoin(new CORE.Vector2d(-11, 4));
+		this.createCoin(new CORE.Vector2d(20.4, 0.7));
+		this.createCoin(new CORE.Vector2d(15.9, 0.7));
+		this.createBall(new CORE.Vector2d(-38.6, 4.4));
+		this.createBox(0.4, 0.7);
+		this.createBox(-1.6, 0.7);
+		this.createBox(2.4, 0.7);
+		this.addObject(this.finish);
 		this.addObject(new CORE.Camera({
 			name: 'camera',
 			width: 1280,
@@ -736,7 +886,7 @@ export default class Level1 extends CORE.Scene {
 		const about = new CORE.UIObject({
 			tag: 'div',
 			id: 'about',
-			innerHTML: '<h1>IndieDevs</h1><hr><h2>Игра-платформер</h2><hr><p>Демо-версия игры, где показаны возможности ядра и некоторые основные механики (механики передвижения, собирания монеток, смерти).</p><h2>Описание демо-версии игры:</h2><hr><ol><li>У игрока есть 3 жизни, при потере которых игра начинается сначала.</li><li>Жизни теряются при столкновении с шипами, прыжке с высокой платформы.</li><li>При падении в пропасть игра начинается сначала.</li><li>Игра считается пройденной при подбирании всех монеток на уровне (их всего 5).</li></ol><h2>Команда</h2><hr><ul><li>Игорь Бахтин (капитан) <a href="https://github.com/igor-vgs">@igor-vgs</a></li><li>Дмитрий Балакин (разработчик ядра игры) <a href="https://github.com/Trequend">@Trequend</a></li><li>Егор Смирнов (разработчик ядра игры) <a href="https://github.com/SmEgDm">@SmEgDm</a></li><li>Александра Пастухова <a href="https://github.com/caapricorn">@caapricorn</a></li><li>Гиорги Шаликиани <a href="https://github.com/gioshek">@gioshek</a></li><li>Лада Еникеева <a href="https://github.com/l-en">@l-en</a></li><li>Азамат Гимазов <a href="https://github.com/Azarolol">@Azarolol</a></li><li>Владислав Бровкин <a href="https://github.com/vladb000">@vladb000</a></li></ul><h2>Инструкция пользователя:</h2><hr><ul type="disc"><li>A, D - движение влево и вправо</li><li>W, S - движение вверх и вниз по лестнице</li><li>Space - прыжок</li></ul>',
+			innerHTML: this.resources.getText('description'),
 		});
 		const audio = new CORE.UIObject({
 			tag: 'div',
@@ -772,7 +922,6 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									name: 'about',
-									id: 'aboutButton',
 									innerText: 'Об игре',
 									components: [
 										new UIAboutButton(),
@@ -787,7 +936,6 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									name: 'audio',
-									id: 'audioButton',
 									innerText: 'Звук',
 									components: [
 										new UIAudioButton(),
@@ -802,10 +950,10 @@ export default class Level1 extends CORE.Scene {
 								new CORE.UIObject({
 									tag: 'button',
 									innerText: 'Закрыть',
-									id: 'closeButton',
+									id: 'closeMenu',
 									components: [
 										new UICloseButton(),
-									]
+									],
 								}),
 							],
 						}),

@@ -377,7 +377,7 @@ export default class TileMapCollider extends GameComponent {
 		}
 
 		this.rectList.forEach((rect, i) => {
-			const x = rect.x + rect.width / 2 - Math.ceil(this.tileMap.width / 2) + 0.5;
+			const x = rect.x + rect.width / 2 - Math.ceil(this.tileMap.width / 2) - 0.5;
 			const y = -rect.y - rect.height / 2 + Math.ceil(this.tileMap.height / 2) - 0.5;
 			this.gameObject.addChild(new GameObject({
 				name: `collider - ${i}`,
