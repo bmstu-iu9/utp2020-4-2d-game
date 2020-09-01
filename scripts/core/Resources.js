@@ -526,7 +526,6 @@ export default class Resources {
 				}
 
 				maxHeight *= numberOfRows;
-				console.log(maxHeight, maxWidth)
 				const finalImageData = new ImageData(maxWidth, maxHeight);
 				let destX = 0;
 				let destY = 0;
@@ -536,7 +535,6 @@ export default class Resources {
 						properties.tiles[i][0],
 						new Rect(destX + properties.border, destY + properties.border, rect.width, rect.height),
 					];
-					console.log(tiles[i]);
 					copyPixels(
 						imageData,
 						rect.x,
