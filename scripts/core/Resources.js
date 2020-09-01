@@ -369,7 +369,7 @@ export default class Resources {
 		this.textureCreationQueue = {};
 
 		const texturesToLoad = Object.entries(this.textureLoadQueue);
-		this.textLoadQueue = {};
+		this.textureLoadQueue = {};
 
 		const sounds = Object.entries(this.soundLoadQueue);
 		this.soundLoadQueue = {};
