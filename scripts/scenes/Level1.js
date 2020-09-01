@@ -1,399 +1,5 @@
 import * as CORE from '../core/Core.js';
-
-class UICoinsCount extends CORE.UIComponent {
-	constructor(hero) {
-		super();
-		this.hero = hero;
-		this.currentValue = null;
-	}
-
-	onInitialize() {
-		this.collector = this.hero.getComponent(Collector);
-	}
-
-	onUpdate() {
-		if (this.currentValue !== this.collector.coinsCount) {
-			this.uiObject.setInnerText(`${this.collector.coinsCount}`);
-			this.currentValue = this.collector.coinsCount;
-		}
-	}
-}
-
-class UILifeCount extends CORE.UIComponent {
-	constructor(hero) {
-		super();
-		this.hero = hero;
-		this.currentValue = null;
-	}
-
-	onInitialize() {
-		this.player = this.hero.getComponent(Player);
-	}
-
-	onUpdate() {
-		if (this.currentValue !== this.player.lifeCount) {
-			this.uiObject.setInnerText(`${this.player.lifeCount}`);
-			this.currentValue = this.player.lifeCount;
-		}
-	}
-}
-
-class UIMenuButton extends CORE.UIComponent {
-	onInitialize() {
-		const component = this;
-		this.uiObject.addEventListener('click', () => {
-			if (component.uiObject.htmlObject.style.display == 'flex') {
-				document.getElementById(`countsContainer`).style.display = 'none';
-				component.uiObject.htmlObject.style.display = 'none';
-				document.getElementById(`menu`).style.display = 'flex';
-			}
-		});
-	}
-}
-
-class UIAboutButton extends CORE.UIComponent {
-	onInitialize() {
-		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`about`).style.display == 'none') {
-				document.getElementById(`audio`).style.display = 'none';
-				document.getElementById(`about`).style.display = 'block';
-			}
-		});
-	}
-}
-
-class UIAudioButton extends CORE.UIComponent {
-	onInitialize() {
-		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`audio`).style.display == 'none') {
-				document.getElementById(`about`).style.display = 'none';
-				document.getElementById(`audio`).style.display = 'flex';
-			}
-		});
-	}
-}
-
-class UICloseButton extends CORE.UIComponent {
-	onInitialize() {
-		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`menu`).style.display == 'flex') {
-				document.getElementById(`menu`).style.display = 'none';
-				document.getElementById(`countsContainer`).style.display = 'flex';
-				document.getElementById(`menuButton`).style.display = 'flex';
-			}
-		});
-	}
-}
-
-class Rotater extends CORE.GameComponent {
-	constructor(speed) {
-		super();
-		this.speed = speed;
-	}
-	
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-	}
-
-	onUpdate(delta) {
-		if (this.rigidBody.velocity.x > 0 || this.rigidBody.velocity.x < 0) {
-			this.transform.setRotation(
-				this.transform.rotation + (this.rigidBody.velocity.x / Math.PI) * this.speed * delta,
-			);
-		}
-		if (this.transform.position.y < -5) {
-			this.gameObject.destroy();
-		}
-	}
-}
-
-class InteractingObject extends CORE.GameComponent {
-	interact(gameObject) {
-
-	}
-}
-
-class Player extends CORE.GameComponent {
-	constructor(lifeCount, maxHungryCount) {
-		super();
-		this.lifeCount = lifeCount;
-		this.maxHungryCount = maxHungryCount;
-		this.hungryCount = maxHungryCount;
-		this.interactingObject = null;
-	}
-
-	increaseHunger() {
-		this.hungryCount--;
-		console.log('hunger: ' + this.hungryCount);
-		if (this.hungryCount <= 0) {
-			console.log('lose');
-			this.gameObject.scene.reload();
-		}
-	}
-
-	decreaseHunger(levelOfSatiety) {
-		this.hungryCount += levelOfSatiety;
-		if (this.hungryCount >= this.maxHungryCount) {
-			this.hungryCount = this.maxHungryCount;
-		}
-		console.log('hunger: ' + this.hungryCount);
-	}
-
-	onUpdate() {
-		if (!this.controller.isFreeze) {
-			if (CORE.Input.getKeyDown('KeyE') && this.interactingObject != null) {
-				this.interactingObject.interact(this.gameObject);
-			}
-		}
-	}
-
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-		/**
-		 * @type {Controller}
-		 */
-		this.controller = this.gameObject.getComponent(Controller);
-		if (this.controller == null) {
-			throw new Error('no controller.');
-		}
-	}
-
-	onCollisionEnter(collider) {
-		if (collider.gameObject.name === 'spike') {
-			this.lifeCount--;
-			console.log('lives left: ' + this.lifeCount);
-			if (this.lifeCount <= 0) {
-				console.log('lose');
-				this.gameObject.scene.reload();
-			} else {
-				this.controller.freeze();
-				this.rigidBody.setVelocity(new CORE.Vector2d(0, 0));
-				if (this.transform.position.x <= collider.transform.position.x) {
-					this.rigidBody.addForce(new CORE.Vector2d(-75, 800));
-				} else {
-					this.rigidBody.addForce(new CORE.Vector2d(75, 800));
-				}
-			}
-		}
-	}
-
-	onTriggerExit(collider) {
-		if (this.interactingObject != null && collider.gameObject === this.interactingObject.gameObject) {
-			this.interactingObject = null;
-		}
-	}
-}
-
-class Controller extends CORE.GameComponent {
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-		/**
-		 * @type {Player}
-		 */
-		this.player = this.gameObject.getComponent(Player);
-		if (this.player == null) {
-			throw new Error('no player.');
-		}
-		this.isFreeze = false;
-		/**
-		 * @type {CORE.Animator}
-		 */
-		this.animator = this.gameObject.getComponent(CORE.Animator);
-		if (this.animator == null) {
-			throw new Error('no animator.');
-		}
-		this.state = 'idle';
-	}
-
-	changeState(state) {
-		if (this.state === state) {
-			return;
-		}
-		this.animator.play(state);
-		this.state = state;
-	}
-
-	freeze() {
-		if (!this.canJump) {
-			this.isFreeze = true;
-		}
-	}
-
-	onCollisionEnter(collider) {
-		if (collider.gameObject.name === 'platform' || collider.gameObject.name === 'roof') {
-			this.canJump = true;
-			this.isFreeze = false;
-		}
-	}
-
-	onCollisionExit(collider) {
-		if (
-			collider.gameObject.name === 'platform' 
-			&& this.gameObject.getComponent(CORE.Collider).collidersInContact.size === 1
-		) {
-			this.canJump = false;
-		}
-	}
-
-	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'ladders') {
-			this.isLadder = true;
-			this.rigidBody.setKinematic(true);
-		}
-	}
-
-	onTriggerExit(collider) {
-		if (collider.gameObject.name === 'ladders') {
-			this.isLadder = false;
-			this.rigidBody.setKinematic(false);
-		}
-	}
-
-	onFixedUpdate(delta) {
-		if (this.freezeTime > 0) {
-			this.freezeTime -= delta;
-		}
-	}
-
-	onUpdate() {
-		const follower = this.gameObject.scene.camera.getComponent(Follower);
-		follower.isLookDown = false;
-		if (this.isLadder) {
-			if (CORE.Input.getKeyPressed('KeyW') || CORE.Input.getKeyPressed('ArrowUp')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
-			} else if (CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
-			} else {
-				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
-			}
-			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
-				this.changeState('walk');
-			} else {
-				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-				this.changeState('idle');
-			}
-		} else {
-			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
-				this.changeState('walk');
-			} else {
-				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
-				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
-				this.changeState('idle');
-			}
-			if (CORE.Input.getKeyDown('Space') || CORE.Input.getKeyDown('ArrowUp')) {
-				this.rigidBody.addForce(new CORE.Vector2d(0, 700));
-			}
-		}
-		if (this.transform.position.y < -6) {
-			this.gameObject.scene.reload();
-		}
-	}
-}
-
-class Follower extends CORE.CameraComponent {
-	constructor(target) {
-		super();
-		this.target = target;
-		this.floor = 1.5;
-		this.isLookDown = false;
-	}
-	
-	setFloor(y) {
-		this.floor = y;
-	}
-
-	onUpdate() {
-		let position = this.target.transform.position;
-		position = new CORE.Vector2d(position.x, position.y + 1.2);
-		if (this.isLookDown) {
-			position = position.subtract(new CORE.Vector2d(0, 2));
-		}
-
-		if (position.y < this.floor) {
-			position = new CORE.Vector2d(position.x, this.floor);
-		}
-		if (position.x < -40) {
-			position = new CORE.Vector2d(-40, position.y);
-		}
-		this.transform.setPosition(position);
-	}
-}
-
-class Collector extends CORE.GameComponent {
-	constructor() {
-		super();
-		this.coinsCount = 0;
-	}
-
-	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'coin') {
-			this.coinsCount++;
-			console.log('coins: ' + this.coinsCount + ' / 5');
-			collider.gameObject.destroy();
-		}
-	}
-}
-
-class Mover extends CORE.GameComponent {
-	constructor(speed, left, right) {
-		super();
-		this.speed = speed;
-		this.left = left;
-		this.right = right;
-		this.target = left;
-	}
-
-	onInitialize() {
-		/**
-		 * @type {CORE.RigidBody}
-		 */
-		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
-		if (this.rigidBody == null) {
-			throw new Error('no rigid body.');
-		}
-	}
-
-	onFixedUpdate(delta) {
-		if (this.transform.position.equals(this.target)) {
-			if (this.target.equals(this.left)) {
-				this.target = this.right;
-			} else {
-				this.target = this.left;
-			}
-		}
-		this.rigidBody.moveTo(this.target, this.speed, delta);
-	}
-}
+import * as MECH from '../mechanics/Mechanics.js';
 
 export default class Level1 extends CORE.Scene {
 	onInitialize() {
@@ -504,7 +110,7 @@ export default class Level1 extends CORE.Scene {
 					material: new CORE.Material(0.5, 0),
 					isKinematic: true,
 				}),
-				new Mover(speed, left, right),
+				new MECH.Mover(speed, left, right),
 				new CORE.BoxCollider(0.31 / 2, 0.48),
 			],
 		}));
@@ -524,7 +130,7 @@ export default class Level1 extends CORE.Scene {
 					new CORE.RigidBody({
 						material: new CORE.Material(0.5, 0.5),
 					}),
-					new Rotater(3),
+					new MECH.Rotater(3),
 				],
 			}));
 		}
@@ -540,7 +146,7 @@ export default class Level1 extends CORE.Scene {
 				new CORE.RigidBody({
 					material: new CORE.Material(0.1, 0.5),
 				}),
-				new Rotater(3),
+				new MECH.Rotater(3),
 			],
 		}));
 	}
@@ -684,9 +290,9 @@ export default class Level1 extends CORE.Scene {
 					])],
 				], 'idle'),
 				new CORE.BoxCollider(0.8, 2),
-				new Controller(),
-				new Collector(),
-				new Player(5, new CORE.Vector2d(-3.5, 4)),
+				new MECH.Controller(),
+				new MECH.Collector(),
+				new MECH.Player(5, new CORE.Vector2d(-30, -0.7)),
 			],
 		});
 		this.addObject(new CORE.GameObject({
@@ -829,7 +435,7 @@ export default class Level1 extends CORE.Scene {
 			zoom: 4,
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
-				new Follower(this.hero),
+				new MECH.Follower(this.hero),
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
@@ -850,7 +456,7 @@ export default class Level1 extends CORE.Scene {
 							tag: 'div',
 							id: 'life',
 							components: [
-								new UILifeCount(this.hero),
+								new MECH.UILifeCount(this.hero),
 							],
 						}),
 					],
@@ -868,7 +474,7 @@ export default class Level1 extends CORE.Scene {
 							tag: 'div',
 							id: 'coins',
 							components: [
-								new UICoinsCount(this.hero),
+								new MECH.UICoinsCount(this.hero),
 							],
 						}),
 					],
@@ -880,7 +486,7 @@ export default class Level1 extends CORE.Scene {
 			id: 'menuButton',
 			innerText: 'Меню',
 			components: [
-				new UIMenuButton(),
+				new MECH.UIMenuButton(),
 			],
 		});
 		const about = new CORE.UIObject({
@@ -929,7 +535,7 @@ export default class Level1 extends CORE.Scene {
 									name: 'about',
 									innerText: 'Об игре',
 									components: [
-										new UIAboutButton(),
+										new MECH.UIAboutButton(),
 									],
 								}),	
 							],
@@ -943,7 +549,7 @@ export default class Level1 extends CORE.Scene {
 									name: 'audio',
 									innerText: 'Звук',
 									components: [
-										new UIAudioButton(),
+										new MECH.UIAudioButton(),
 									],
 								}),
 							],
@@ -957,7 +563,7 @@ export default class Level1 extends CORE.Scene {
 									innerText: 'Закрыть',
 									id: 'closeMenu',
 									components: [
-										new UICloseButton(),
+										new MECH.UICloseButton(),
 									],
 								}),
 							],
