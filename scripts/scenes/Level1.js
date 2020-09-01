@@ -693,7 +693,7 @@ export default class Level1 extends CORE.Scene {
 			name: 'sounds',
 			components: [
 				new CORE.AudioPlayer({
-					volume: 1,
+					volume: 0.025,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('nature'),
@@ -701,7 +701,7 @@ export default class Level1 extends CORE.Scene {
 					playOnInitialize: true
 				}),
 				new CORE.AudioPlayer({
-					volume: 1,
+					volume: 0.025,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('theme'),
