@@ -893,6 +893,11 @@ export default class Level1 extends CORE.Scene {
 			id: 'audio',
 			children: [
 				new CORE.UIObject({
+					tag: 'div',
+					id: 'audioText',
+					innerText: 'Громкость звука:',
+				}),
+				new CORE.UIObject({
 					name: 'volume',
 					tag: 'input',
 					attributes: [
@@ -917,7 +922,7 @@ export default class Level1 extends CORE.Scene {
 					children: [
 						new CORE.UIObject({
 							tag: 'li',
-							name: 'liAbout',
+							id: 'liAbout',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
@@ -931,7 +936,7 @@ export default class Level1 extends CORE.Scene {
 						}),
 						new CORE.UIObject({
 							tag: 'li',
-							name: 'liAudio',
+							id: 'liAudio',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
@@ -945,7 +950,7 @@ export default class Level1 extends CORE.Scene {
 						}),
 						new CORE.UIObject({
 							tag: 'li',
-							name: 'liClose',
+							id: 'liClose',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
