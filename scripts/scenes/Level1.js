@@ -612,7 +612,7 @@ export default class Level1 extends CORE.Scene {
 		this.hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(0.8, 0.8),
-			position: new CORE.Vector2d(27, 0),
+			position: new CORE.Vector2d(-36, 8),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: ss.get('hero'),
@@ -646,7 +646,7 @@ export default class Level1 extends CORE.Scene {
 			name: 'sounds',
 			components: [
 				new CORE.AudioPlayer({
-					volume: 0,
+					volume: 1,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('nature'),
@@ -654,7 +654,7 @@ export default class Level1 extends CORE.Scene {
 					playOnInitialize: true
 				}),
 				new CORE.AudioPlayer({
-					volume: 0,
+					volume: 1,
 					loop: true,
 					playbackRate: 1,
 					sound: this.resources.getSound('theme'),

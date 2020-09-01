@@ -7,6 +7,8 @@ body, html, #container, #menu {
 	min-height:100%;
 	width: 100%;
 	min-width: 100%;
+	font-family: PixelFont;
+	font-size: larger;
 }
 
 #game {
@@ -88,6 +90,7 @@ body, html, #container, #menu {
 	padding: 5px;
 	text-decoration: none;
 	font-weight: bold;
+	font-family: PixelFont;
 	border-left: 5px solid #33ADFF;
 	display: block;
 	width: 100%;
@@ -105,4 +108,11 @@ body, html, #container, #menu {
 
   #closeMenu {
 	display: none;
+}
+
+@font-face {
+	font-family: 'PixelFont';
+	src: url('./resources/19363.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
 }
