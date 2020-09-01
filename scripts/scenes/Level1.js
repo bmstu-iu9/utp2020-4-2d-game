@@ -38,6 +38,53 @@ class UILifeCount extends CORE.UIComponent {
 	}
 }
 
+class UIMenuButton extends CORE.UIComponent {
+	onInitialize() {
+		const component = this;
+		this.uiObject.addEventListener('click', () => {
+			if (component.uiObject.htmlObject.style.display == 'flex') {
+				document.getElementById(`countsContainer`).style.display = 'none';
+				component.uiObject.htmlObject.style.display = 'none';
+				document.getElementById(`menu`).style.display = 'flex';
+			}
+		});
+	}
+}
+
+class UIAboutButton extends CORE.UIComponent {
+	onInitialize() {
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`about`).style.display == 'none') {
+				document.getElementById(`audio`).style.display = 'none';
+				document.getElementById(`about`).style.display = 'block';
+			}
+		});
+	}
+}
+
+class UIAudioButton extends CORE.UIComponent {
+	onInitialize() {
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`audio`).style.display == 'none') {
+				document.getElementById(`about`).style.display = 'none';
+				document.getElementById(`audio`).style.display = 'flex';
+			}
+		});
+	}
+}
+
+class UICloseButton extends CORE.UIComponent {
+	onInitialize() {
+		this.uiObject.addEventListener('click', () => {
+			if (document.getElementById(`menu`).style.display == 'flex') {
+				document.getElementById(`menu`).style.display = 'none';
+				document.getElementById(`countsContainer`).style.display = 'flex';
+				document.getElementById(`menuButton`).style.display = 'flex';
+			}
+		});
+	}
+}
+
 class Rotater extends CORE.GameComponent {
 	constructor(speed) {
 		super();
@@ -786,8 +833,7 @@ export default class Level1 extends CORE.Scene {
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
-		this.addObject(ui);
-		ui.addChild(new CORE.UIObject({
+		const countsContainer = new CORE.UIObject({
 			tag: 'div',
 			id: 'countsContainer',
 			children: [
@@ -828,38 +874,43 @@ export default class Level1 extends CORE.Scene {
 					],
 				}),
 			],
-		}));
-		ui.addChild(new CORE.UIObject({
+		});
+		const menuButton = new CORE.UIObject({
 			tag: 'button',
-			id: 'closeButton',
+			id: 'menuButton',
 			innerText: 'Меню',
-		}));
-		ui.addChild(new CORE.UIObject({
+			components: [
+				new UIMenuButton(),
+			],
+		});
+		const about = new CORE.UIObject({
 			tag: 'div',
-			id: 'openMenu',
+			id: 'about',
+			innerHTML: `${this.resources.getText('description')}`,
+		});
+		const audio = new CORE.UIObject({
+			tag: 'div',
+			id: 'audio',
 			children: [
 				new CORE.UIObject({
-					tag: 'div',
-					id: 'about',
-					innerHTML: this.resources.getText('description'),
-				}),
-				new CORE.UIObject({
-					tag: 'div',
-					id: 'audio',
-					children: [
-						new CORE.UIObject({
-							name: 'volume',
-							tag: 'input',
-							attributes: [
-								{name: 'type', value: 'range'},
-								{name: 'min', value: '0'},
-								{name: 'max', value: '100'},
-								{name: 'step', value: '1'},
-								{name: 'value', value: '50'},
-							],
-						}),
+					name: 'volume',
+					tag: 'input',
+					attributes: [
+						{name: 'type', value: 'range'},
+						{name: 'min', value: '0'},
+						{name: 'max', value: '100'},
+						{name: 'step', value: '1'},
+						{name: 'value', value: '50'},
 					],
 				}),
+			],
+		});
+		const menu = new CORE.UIObject({
+			tag: 'div',
+			id: 'menu',
+			children: [
+				about,
+				audio,
 				new CORE.UIObject({
 					tag: 'ul',
 					id: 'navbar',
@@ -872,6 +923,9 @@ export default class Level1 extends CORE.Scene {
 									tag: 'button',
 									name: 'about',
 									innerText: 'Об игре',
+									components: [
+										new UIAboutButton(),
+									],
 								}),	
 							],
 						}),
@@ -883,6 +937,9 @@ export default class Level1 extends CORE.Scene {
 									tag: 'button',
 									name: 'audio',
 									innerText: 'Звук',
+									components: [
+										new UIAudioButton(),
+									],
 								}),
 							],
 						}),
@@ -894,12 +951,24 @@ export default class Level1 extends CORE.Scene {
 									tag: 'button',
 									innerText: 'Закрыть',
 									id: 'closeMenu',
+									components: [
+										new UICloseButton(),
+									],
 								}),
 							],
 						}),
 					],
 				}),
 			],
-		}));
+		});
+		this.addObject(ui);
+		ui.addChild(countsContainer);
+		ui.addChild(menuButton);
+		ui.addChild(menu);
+		countsContainer.htmlObject.style.display = 'flex';
+		menuButton.htmlObject.style.display = 'flex';
+		menu.htmlObject.style.display = 'none';
+		about.htmlObject.style.display = 'block';
+		audio.htmlObject.style.display = 'none';
 	}
 }
