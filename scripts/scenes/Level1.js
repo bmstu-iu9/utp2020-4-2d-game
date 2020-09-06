@@ -67,6 +67,7 @@ class UIMenuButton extends CORE.UIComponent {
 				document.getElementById(`countsContainer`).style.display = 'none';
 				component.uiObject.htmlObject.style.display = 'none';
 				document.getElementById(`menu`).style.display = 'flex';
+				document.getElementById('bottomPanel').style.display = 'none';
 			}
 		});
 	}
@@ -86,9 +87,9 @@ class UIAboutButton extends CORE.UIComponent {
 class UIAudioButton extends CORE.UIComponent {
 	onInitialize() {
 		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`audio`).style.display == 'none') {
-				document.getElementById(`about`).style.display = 'none';
-				document.getElementById(`audio`).style.display = 'flex';
+			if (document.getElementById('audio').style.display == 'none') {
+				document.getElementById('about').style.display = 'none';
+				document.getElementById('audio').style.display = 'flex';
 			}
 		});
 	}
@@ -97,10 +98,11 @@ class UIAudioButton extends CORE.UIComponent {
 class UICloseButton extends CORE.UIComponent {
 	onInitialize() {
 		this.uiObject.addEventListener('click', () => {
-			if (document.getElementById(`menu`).style.display == 'flex') {
-				document.getElementById(`menu`).style.display = 'none';
-				document.getElementById(`countsContainer`).style.display = 'flex';
-				document.getElementById(`menuButton`).style.display = 'flex';
+			if (document.getElementById('menu').style.display == 'flex') {
+				document.getElementById('menu').style.display = 'none';
+				document.getElementById('countsContainer').style.display = 'flex';
+				document.getElementById('menuButton').style.display = 'flex';
+				document.getElementById('bottomPanel').style.display = 'flex';
 			}
 		});
 	}
@@ -241,17 +243,17 @@ class Controller extends CORE.GameComponent {
 		this.rightButtonPressed = false;
 		this.topButtonPressed = false;
 		this.bottomButtonPressed = false;
-		this.leftButton.addEventListener('mousedown', () => component.leftButtonPressed = true);
-		this.leftButton.addEventListener('mouseup', () => component.leftButtonPressed = false);
+		this.leftButton.addEventListener('pointerdown', () => component.leftButtonPressed = true);
+		this.leftButton.addEventListener('pointerup', () => component.leftButtonPressed = false);
 
-		this.rightButton.addEventListener('mousedown', () => component.rightButtonPressed = true);
-		this.rightButton.addEventListener('mouseup', () => component.rightButtonPressed = false);
+		this.rightButton.addEventListener('pointerdown', () => component.rightButtonPressed = true);
+		this.rightButton.addEventListener('pointerup', () => component.rightButtonPressed = false);
 
-		this.topButton.addEventListener('mousedown', () => component.topButtonPressed = true);
-		this.topButton.addEventListener('mouseup', () => component.topButtonPressed = false);
+		this.topButton.addEventListener('pointerdown', () => component.topButtonPressed = true);
+		this.topButton.addEventListener('pointerup', () => component.topButtonPressed = false);
 
-		this.bottomButton.addEventListener('mousedown', () => component.bottomButtonPressed = true);
-		this.bottomButton.addEventListener('mouseup', () => component.bottomButtonPressed = false);
+		this.bottomButton.addEventListener('pointerdown', () => component.bottomButtonPressed = true);
+		this.bottomButton.addEventListener('pointerup', () => component.bottomButtonPressed = false);
 
 		this.jumpButton.addEventListener('click', () => component.jump());
 	}
