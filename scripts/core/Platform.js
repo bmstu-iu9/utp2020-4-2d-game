@@ -5,9 +5,9 @@ export default class Platform {
 		const userAgent = window.navigator.userAgent;
 		if (/Win/.test(userAgent)) {
 			this.current = this.windows;
-		} else if (/Linux/.test(userAgent)) {
-			this.current = this.linux;
 		} else if (/Android/.test(userAgent)) {
+			this.current = this.linux;
+		} else if (/Linux/.test(userAgent)) {
 			this.current = this.android;
 		} else if (/iPhone|iPad|iPod/.test(userAgent)) {
 			this.current = this.ios;
