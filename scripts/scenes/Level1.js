@@ -742,13 +742,13 @@ export default class Level1 extends CORE.Scene {
 				}),
 				new CORE.Animator([
 					['walk', new CORE.Animation(0.7, true, [
-						new CORE.SpriteKeyFrame(ss.get('walk'), 0.1),
-						new CORE.SpriteKeyFrame(ss.get('walk1'), 0.2),
-						new CORE.SpriteKeyFrame(ss.get('walk2'), 0.3),
-						new CORE.SpriteKeyFrame(ss.get('walk3'), 0.4),
-						new CORE.SpriteKeyFrame(ss.get('walk4'), 0.5),
-						new CORE.SpriteKeyFrame(ss.get('walk5'), 0.6),
-						new CORE.SpriteKeyFrame(ss.get('walk6'), 0.7),
+						new CORE.SpriteKeyFrame(ss.get('walk'), 0),
+						new CORE.SpriteKeyFrame(ss.get('walk1'), 0.1),
+						new CORE.SpriteKeyFrame(ss.get('walk2'), 0.2),
+						new CORE.SpriteKeyFrame(ss.get('walk3'), 0.3),
+						new CORE.SpriteKeyFrame(ss.get('walk4'), 0.4),
+						new CORE.SpriteKeyFrame(ss.get('walk5'), 0.5),
+						new CORE.SpriteKeyFrame(ss.get('walk6'), 0.6),
 						
 					])],
 					['idle', new CORE.Animation(1, false, [
