@@ -197,6 +197,44 @@ class Player extends CORE.GameComponent {
 }
 
 class Controller extends CORE.GameComponent {
+	constructor(leftButton, rightButton, topButton, bottomButton, jumpButton) {
+		super();
+		this.leftButton = leftButton;
+		this.rightButton = rightButton;
+		this.topButton = topButton;
+		this.bottomButton = bottomButton;
+		this.jumpButton = jumpButton;
+		if (CORE.Platform.current !== CORE.Platform.ios && CORE.Platform.current !== CORE.Platform.android) {
+			this.leftButton.htmlObject.style.display = 'none';
+			this.rightButton.htmlObject.style.display = 'none';
+			this.topButton.htmlObject.style.display = 'none';
+			this.bottomButton.htmlObject.style.display = 'none';
+			this.jumpButton.htmlObject.style.display = 'none';
+			return;
+		}
+
+		this.topButton.htmlObject.style.display = 'none';
+		this.bottomButton.htmlObject.style.display = 'none';
+		const component = this;
+		this.leftButtonPressed = false;
+		this.rightButtonPressed = false;
+		this.topButtonPressed = false;
+		this.bottomButtonPressed = false;
+		this.leftButton.addEventListener('mousedown', () => component.leftButtonPressed = true);
+		this.leftButton.addEventListener('mouseup', () => component.leftButtonPressed = false);
+
+		this.rightButton.addEventListener('mousedown', () => component.rightButtonPressed = true);
+		this.rightButton.addEventListener('mouseup', () => component.rightButtonPressed = false);
+
+		this.topButton.addEventListener('mousedown', () => component.topButtonPressed = true);
+		this.topButton.addEventListener('mouseup', () => component.topButtonPressed = false);
+
+		this.bottomButton.addEventListener('mousedown', () => component.bottomButtonPressed = true);
+		this.bottomButton.addEventListener('mouseup', () => component.bottomButtonPressed = false);
+
+		this.jumpButton.addEventListener('click', () => component.jump());
+	}
+
 	onInitialize() {
 		/**
 		 * @type {CORE.RigidBody}
@@ -257,6 +295,11 @@ class Controller extends CORE.GameComponent {
 		if (collider.gameObject.name === 'ladders') {
 			this.isLadder = true;
 			this.rigidBody.setKinematic(true);
+			if (CORE.Platform.current === CORE.Platform.ios || CORE.Platform.current === CORE.Platform.android) {
+				this.topButton.htmlObject.style.display = 'block';
+				this.bottomButton.htmlObject.style.display = 'block';
+				this.jumpButton.htmlObject.style.display = 'none';
+			}
 		}
 	}
 
@@ -264,6 +307,11 @@ class Controller extends CORE.GameComponent {
 		if (collider.gameObject.name === 'ladders') {
 			this.isLadder = false;
 			this.rigidBody.setKinematic(false);
+			if (CORE.Platform.current === CORE.Platform.ios || CORE.Platform.current === CORE.Platform.android) {
+				this.topButton.htmlObject.style.display = 'none';
+				this.bottomButton.htmlObject.style.display = 'none';
+				this.jumpButton.htmlObject.style.display = 'block';
+			}
 		}
 	}
 
@@ -273,45 +321,89 @@ class Controller extends CORE.GameComponent {
 		}
 	}
 
+	moveLeft() {
+		const speed = this.isLadder ? -3 : -5;
+		this.rigidBody.setVelocity(new CORE.Vector2d(speed, this.rigidBody.velocity.y));
+		this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+		this.changeState('walk');
+	}
+
+	moveRight() {
+		const speed = this.isLadder ? 3 : 5;
+		this.rigidBody.setVelocity(new CORE.Vector2d(speed, this.rigidBody.velocity.y));
+		this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+		this.changeState('walk');
+	}
+
+	moveTop() {
+		this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
+	}
+
+	moveBottom() {
+		this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
+	}
+
+	jump() {
+		this.rigidBody.addForce(new CORE.Vector2d(0, 700));
+	}
+
 	onUpdate() {
 		const follower = this.gameObject.scene.camera.getComponent(Follower);
 		follower.isLookDown = false;
 		if (this.isLadder) {
-			if (CORE.Input.getKeyPressed('KeyW') || CORE.Input.getKeyPressed('ArrowUp')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
-			} else if (CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
+			if (
+				CORE.Input.getKeyPressed('KeyW')
+				|| CORE.Input.getKeyPressed('ArrowUp')
+				|| this.topButtonPressed
+			) {
+				this.moveTop();
+			} else if (
+				CORE.Input.getKeyPressed('KeyS')
+				|| CORE.Input.getKeyPressed('ArrowDown')
+				|| this.bottomButtonPressed
+			) {
+				this.moveBottom();
 			} else {
 				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
 			}
-			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(-3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
-				this.changeState('walk');
+
+			if (
+				CORE.Input.getKeyPressed('KeyA')
+				|| CORE.Input.getKeyPressed('ArrowLeft')
+				|| this.leftButtonPressed
+			) {
+				this.moveLeft();
+			} else if (
+				CORE.Input.getKeyPressed('KeyD')
+				|| CORE.Input.getKeyPressed('ArrowRight')
+				|| this.rightButtonPressed
+			) {
+				this.moveRight();
 			} else {
 				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
 				this.changeState('idle');
 			}
 		} else {
-			if (CORE.Input.getKeyPressed('KeyA') || CORE.Input.getKeyPressed('ArrowLeft')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(-5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (CORE.Input.getKeyPressed('KeyD') || CORE.Input.getKeyPressed('ArrowRight')) {
-				this.rigidBody.setVelocity(new CORE.Vector2d(5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
-				this.changeState('walk');
+			if (
+				CORE.Input.getKeyPressed('KeyA')
+				|| CORE.Input.getKeyPressed('ArrowLeft')
+				|| this.leftButtonPressed
+			) {
+				this.moveLeft();
+			} else if (
+				CORE.Input.getKeyPressed('KeyD')
+				|| CORE.Input.getKeyPressed('ArrowRight')
+				|| this.rightButtonPressed
+			) {
+				this.moveRight();
 			} else {
 				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
 				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
 				this.changeState('idle');
 			}
+
 			if (CORE.Input.getKeyDown('Space') || CORE.Input.getKeyDown('ArrowUp')) {
-				this.rigidBody.addForce(new CORE.Vector2d(0, 700));
+				this.jump();
 			}
 		}
 		if (this.transform.position.y < -6) {
@@ -684,7 +776,6 @@ export default class Level1 extends CORE.Scene {
 					])],
 				], 'idle'),
 				new CORE.BoxCollider(0.8, 2),
-				new Controller(),
 				new Collector(),
 				new Player(5, new CORE.Vector2d(-3.5, 4)),
 			],
@@ -800,8 +891,8 @@ export default class Level1 extends CORE.Scene {
 								['ladders'],
 								['ladders'],
 								['ladders'],
-                            	['ladders'],
-                            	['ladders']
+								['ladders'],
+								['ladders']
 							],
 						}),
 					]
@@ -833,6 +924,34 @@ export default class Level1 extends CORE.Scene {
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
+		const leftButton = new CORE.UIObject({
+			id: 'leftButton',
+			tag: 'button',
+			innerText: '<',
+		});
+		const rightButton = new CORE.UIObject({
+			id: 'rightButton',
+			tag: 'button',
+			innerText: '>',
+		});
+		const topButton = new CORE.UIObject({
+			id: 'topButton',
+			tag: 'button',
+			innerHTML: '<p>></p>',
+		});
+		const bottomButton = new CORE.UIObject({
+			id: 'bottomButton',
+			tag: 'button',
+			innerHTML: '<p>></p>',
+		});
+		const jumpButton = new CORE.UIObject({
+			id: 'jumpButton',
+			tag: 'button',
+			innerText: 'Прыжок',
+		});
+		this.hero.addComponent(new Controller(leftButton, rightButton, topButton, bottomButton, jumpButton));
+		ui.addChild(leftButton);
+		ui.addChild(rightButton);
 		const countsContainer = new CORE.UIObject({
 			tag: 'div',
 			id: 'countsContainer',
@@ -961,9 +1080,29 @@ export default class Level1 extends CORE.Scene {
 				}),
 			],
 		});
+		const topPanel = new CORE.UIObject({
+			id: 'topPanel',
+			tag: 'div',
+			children: [countsContainer, menuButton],
+		});
+		const horizontalMoveButtons = new CORE.UIObject({
+			id: 'horizontalMoveButtons',
+			tag: 'div',
+			children: [leftButton, rightButton],
+		});
+		const verticalMoveButtons = new CORE.UIObject({
+			id: 'verticalMoveButtons',
+			tag: 'div',
+			children: [topButton, bottomButton, jumpButton],
+		});
+		const bottomPanel = new CORE.UIObject({
+			id: 'bottomPanel',
+			tag: 'div',
+			children: [horizontalMoveButtons, verticalMoveButtons],
+		});
 		this.addObject(ui);
-		ui.addChild(countsContainer);
-		ui.addChild(menuButton);
+		ui.addChild(topPanel);
+		ui.addChild(bottomPanel);
 		ui.addChild(menu);
 		countsContainer.htmlObject.style.display = 'flex';
 		menuButton.htmlObject.style.display = 'flex';
