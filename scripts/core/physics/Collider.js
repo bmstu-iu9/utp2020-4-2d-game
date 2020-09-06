@@ -70,5 +70,9 @@ export default class Collider extends GameComponent {
 	onDisable() {
 		Collider.colliders.delete(this);
 		Collider.dynamicColliders.delete(this);
+		this.collidersInContact.forEach(collider => {
+			collider.collidersInContact.delete(this);
+		});
+		this.collidersInContact.clear();
 	}
 }

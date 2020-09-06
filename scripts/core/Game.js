@@ -150,6 +150,9 @@ export default class Game {
 
 			collisions.forEach(collision => collision.positionalCorrection());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
+			collisions.forEach(collision => {
+				collision.notify();
+			});
 			Animator.animators.forEach(animator => animator.process(Game.step));
 		}
 	

@@ -102,37 +102,64 @@ const dispatch = [
 	[boxVsCircle, boxVsBox],
 ];
 
+/**
+ * @param {Collider} firstCollider
+ */
 const notify = (firstCollider, secondCollider, firstRigidBody, secondRigidBody, message) => {
+	const call = (name, arg) => {
+		return component => {
+			if (!component.isActive()) {
+				return;
+			}
+
+			if (!arg.isActive()) {
+				return;
+			}
+
+			if (component[name] != null) {
+				component[name](arg);
+			};
+		}
+	}
 	if (firstRigidBody != null && secondRigidBody != null) {
+		const name = `onCollision${message}`;
 		if (firstRigidBody.gameObject != firstCollider.gameObject) {
-			firstCollider.gameObject.callInComponents('onCollision' + message, secondCollider);
+			firstCollider.gameObject.forEachComponent(call(name, secondCollider));;
 		}
+
 		if (firstRigidBody.isActive()) {
-			firstRigidBody.gameObject.callInComponents('onCollision' + message, secondCollider);
+			firstRigidBody.gameObject.forEachComponent(call(name, secondCollider));
 		}
+
 		if (secondRigidBody.gameObject != secondCollider.gameObject && secondCollider.isActive()) {
-			secondCollider.gameObject.callInComponents('onCollision' + message, firstCollider);
+			secondCollider.gameObject.forEachComponent(call(name, firstCollider));
 		}
+
 		if (secondRigidBody.isActive()) {
-			secondRigidBody.gameObject.callInComponents('onCollision' + message, firstCollider);
+			secondRigidBody.gameObject.forEachComponent(call(name, firstCollider));
 		}
 	} else if (firstRigidBody != null) {
+		const name = `onTrigger${message}`;
 		if (firstRigidBody.gameObject != firstCollider.gameObject) {
-			firstCollider.gameObject.callInComponents('onTrigger' + message, secondCollider);
+			firstCollider.gameObject.forEachComponent(call(name, secondCollider));
 		}
+
 		if (firstRigidBody.isActive()) {
-			firstRigidBody.gameObject.callInComponents('onTrigger' + message, secondCollider);
+			firstRigidBody.gameObject.forEachComponent(call(name, secondCollider));
 		}
+
 		if (secondCollider.isActive()) {
-			secondCollider.gameObject.callInComponents('onTrigger' + message, firstCollider);
+			secondCollider.gameObject.forEachComponent(call(name, firstCollider));
 		}
 	} else if (secondRigidBody != null) {
-		firstCollider.gameObject.callInComponents('onTrigger' + message, secondCollider);
+		const name = `onTrigger${message}`;
+		firstCollider.gameObject.forEachComponent(call(name, secondCollider));
 		if (secondRigidBody.gameObject != secondCollider.gameObject && secondCollider.isActive()) {
-			secondCollider.gameObject.callInComponents('onTrigger' + message, firstCollider);
+			secondCollider.gameObject.forEachComponent(call(name, firstCollider));
 		}
+
 		if (secondRigidBody.isActive()) {
-			secondRigidBody.gameObject.callInComponents('onTrigger' + message, firstCollider);
+			secondRigidBody.gameObject.forEachComponent(call(name, firstCollider));
 		}
 	}
 }
@@ -169,6 +196,17 @@ export default class Collision {
 		 * @type {number}
 		 */
 		this.depth = null;
+		this.isPersistent = false;
+	}
+
+	notify() {
+		if (this.isPersistent) {
+			return;
+		}
+
+		this.firstCollider.collidersInContact.add(this.secondCollider);
+		this.secondCollider.collidersInContact.add(this.firstCollider);
+		notify(this.firstCollider, this.secondCollider, this.firstRigidBody, this.secondRigidBody, 'Enter');
 	}
 
 	/**
@@ -191,27 +229,27 @@ export default class Collision {
 		const secondRigidBody = secondCollider.getRigidBody();
 		if (info == null) {
 			if (firstCollider.collidersInContact.has(secondCollider)) {
-				notify(firstCollider, secondCollider, firstRigidBody, secondRigidBody, 'Exit');
 				firstCollider.collidersInContact.delete(secondCollider);
 				secondCollider.collidersInContact.delete(firstCollider);
+				notify(firstCollider, secondCollider, firstRigidBody, secondRigidBody, 'Exit');
 			}
 			return null;
 		}
-		if (!firstCollider.collidersInContact.has(secondCollider)) {
-			notify(firstCollider, secondCollider, firstRigidBody, secondRigidBody, 'Enter');
-			firstCollider.collidersInContact.add(secondCollider);
-			secondCollider.collidersInContact.add(firstCollider);
-		}
-		if (firstRigidBody == null || secondRigidBody == null) {
-			return null;
-		}
-		if (!firstRigidBody.isActive() || !secondRigidBody.isActive()) {
+		if (firstRigidBody == null && secondRigidBody == null) {
 			return null;
 		}
 		if (
-			(firstRigidBody.transform.isStatic || firstRigidBody.isKinematic)
-			&& (secondRigidBody.transform.isStatic || secondRigidBody.isKinematic)
+			(firstRigidBody == null || secondRigidBody == null)
+			|| (
+				(firstRigidBody.transform.isStatic || firstRigidBody.isKinematic)
+				&& (secondRigidBody.transform.isStatic || secondRigidBody.isKinematic)
+			)
 		) {
+			if (!firstCollider.collidersInContact.has(secondCollider)) {
+				notify(firstCollider, secondCollider, firstRigidBody, secondRigidBody, 'Enter');
+				firstCollider.collidersInContact.add(secondCollider);
+				secondCollider.collidersInContact.add(firstCollider);
+			}
 			return null;
 		}
 		const collision = new Collision();
@@ -221,19 +259,11 @@ export default class Collision {
 		collision.secondRigidBody = secondRigidBody;
 		collision.normal = info.normal;
 		collision.depth = info.depth;
+		collision.isPersistent = firstCollider.collidersInContact.has(secondCollider);
 		return collision;
 	}
 
 	applyImpulse() {
-		if (!this.firstRigidBody.isActive() || !this.secondRigidBody.isActive()) {
-			return null;
-		}
-		if (
-			(this.firstRigidBody.transform.isStatic || this.firstRigidBody.isKinematic)
-			&& (this.secondRigidBody.transform.isStatic || this.secondRigidBody.isKinematic)
-		) {
-			return null;
-		}
 		const relativeVelocity = this.secondRigidBody.velocity.subtract(this.firstRigidBody.velocity);
 		const relativeVelocityAlongNormal = relativeVelocity.dot(this.normal);
 		if (relativeVelocityAlongNormal >= 0) {
@@ -258,15 +288,6 @@ export default class Collision {
 	}
 
 	positionalCorrection() {
-		if (!this.firstRigidBody.isActive() || !this.secondRigidBody.isActive()) {
-			return null;
-		}
-		if (
-			(this.firstRigidBody.transform.isStatic || this.firstRigidBody.isKinematic)
-			&& (this.secondRigidBody.transform.isStatic || this.secondRigidBody.isKinematic)
-		) {
-			return null;
-		}
 		const kSlop = 0.008;
 		const percent = 0.2;
 		const correction = this.normal.multiply(
