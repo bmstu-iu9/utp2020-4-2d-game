@@ -1,9 +1,9 @@
 import * as CORE from '../core/Core.js';
 import * as MECH from '../mechanics/Mechanics.js';
 import GameScene from './GameScene.js';
-import Level2 from './Level2.js';
+import HardLevel2 from './HardLevel2.js';
 
-export default class Level1 extends GameScene {
+export default class HardLevel1 extends GameScene {
 	onStart() {
 		const ss = this.resources.getTiles('tileset');
 		this.hero = this.createHero(new CORE.Vector2d(-30, -0.7), 3, -6);
@@ -83,11 +83,11 @@ export default class Level1 extends GameScene {
 
 		this.createLadder(new CORE.Vector2d(-23, 0), 5);
 		this.addObject(this.hero);
-		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4);
-		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5);
-		this.createRailSpike(3.5, new CORE.Vector2d(-38, -1.2), 4);
-		this.createRailSpike(2, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
-		this.createRailSpike(3.5, new CORE.Vector2d(-38, 2), 4, Math.PI);
+		this.createRailSpike(6, new CORE.Vector2d(15.4, -0.1), 4);
+		this.createRailSpike(5, new CORE.Vector2d(20.4, -0.1), 5);
+		this.createRailSpike(4, new CORE.Vector2d(-38, -1.2), 4);
+		this.createRailSpike(3, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
+		this.createRailSpike(4, new CORE.Vector2d(-38, 2), 4, Math.PI);
 		this.createExtraLife(new CORE.Vector2d(-5, 0.5));
 		this.createCheckPoint(new CORE.Vector2d(-3, 0.5));
 		this.createCoin(new CORE.Vector2d(-40.6, -0.8), -3);
@@ -99,7 +99,7 @@ export default class Level1 extends GameScene {
 		this.createBox(0.4, 0.7);
 		this.createBox(-1.6, 0.7);
 		this.createBox(2.4, 0.7);
-		this.createDoor(new CORE.Vector2d(28, 0.7), Level2, this.hero);
+		this.createDoor(new CORE.Vector2d(28, 0.7), HardLevel2, this.hero);
 		this.createCamera(this.hero, 1.5);
 		this.createUI(this.hero);
 	}

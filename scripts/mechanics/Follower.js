@@ -2,10 +2,10 @@ import CameraComponent from '../core/graphics/CameraComponent.js';
 import Vector2d from '../core/mathematics/Vector2d.js';
 
 export default class Follower extends CameraComponent {
-	constructor(target) {
+	constructor(target, floor) {
 		super();
 		this.target = target;
-		this.floor = 1.5;
+		this.floor = floor;
 		this.isLookDown = false;
 	}
 	
@@ -21,9 +21,6 @@ export default class Follower extends CameraComponent {
 		}
 		if (position.y < this.floor) {
 			position = new Vector2d(position.x, this.floor);
-		}
-		if (position.x < -40) {
-			position = new Vector2d(-40, position.y);
 		}
 		this.transform.setPosition(position);
 	}

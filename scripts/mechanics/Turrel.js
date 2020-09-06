@@ -42,7 +42,7 @@ export default class Turrel extends GameComponent {
 					rotation: this.rotation,
 					components: [					
 						new SpriteRenderer({
-							sprite: new Sprite(this.resources.getTexture('laser')),
+							sprite: new Sprite(this.gameObject.scene.resources.getTexture('laser')),
 							layer: 2,
 						}),
 						new BoxCollider(1, 1),

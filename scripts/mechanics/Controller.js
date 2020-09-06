@@ -7,6 +7,11 @@ import Animator from '../core/animations/Animator.js';
 import Input from '../core/Input.js';
 
 export default class Controller extends GameComponent {
+	constructor(deadline) {
+		super();
+		this.deadline = deadline;
+	}
+
 	onInitialize() {
 		/**
 		 * @type {RigidBody}
@@ -73,14 +78,14 @@ export default class Controller extends GameComponent {
 	}
 
 	onTriggerEnter(collider) {
-		if (collider.gameObject.name === 'ladders') {
+		if (collider.gameObject.name === 'ladder') {
 			this.isLadder = true;
 			this.rigidBody.setKinematic(true);
 		}
 	}
 
 	onTriggerExit(collider) {
-		if (collider.gameObject.name === 'ladders') {
+		if (collider.gameObject.name === 'ladder') {
 			this.isLadder = false;
 			this.rigidBody.setKinematic(false);
 		}
@@ -136,7 +141,7 @@ export default class Controller extends GameComponent {
 				this.canJump = false;
 			}
 		}
-		if (this.transform.position.y < -6) {
+		if (this.transform.position.y < this.deadline) {
 			this.player.decreaseLife();
 		}
 	}
