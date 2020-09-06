@@ -23,6 +23,8 @@ body, html, #container, #menu {
 	justify-content: center;
 	align-items: center;
 	background-color: #505050;
+	height: 100%;
+	width: 100%;
 }
 
 #loader {
@@ -83,6 +85,7 @@ body, html, #container, #menu {
 	height: 100%;
 	display: flex;
 	flex-direction: row;
+	align-items: flex-start;
 	justify-content: space-between;
 }
 
@@ -101,21 +104,21 @@ body, html, #container, #menu {
 
 #verticalMoveButtons {
 	padding: 35px;
-	padding-left: 15px;
+	padding-right: 15px;
 }
 
 #topButton > p {
-	font-size: 1.5em;
+	font-size: 0.8em;
 	transform: rotate(-90deg);
 }
 
 #bottomButton > p {
-	font-size: 1.5em;
+	font-size: 0.8em;
 	transform: rotate(90deg);
 }
 
 #jumpButton {
-	font-size: 1.5em;
+	font-size: 1em;
 }
 
 #verticalMoveButtons {
@@ -132,8 +135,8 @@ body, html, #container, #menu {
 	margin-top: 10px;
 }
 
-#horizontalMoveButtons > button, #verticalMoveButtons > button {
-	padding: 15px 30px;
+#horizontalMoveButtons > button, #verticalMoveButtons > button, #menuButton {
+	padding: 15px 25px;
 	color: white;
 	background-color: rgba(68, 68, 68, 0.74);
 	border: none;
@@ -141,26 +144,19 @@ body, html, #container, #menu {
 }
 
 #horizontalMoveButtons > button {
-	font-size: 1.5em;
+	font-size: 1em;
 }
 
-#horizontalMoveButtons > button:active, #verticalMoveButtons > button:active {
+#horizontalMoveButtons > button:active, #verticalMoveButtons > button:active, #menuButton:active {
 	background-color: rgba(68, 68, 68, 0.911);
 }
 
 #menuButton {
 	margin: 15px;
-	background-color:  cornflowerblue;
-	padding: 5px 25px;
-	height: 10%;
-	justify-content: center;
-	align-items: center;
 }
 
 #countsContainer {
 	margin: 15px;
-	width: 10%;
-	height: 10%;
 	padding-left: 10px;
 	flex-direction: column;
 	justify-content: space-around;
@@ -201,7 +197,8 @@ body, html, #container, #menu {
 }
 
 #info {
-	height: auto;
+	height: 100%;
+	overflow-y: auto;
 }
 
 #audio {
@@ -235,9 +232,9 @@ body, html, #container, #menu {
 #navbar button:hover {
 	background-color: #666;
 	border-left: 5px solid #3333FF;
-  }
+}
 
-  #closeMenu {
+#closeMenu {
 	display: none;
 }
 
