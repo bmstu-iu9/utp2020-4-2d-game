@@ -396,46 +396,6 @@ class Mover extends CORE.GameComponent {
 }
 
 export default class Level1 extends CORE.Scene {
-	onInitialize() {
-		this.resources.addTextureInLoadQueue('ball', 'resources/ball.png');
-		this.resources.addTextureInLoadQueue('coin', 'resources/coin.png');
-		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png');
-		this.resources.addTextureInLoadQueue('rail', 'resources/rail.png');
-		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
-		this.resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
-		this.resources.addSoundInLoadQueue('theme', 'resources/theme.mp3');
-		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
-		this.resources.createTileMapSpriteSheet({
-			id: 'tileset',
-			path: 'resources/map.png',
-			pixelsPerUnit: 16,
-			tiles: [
-				['3', new CORE.Rect(16, 48, 16, 16)],
-				['1', new CORE.Rect(32, 48, 16, 16)],
-				['2', new CORE.Rect(48, 48, 16, 16)],
-				['01', new CORE.Rect(16, 64, 16, 16)],
-				['00', new CORE.Rect(64, 64, 16, 16)],
-				['ladders', new CORE.Rect(64, 48, 16, 16)],
-				['littlebush', new CORE.Rect(0, 32, 32, 16)],
-				['bush', new CORE.Rect(32, 16, 48, 32)],
-				['littletree', new CORE.Rect(80, 0, 64, 80)],
-				['tree', new CORE.Rect(144, 0, 70, 80)],
-				['hero', new CORE.Rect(0, 80, 16, 32)],
-				['walk', new CORE.Rect(16, 80, 16, 32)],
-				['walk1', new CORE.Rect(32, 80, 16, 32)],
-				['walk2', new CORE.Rect(48, 80, 16, 32)],
-				['walk3', new CORE.Rect(64, 80, 16, 32)],
-				['walk4', new CORE.Rect(80, 80, 16, 32)],
-				['walk5', new CORE.Rect(96, 80, 16, 32)],
-				['walk6', new CORE.Rect(112, 80, 16, 32)],
-				['box1', new CORE.Rect(0, 48, 16, 16)],
-				['box2', new CORE.Rect(0, 64, 16, 16)],
-				['finish1', new CORE.Rect(128, 80, 76, 28)],
-				['finish2', new CORE.Rect(128, 108, 76, 28)],
-			],
-		});
-	}
-
 	createCoin(position, layer = 2) {
 		this.addObject(new CORE.GameObject({
 			name: 'coin',
@@ -443,7 +403,7 @@ export default class Level1 extends CORE.Scene {
 			position: position,
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('coin')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('coin')),
 					layer,
 				}),
 				new CORE.CircleCollider(0.5),
@@ -475,7 +435,7 @@ export default class Level1 extends CORE.Scene {
 			scale: new CORE.Vector2d(size, 1),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('rail')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('rail')),
 					layer: 2,
 				}),
 			],
@@ -497,7 +457,7 @@ export default class Level1 extends CORE.Scene {
 			position: spawn,
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('spike')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('spike')),
 					layer: 2,
 				}),
 				new CORE.RigidBody({
@@ -517,7 +477,7 @@ export default class Level1 extends CORE.Scene {
 				position: new CORE.Vector2d(position.x + (i * 2), position.y),
 				components: [
 					new CORE.SpriteRenderer({
-						sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+						sprite: new CORE.Sprite(CORE.Game.resources.getTexture('ball')),
 						layer: 3,
 					}),
 					new CORE.CircleCollider(0.5),
@@ -533,7 +493,7 @@ export default class Level1 extends CORE.Scene {
 			position: position.subtract(new CORE.Vector2d(2, 0)),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('ball')),
 					layer: 3,
 				}),
 				new CORE.CircleCollider(0.5),
@@ -554,7 +514,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('littlebush'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('littlebush'),
 				}),
 			],
 		}));
@@ -568,7 +528,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('bush'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('bush'),
 				}),
 			],
 		}));
@@ -583,7 +543,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('tree'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('tree'),
 				}),
 			],
 		}));
@@ -597,7 +557,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('littletree'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('littletree'),
 				}),
 			],
 		}));
@@ -611,7 +571,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('box2'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('box2'),
 				}),
 			],
 		}));
@@ -624,7 +584,7 @@ export default class Level1 extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('box1'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('box1'),
 				}),
 				new CORE.BoxCollider(1, 1),
 				new CORE.RigidBody({
@@ -639,7 +599,7 @@ export default class Level1 extends CORE.Scene {
 		CORE.Screen.setSize(new CORE.Vector2d(1280, 720));
 		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4)
 		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
-		const ss = this.resources.getTiles('tileset');
+		const ss = CORE.Game.resources.getTiles('tileset');
 		this.finish = new CORE.GameObject({
 			name: 'finish',
 			position: new CORE.Vector2d(28.4, 1.2),
@@ -696,7 +656,7 @@ export default class Level1 extends CORE.Scene {
 					volume: 0.025,
 					loop: true,
 					playbackRate: 1,
-					sound: this.resources.getSound('nature'),
+					sound: CORE.Game.resources.getSound('nature'),
 					isSpatialSound: false,
 					playOnInitialize: true
 				}),
@@ -704,7 +664,7 @@ export default class Level1 extends CORE.Scene {
 					volume: 0.025,
 					loop: true,
 					playbackRate: 1,
-					sound: this.resources.getSound('theme'),
+					sound: CORE.Game.resources.getSound('theme'),
 					isSpatialSound: false,
 					playOnInitialize: true
 				})
@@ -886,7 +846,7 @@ export default class Level1 extends CORE.Scene {
 		const about = new CORE.UIObject({
 			tag: 'div',
 			id: 'about',
-			innerHTML: this.resources.getText('description'),
+			innerHTML: CORE.Game.resources.getText('description'),
 		});
 		const audio = new CORE.UIObject({
 			tag: 'div',
