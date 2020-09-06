@@ -33,11 +33,26 @@ export default class Game {
 	static resources;
 	static isActive = false;
 
-	static start(scene, canvasId, uiHostId, maxQuadCount = 5000) {
+	static start({
+		scene,
+		canvasId,
+		uiHostId,
+		resources = null,
+		onload = null,
+		maxQuadCount = 5000,
+	}) {
 		Game.canvas = document.getElementById(canvasId);
 		Game.uiHost = document.getElementById(uiHostId);
 
-		Game.resources = new Resources();
+		if (resources != null && !(resources instanceof Resources)) {
+			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
+		}
+
+		if (onload != null && typeof onload !== 'function') {
+			throw new TypeError('invalid parameter "onload". Expected a function.');
+		}
+
+		Game.resources = resources || new Resources();
 		Screen.initialize(Game.canvas);
 		Input.initialize();
 		Renderer.initialize(Game.canvas, maxQuadCount);
@@ -51,6 +66,9 @@ export default class Game {
 			Game.isActive = true;
 			Scene.changeScene(scene);
 			requestAnimationFrame(Game.loop);
+			if (onload != null) {
+				onload();
+			}
 		});
 	}
 
