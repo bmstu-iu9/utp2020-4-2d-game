@@ -853,12 +853,6 @@ export default class Level1 extends CORE.Scene {
 			]
 		}));
 
-		this.addObject(new CORE.UIObject({
-			name: 'test',
-			tag: 'div',
-			innerText: `${CORE.Platform.current}`,
-		}));
-
 		this.addObject(new CORE.GameObject({
 			name: 'ladders',
 			position: new CORE.Vector2d(-23, 1.8),
