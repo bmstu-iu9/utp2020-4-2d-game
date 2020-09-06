@@ -245,17 +245,21 @@ class Controller extends CORE.GameComponent {
 		this.bottomButtonPressed = false;
 		this.leftButton.addEventListener('pointerdown', () => component.leftButtonPressed = true);
 		this.leftButton.addEventListener('pointerup', () => component.leftButtonPressed = false);
+		this.leftButton.addEventListener('pointerout', () => component.leftButtonPressed = false);
 
 		this.rightButton.addEventListener('pointerdown', () => component.rightButtonPressed = true);
 		this.rightButton.addEventListener('pointerup', () => component.rightButtonPressed = false);
+		this.rightButton.addEventListener('pointerout', () => component.rightButtonPressed = false);
 
 		this.topButton.addEventListener('pointerdown', () => component.topButtonPressed = true);
 		this.topButton.addEventListener('pointerup', () => component.topButtonPressed = false);
+		this.topButton.addEventListener('pointerout', () => component.topButtonPressed = false);
 
 		this.bottomButton.addEventListener('pointerdown', () => component.bottomButtonPressed = true);
 		this.bottomButton.addEventListener('pointerup', () => component.bottomButtonPressed = false);
+		this.bottomButton.addEventListener('pointerout', () => component.bottomButtonPressed = false);
 
-		this.jumpButton.addEventListener('click', () => component.jump());
+		this.jumpButton.addEventListener('pointerdown', () => component.jump());
 	}
 
 	onInitialize() {
