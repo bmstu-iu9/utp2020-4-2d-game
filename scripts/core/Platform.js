@@ -6,9 +6,9 @@ export default class Platform {
 		if (/Win/.test(userAgent)) {
 			this.current = this.windows;
 		} else if (/Android/.test(userAgent)) {
-			this.current = this.linux;
-		} else if (/Linux/.test(userAgent)) {
 			this.current = this.android;
+		} else if (/Linux/.test(userAgent)) {
+			this.current = this.linux;
 		} else if (/iPhone|iPad|iPod/.test(userAgent)) {
 			this.current = this.ios;
 		} else if (/Mac/.test(userAgent)) {
