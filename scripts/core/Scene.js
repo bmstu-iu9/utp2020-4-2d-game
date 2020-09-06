@@ -326,7 +326,7 @@ export default class Scene {
 				return renderer.layer - otherRenderer.layer;
 			}));
 		} else {
-			const size = Screen.getSize();
+			const size = Screen.size;
 			Renderer.clear(0, 0, size, Color.black);
 		}
 	}
