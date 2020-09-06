@@ -77,10 +77,12 @@ export default class Game {
 			this.closeGame();
 			return true;
 		}
+
 		if (!Scene.current.isStarted || !Scene.current.isInitialized) {
 			requestAnimationFrame(Game.loop);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -89,15 +91,18 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
-	
+
 		const timestep = Math.min(0.1, (performance.now() - Game.lastFrameTime) / 1000);
 		Game.deltaTime += timestep;
 	
-		const size = Screen.getSize();
+		Screen.process();
+
+		const size = Screen.size;
 		
 		if (Game.uiHost.style.width !== `${size.x}px`) {
 			Game.uiHost.style.width = `${size.x}px`;
 		}
+
 		if (Game.uiHost.style.height !== `${size.y}px`) {
 			Game.uiHost.style.height = `${size.y}px`;
 		}
@@ -116,6 +121,7 @@ export default class Game {
 				Game.lastFrameTime = performance.now();
 				return;
 			}
+
 			Collider.dynamicColliders.forEach(collider => collider.recalculate());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.recalculate());
 			const collisions = [];
@@ -129,6 +135,7 @@ export default class Game {
 					}
 				});
 			});
+
 			for (let i = 0; i < 20; i++) {
 				RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => {
 					dynamicRigidBody.integrateForces(Game.step / 20);
@@ -138,6 +145,7 @@ export default class Game {
 					dynamicRigidBody.integrateVelocity(Game.step / 20);
 				});
 			}
+
 			collisions.forEach(collision => collision.positionalCorrection());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
 			Animator.animators.forEach(animator => animator.process(Game.step));
@@ -148,24 +156,27 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Scene.current.updateCamera(timestep);
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Scene.current.forEachEnabledUIObject(uiObject => uiObject.update(timestep));
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		const start = performance.now();
 		Scene.current.draw();
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Game.drawTime = performance.now() - start;
-	
 		Game.lastFrameTime = performance.now();
 	
 		requestAnimationFrame(Game.loop);
@@ -175,10 +186,12 @@ export default class Game {
 		if (!Game.isActive) {
 			return;
 		}
+
 		Game.isActive = false;
 		if (Scene.current != null && !Scene.current.isDestroyed) {
 			Scene.current.destroy();
 		}
+
 		Game.canvas = null;
 		Game.uiHost = null;
 		Game.resources.destroy();

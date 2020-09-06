@@ -38,6 +38,27 @@ class UILifeCount extends CORE.UIComponent {
 	}
 }
 
+class Resizer extends CORE.CameraComponent {
+	constructor() {
+		super();
+		this.size = CORE.Vector2d.zero;
+	}
+
+	onInitialize() {
+		const size = new CORE.Vector2d(document.body.clientWidth, document.body.clientHeight);
+		CORE.Screen.setSize(size);
+	}
+	
+	onUpdate() {
+		if (!this.size.equals(CORE.Screen.size)) {
+			this.size = CORE.Screen.size;
+			this.camera.setProjection(this.size.x, this.size.y, this.camera.zoom);
+		}
+		const size = new CORE.Vector2d(document.body.clientWidth, document.body.clientHeight);
+		CORE.Screen.setSize(size);
+	}
+}
+
 class UIMenuButton extends CORE.UIComponent {
 	onInitialize() {
 		const component = this;
@@ -596,7 +617,6 @@ export default class Level1 extends CORE.Scene {
 	}
 
 	onStart() {
-		CORE.Screen.setSize(new CORE.Vector2d(1280, 720));
 		this.createRailSpike(5, new CORE.Vector2d(15.4, -0.1), 4)
 		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
 		const ss = CORE.Game.resources.getTiles('tileset');
@@ -760,8 +780,8 @@ export default class Level1 extends CORE.Scene {
 								['ladders'],
 								['ladders'],
 								['ladders'],
-                            	['ladders'],
-                            	['ladders']
+								['ladders'],
+								['ladders']
 							],
 						}),
 					]
@@ -784,12 +804,11 @@ export default class Level1 extends CORE.Scene {
 		this.addObject(this.finish);
 		this.addObject(new CORE.Camera({
 			name: 'camera',
-			width: 1280,
-			height: 720,
 			zoom: 4,
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
 				new Follower(this.hero),
+				new Resizer(),
 			],
 		}));
 		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
