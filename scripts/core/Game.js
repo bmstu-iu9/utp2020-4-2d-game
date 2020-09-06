@@ -7,6 +7,7 @@ import Input from './Input.js';
 import Renderer from './graphics/webgl/Renderer.js';
 import Resources from './Resources.js'; 
 import Animator from './animations/Animator.js';
+import Platform from './Platform.js';
 
 export default class Game {
 	/**
@@ -54,6 +55,7 @@ export default class Game {
 
 		Game.resources = resources || new Resources();
 		Screen.initialize(Game.canvas);
+		Platform.initialize();
 		Input.initialize();
 		Renderer.initialize(Game.canvas, maxQuadCount);
 
@@ -197,6 +199,7 @@ export default class Game {
 		Game.resources.destroy();
 		Game.resources = null;
 		Screen.destroy();
+		Platform.destroy();
 		Input.destroy();
 		Renderer.destroy();
 	}
