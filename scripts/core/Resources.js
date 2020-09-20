@@ -453,16 +453,19 @@ export default class Resources {
 		});
 
 		sounds.forEach(([id, path]) => {
-			fetch(path)
-				.then(response => response.arrayBuffer())
-				.then(arrayBuffer => this.audioContext.decodeAudioData(arrayBuffer))
-				.then(audioBuffer => {
-					this.loadedSounds[id] = new Sound(audioBuffer);
+			const request = new XMLHttpRequest();
+			request.open('GET', path, true);
+			request.responseType = 'arraybuffer';
+			request.onload = () => {
+				this.audioContext.decodeAudioData(request.response, buffer => {
+					this.loadedSounds[id] = new Sound(buffer);
 					count--;
 					if (count === 0 && onload != null) {
 						onload();
-					} 
+					}
 				});
+			}
+			request.send();
 		});
 
 		texts.forEach(([id, path]) => {
@@ -521,7 +524,8 @@ export default class Resources {
 						maxHeight = rect.height + 2 * properties.border;
 					}
 				}
-				if ( maxWidth< deltaWidth) {
+				
+				if (maxWidth < deltaWidth) {
 					maxWidth = deltaWidth;
 				}
 
