@@ -31,7 +31,7 @@ export default class Simplex {
 	}
 
 	/**
-	 * @param {CSOPoint}
+	 * @param {CSOPoint} csoPoint
 	 */
 	add(csoPoint) {
 		this.pC = csoPoint;
@@ -49,11 +49,11 @@ export default class Simplex {
 		const vHca = vCA.orthogonalComponent(vCB);
 		const vHcb = vCB.orthogonalComponent(vCA);
 		if (vNca.dot(vHca) < 0) {
-			this.pointB = this.pointC;
+			this.pB = this.pC;
 			return vNca;
 		}
 		if (vNcb.dot(vHcb) < 0) {
-			this.pointA = this.pointC;
+			this.pA = this.pC;
 			return vNcb;
 		}
 		return Vector2d.zero;
