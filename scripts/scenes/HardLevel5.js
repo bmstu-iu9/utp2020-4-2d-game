@@ -1,5 +1,6 @@
 import * as CORE from '../core/Core.js';
 import GameScene from './GameScene.js';
+import Bonus from './Bonus.js';
 
 export default class HardLevel5 extends GameScene {
 	onStart() {
@@ -73,6 +74,7 @@ export default class HardLevel5 extends GameScene {
         this.createRailSpike(2.5, new CORE.Vector2d(58, 1.8), 3);
 		this.createTurrel(new CORE.Vector2d(60, -1), Math.PI / 2, 6, 1);
         this.createCoin(new CORE.Vector2d(62, 2.1));
+        this.createDoor(new CORE.Vector2d(65, 2.3), Bonus, this.hero);
 		this.createCamera(this.hero, 0.5);
 		this.createUI(this.hero);
 	}
