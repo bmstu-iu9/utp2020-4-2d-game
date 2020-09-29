@@ -56,7 +56,7 @@ export default class Voleyball extends GameComponent {
 	}
 	
 	onCollisionEnter(collider) {
-		if (collider.gameObject.name === 'collider - 4' && this.gameObject.transform.position.x < 2) {
+		if (collider.gameObject.name === 'collider - 4' && this.gameObject.transform.position.x < -1) {
 			this.player2Score++;
 			this.begin1();
 		} else if (collider.gameObject.name === 'collider - 4') {

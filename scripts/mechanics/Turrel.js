@@ -38,10 +38,10 @@ export default class Turrel extends GameComponent {
 			} else {
 				this.laser = new GameObject({
 					name: 'laser',
-					scale: new Vector2d(0.07, 0.04),
+					scale: new Vector2d(0.1, 0.05),
 					position: this.laserPosition,
 					rotation: this.rotation,
-					components: [					
+					components: [
 						new SpriteRenderer({
 							sprite: new Sprite(Game.resources.getTexture('laser')),
 							layer: 2,

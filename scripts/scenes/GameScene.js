@@ -118,7 +118,7 @@ export default class GameScene extends CORE.Scene {
 		const door = new CORE.GameObject({
 			name: 'door',
 			position,
-			scale: new CORE.Vector2d(0.5, 0.5),
+			scale: new CORE.Vector2d(0.4, 0.4),
 			components: [
 				new CORE.SpriteRenderer({
 					sprite: CORE.Game.resources.getTiles('tileset').get('door'),
