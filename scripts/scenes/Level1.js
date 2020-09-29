@@ -1,4 +1,5 @@
 import * as CORE from '../core/Core.js';
+import * as MECH from '../mechanics/Mechanics.js';
 import GameScene from './GameScene.js';
 import Level2 from './Level2.js';
 
@@ -88,7 +89,7 @@ export default class Level1 extends GameScene {
 		this.createRailSpike(2, new CORE.Vector2d(-41, 0.5), 4, Math.PI / 2);
 		this.createRailSpike(3.5, new CORE.Vector2d(-38, 2), 4, Math.PI);
 		this.createExtraLife(new CORE.Vector2d(-5, 0.5));
-		this.createCheckPoint(new CORE.Vector2d(-3, -0.5));
+		this.createCheckPoint(new CORE.Vector2d(-3, 0.5));
 		this.createCoin(new CORE.Vector2d(-40.6, -0.8), -3);
 		this.createCoin(new CORE.Vector2d(-18.6, 4.7));
 		this.createCoin(new CORE.Vector2d(-11, 4));

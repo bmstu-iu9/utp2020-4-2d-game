@@ -61,7 +61,7 @@ export default class Level4 extends GameScene {
         this.createCoin(new CORE.Vector2d(35, -0.5));
         this.createCoin(new CORE.Vector2d(37, -0.5));
 		this.createCoin(new CORE.Vector2d(39, -0.5));
-        this.createDoor(new CORE.Vector2d(42, -0.3), HardLevel5, this.hero);
+        this.createDoor(new CORE.Vector2d(42, 0), HardLevel5, this.hero);
         this.createCamera(this.hero, 0.5);
 		this.createUI(this.hero);
 	}
