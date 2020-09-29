@@ -5,11 +5,9 @@ export default class GameScene extends CORE.Scene {
     onInitialize() {
 		this.resources.addTextureInLoadQueue('ball', 'resources/ball.png');
 		this.resources.addTextureInLoadQueue('coin', 'resources/coin.png');
-		this.resources.addTextureInLoadQueue('checkPoint', 'resources/checkPoint.png');
 		this.resources.addTextureInLoadQueue('extraLife', 'resources/extraLife.png');
 		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png');
 		this.resources.addTextureInLoadQueue('laser', 'resources/laser.png');
-		this.resources.addTextureInLoadQueue('turrel', 'resources/turrel.png');
 		this.resources.addTextureInLoadQueue('trampoline', 'resources/trampoline.png');
 		this.resources.addTextureInLoadQueue('rail', 'resources/rail.png');
 		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
@@ -21,6 +19,9 @@ export default class GameScene extends CORE.Scene {
 			path: 'resources/map.png',
 			pixelsPerUnit: 16,
 			tiles: [
+				['door', new CORE.Rect(210, 60, 40, 100)],
+				['checkPoint', new CORE.Rect(250, 87, 20, 95)],
+				['turrel', new CORE.Rect(69, 112, 59, 28)],
 				['3', new CORE.Rect(16, 48, 16, 16)],
 				['1', new CORE.Rect(32, 48, 16, 16)],
 				['2', new CORE.Rect(48, 48, 16, 16)],
@@ -164,10 +165,10 @@ export default class GameScene extends CORE.Scene {
         const door = new CORE.GameObject({
 			name: 'door',
 			position,
-			scale: new CORE.Vector2d(0.4, 0.4),
+			scale: new CORE.Vector2d(0.5, 0.5),
 			components: [
 				new CORE.SpriteRenderer({
-                    sprite: new CORE.Sprite(this.resources.getTexture('extraLife')),
+					sprite: this.resources.getTiles('tileset').get('door'),
                 }),
 				new MECH.Door(nextLevel, hero),
 				new CORE.CircleCollider(2.27),
@@ -382,7 +383,7 @@ export default class GameScene extends CORE.Scene {
             position: position,
             components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('checkPoint')),
+					sprite: this.resources.getTiles('tileset').get('checkPoint'),
 					layer,
 				}),
                 new CORE.BoxCollider(1, 1),
@@ -399,7 +400,7 @@ export default class GameScene extends CORE.Scene {
             rotation: rotation,
             components: [
                 new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('turrel')),
+					sprite: this.resources.getTiles('tileset').get('turrel'),
 					layer: 2,
 				}),
                 new CORE.BoxCollider(4, 3.4),
