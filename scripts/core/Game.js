@@ -116,8 +116,6 @@ export default class Game {
 			return;
 		}
 
-		const pTime = performance.now();
-	
 		while (Game.deltaTime > Game.step) {
 			Game.deltaTime -= Game.step;
 			Scene.current.forEachEnabledGameObject(gameObject => gameObject.fixedUpdate(Game.step));
@@ -157,10 +155,6 @@ export default class Game {
 			});
 			Animator.animators.forEach(animator => animator.process(Game.step));
 		}
-
-		if (Input.getKeyDown("KeyT")) {
-			console.log(`Physics - ${performance.now() - pTime}`);
-		}
 	
 		Scene.current.forEachEnabledGameObject(gameObject => gameObject.update(timestep));
 		if (Game.shouldStopLoop()) {
@@ -188,11 +182,6 @@ export default class Game {
 		}
 
 		Game.drawTime = performance.now() - start;
-
-		if (Input.getKeyDown("KeyT")) {
-			console.log(`Top graphics - ${Game.drawTime}`);
-		}
-
 		Game.lastFrameTime = performance.now();
 	
 		requestAnimationFrame(Game.loop);
