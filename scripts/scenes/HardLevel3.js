@@ -41,7 +41,7 @@ export default class HardLevel3 extends GameScene {
 		this.createRailSpike(5, new CORE.Vector2d(-73, 4.8), 7);
 		this.createRailSpike(5, new CORE.Vector2d(-70, 4.8), 5);
 		this.createCoin(new CORE.Vector2d(-73, 5));
-		this.createCheckPoint(new CORE.Vector2d(-63, 5.3));
+		this.createCheckPoint(new CORE.Vector2d(-63, 5.25));
 		this.createLadder(new CORE.Vector2d(-60, -0.5), 9);
 		this.createTurrel(new CORE.Vector2d(-48.5, -4), Math.PI / 2, 5, 2);
 		this.createTurrel(new CORE.Vector2d(-43.5, -4), Math.PI / 2, 5, 2);
@@ -59,7 +59,7 @@ export default class HardLevel3 extends GameScene {
 		this.createRailSpike(4.5, new CORE.Vector2d(12, -4.2), 4);
 		this.createTurrel(new CORE.Vector2d(16.9, -3), 0, 4, 4);
 		this.createCoin(new CORE.Vector2d(25, 2));
-		this.createCheckPoint(new CORE.Vector2d(27, 2.3));
+		this.createCheckPoint(new CORE.Vector2d(27, 2.25));
 		this.createLadder(new CORE.Vector2d(45, -0), 9);
 		this.createTurrel(new CORE.Vector2d(51.5, -5), Math.PI / 2, 5, 3);
 		this.createExtraLife(new CORE.Vector2d(54, -0.1));
