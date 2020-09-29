@@ -24,8 +24,8 @@ playButton.addEventListener('click', () => {
 		path: 'resources/map.png',
 		pixelsPerUnit: 16,
 		tiles: [
-			['door', new Rect(210, 60, 40, 100)],
-			['checkPoint', new Rect(250, 87, 20, 95)],
+			['door', new Rect(215, 61, 44, 74)],
+			['checkPoint', new Rect(204, 85, 9, 50)],
 			['turrel', new Rect(69, 112, 59, 28)],
 			['3', new Rect(16, 48, 16, 16)],
 			['1', new Rect(32, 48, 16, 16)],

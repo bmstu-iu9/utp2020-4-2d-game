@@ -9,7 +9,6 @@ export default class Collector extends GameComponent {
 	onTriggerEnter(collider) {
 		if (collider.gameObject.name === 'coin') {
 			this.coinsCount++;
-			console.log('coins: ' + this.coinsCount + ' / 5');
 			collider.gameObject.destroy();
 		}
 	}

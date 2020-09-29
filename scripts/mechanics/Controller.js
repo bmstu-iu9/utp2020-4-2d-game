@@ -219,7 +219,7 @@ export default class Controller extends CORE.GameComponent {
 				this.moveRight();
 			} else {
 				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
-				follower.isLookDown &&= this.canJump;
+				follower.isLookDown = follower.isLookDown && this.canJump;
 				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
 				this.changeState('idle');
 			}

@@ -1,5 +1,4 @@
 import * as CORE from '../core/Core.js';
-import * as MECH from '../mechanics/Mechanics.js';
 import GameScene from './GameScene.js';
 import Level2 from './Level2.js';
 

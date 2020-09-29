@@ -49,7 +49,7 @@ export default class Level4 extends GameScene {
 		this.createRailSpike(2, new CORE.Vector2d(3.5, -1.2), 4);
 		this.createRailSpike(4.7, new CORE.Vector2d(1, 1.2), 9, Math.PI);
 		this.createRailSpike(4.1, new CORE.Vector2d(9, -1.2), 7);
-		this.createRailSpike(3.6, new CORE.Vector2d(8.5, 1.2), 6, Math.PI);
+		this.createRailSpike(3.3, new CORE.Vector2d(8.5, 1.2), 6, Math.PI);
 		this.createRailSpike(2.5, new CORE.Vector2d(14.5, -1.2), 4);
 		this.createRailSpike(5, new CORE.Vector2d(15.5, 1.2), 8, Math.PI);
 		this.createRailSpike(3, new CORE.Vector2d(19, -1.2), 5);

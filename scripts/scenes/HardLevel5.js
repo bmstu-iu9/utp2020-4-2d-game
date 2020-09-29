@@ -1,11 +1,11 @@
 import * as CORE from '../core/Core.js';
 import GameScene from './GameScene.js';
-import Bonus from './Bonus.js';
+//import Bonus from './Bonus.js';
 
 export default class HardLevel5 extends GameScene {
 	onStart() {
 		const ss = CORE.Game.resources.getTiles('tileset');
-		this.hero = this.createHero(new CORE.Vector2d(-66, -0.7), 3);
+		this.hero = this.createHero(new CORE.Vector2d(-66, -1), 3);
 		this.createSounds();
 
 		
@@ -41,7 +41,7 @@ export default class HardLevel5 extends GameScene {
 		this.createTurrel(new CORE.Vector2d(-48, -2), 0, 6, 2.5);
 		this.createCoin(new CORE.Vector2d(-47, 0.2));
 		this.createTrampoline(new CORE.Vector2d(-42, -0.8));
-		this.createCheckPoint(new CORE.Vector2d(-30, 3.5));
+		this.createCheckPoint(new CORE.Vector2d(-30, 4.3));
 		this.createLadder(new CORE.Vector2d(-26, -0.2), 7);
 		this.createExtraLife(new CORE.Vector2d(-24, -1.2));
 		this.createRailSpike(5, new CORE.Vector2d(-17, -2.2), 5);
@@ -54,7 +54,7 @@ export default class HardLevel5 extends GameScene {
 		this.createTurrel(new CORE.Vector2d(6.5, -2), Math.PI / 2, 6, 1);
 		this.createCoin(new CORE.Vector2d(8, 1.1));
 		this.createTurrel(new CORE.Vector2d(9.5, -2), Math.PI / 2, 6, 1);
-		this.createCheckPoint(new CORE.Vector2d(11, 0.5));
+		this.createCheckPoint(new CORE.Vector2d(11, 1.3));
 		this.createTurrel(new CORE.Vector2d(12.5, -2), Math.PI / 2, 6, 1);
 		this.createRailSpike(2.7, new CORE.Vector2d(15.5, 2.8), 4);
 		this.createRailSpike(3, new CORE.Vector2d(19.5, 3.8), 4);
