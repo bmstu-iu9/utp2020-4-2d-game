@@ -2,62 +2,16 @@ import * as CORE from '../core/Core.js';
 import * as MECH from '../mechanics/Mechanics.js';
 
 export default class GameScene extends CORE.Scene {
-    onInitialize() {
-		this.resources.addTextureInLoadQueue('ball', 'resources/ball.png');
-		this.resources.addTextureInLoadQueue('coin', 'resources/coin.png');
-		this.resources.addTextureInLoadQueue('extraLife', 'resources/extraLife.png');
-		this.resources.addTextureInLoadQueue('spike', 'resources/spike.png');
-		this.resources.addTextureInLoadQueue('laser', 'resources/laser.png');
-		this.resources.addTextureInLoadQueue('trampoline', 'resources/trampoline.png');
-		this.resources.addTextureInLoadQueue('rail', 'resources/rail.png');
-		this.resources.addTextureInLoadQueue('hero', 'resources/hero.png');
-		this.resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
-		this.resources.addSoundInLoadQueue('theme', 'resources/theme.mp3');
-		this.resources.addTextInLoadQueue('description', 'resources/html_fragments/description.html');
-		this.resources.createTileMapSpriteSheet({
-			id: 'tileset',
-			path: 'resources/map.png',
-			pixelsPerUnit: 16,
-			tiles: [
-				['door', new CORE.Rect(210, 60, 40, 100)],
-				['checkPoint', new CORE.Rect(250, 87, 20, 95)],
-				['turrel', new CORE.Rect(69, 112, 59, 28)],
-				['3', new CORE.Rect(16, 48, 16, 16)],
-				['1', new CORE.Rect(32, 48, 16, 16)],
-				['2', new CORE.Rect(48, 48, 16, 16)],
-				['01', new CORE.Rect(16, 64, 16, 16)],
-				['00', new CORE.Rect(64, 64, 16, 16)],
-				['ladder', new CORE.Rect(64, 48, 16, 16)],
-				['littlebush', new CORE.Rect(0, 32, 32, 16)],
-				['bush', new CORE.Rect(32, 16, 48, 32)],
-				['littletree', new CORE.Rect(80, 0, 64, 80)],
-				['tree', new CORE.Rect(144, 0, 70, 80)],
-				['hero', new CORE.Rect(0, 80, 16, 32)],
-				['walk', new CORE.Rect(16, 80, 16, 32)],
-				['walk1', new CORE.Rect(32, 80, 16, 32)],
-				['walk2', new CORE.Rect(48, 80, 16, 32)],
-				['walk3', new CORE.Rect(64, 80, 16, 32)],
-				['walk4', new CORE.Rect(80, 80, 16, 32)],
-				['walk5', new CORE.Rect(96, 80, 16, 32)],
-				['walk6', new CORE.Rect(112, 80, 16, 32)],
-				['box1', new CORE.Rect(0, 48, 16, 16)],
-				['box2', new CORE.Rect(0, 64, 16, 16)],
-				['finish1', new CORE.Rect(128, 80, 76, 28)],
-				['finish2', new CORE.Rect(128, 108, 76, 28)],
-			],
-		});
-	}
-
-    createHero(position, gravityScale, deadline) {
-        const ss = this.resources.getTiles('tileset');
-        const hero = new CORE.GameObject({
+	createHero(position, gravityScale) {
+		const ss = CORE.Game.resources.getTiles('tileset');
+		const hero = new CORE.GameObject({
 			name: 'hero',
 			scale: new CORE.Vector2d(0.8, 0.8),
 			position,
 			components: [
 				new CORE.SpriteRenderer({
-                    sprite: ss.get('hero'),
-                    layer: 2,
+					sprite: ss.get('hero'),
+					layer: 2,
 				}),
 				new CORE.RigidBody({
 					material: new CORE.Material(0.5, 0),
@@ -65,13 +19,13 @@ export default class GameScene extends CORE.Scene {
 				}),
 				new CORE.Animator([
 					['walk', new CORE.Animation(0.7, true, [
-						new CORE.SpriteKeyFrame(ss.get('walk'), 0.1),
-						new CORE.SpriteKeyFrame(ss.get('walk1'), 0.2),
-						new CORE.SpriteKeyFrame(ss.get('walk2'), 0.3),
-						new CORE.SpriteKeyFrame(ss.get('walk3'), 0.4),
-						new CORE.SpriteKeyFrame(ss.get('walk4'), 0.5),
-						new CORE.SpriteKeyFrame(ss.get('walk5'), 0.6),
-						new CORE.SpriteKeyFrame(ss.get('walk6'), 0.7),
+						new CORE.SpriteKeyFrame(ss.get('walk'), 0.0),
+						new CORE.SpriteKeyFrame(ss.get('walk1'), 0.1),
+						new CORE.SpriteKeyFrame(ss.get('walk2'), 0.2),
+						new CORE.SpriteKeyFrame(ss.get('walk3'), 0.3),
+						new CORE.SpriteKeyFrame(ss.get('walk4'), 0.4),
+						new CORE.SpriteKeyFrame(ss.get('walk5'), 0.5),
+						new CORE.SpriteKeyFrame(ss.get('walk6'), 0.6),
 						
 					])],
 					['idle', new CORE.Animation(1, false, [
@@ -79,47 +33,46 @@ export default class GameScene extends CORE.Scene {
 					])],
 				], 'idle'),
 				new CORE.BoxCollider(0.8, 2),
-				new MECH.Controller(deadline),
 				new MECH.Collector(),
 				new MECH.Player(5, position),
 			],
 		});
-        this.addObject(hero);
-        return hero;
-    }
+		this.addObject(hero);
+		return hero;
+	}
 
-    createSounds() {
-        const sounds = new CORE.GameObject({
-            name: 'sounds',
-            components: [
-                new CORE.AudioPlayer({
-                    volume: 0.025,
-                    loop: true,
-                    playbackRate: 1,
-                    sound: this.resources.getSound('nature'),
-                    isSpatialSound: false,
-                    playOnInitialize: true
-                }),
-                new CORE.AudioPlayer({
-                    volume: 0.025,
-                    loop: true,
-                    playbackRate: 1,
-                    sound: this.resources.getSound('theme'),
-                    isSpatialSound: false,
-                    playOnInitialize: true
-                })
-            ],
-        });
-        this.addObject(sounds);
-        return sounds;
-    }
+	createSounds() {
+		const sounds = new CORE.GameObject({
+			name: 'sounds',
+			components: [
+				new CORE.AudioPlayer({
+					volume: 0.025,
+					loop: true,
+					playbackRate: 1,
+					sound: CORE.Game.resources.getSound('nature'),
+					isSpatialSound: false,
+					playOnInitialize: true
+				}),
+				new CORE.AudioPlayer({
+					volume: 0.025,
+					loop: true,
+					playbackRate: 1,
+					sound: CORE.Game.resources.getSound('theme'),
+					isSpatialSound: false,
+					playOnInitialize: true
+				})
+			],
+		});
+		this.addObject(sounds);
+		return sounds;
+	}
 
-    createLadder(position, size) {
-        const tiles = [];
-        for (let i = 0; i < size; i++) {
-            tiles.push(['ladder']);
-        }
-        const ladder = new CORE.GameObject({
+	createLadder(position, size) {
+		const tiles = [];
+		for (let i = 0; i < size; i++) {
+			tiles.push(['ladder']);
+		}
+		const ladder = new CORE.GameObject({
 			name: 'ladder',
 			position: position.add(new CORE.Vector2d(0, 1.8)),
 			components: [
@@ -132,73 +85,100 @@ export default class GameScene extends CORE.Scene {
 					components: [
 						new CORE.TileMap({
 							color: new CORE.Color(240, 215, 175),
-							spriteSheets: [this.resources.getTiles('tileset')],
+							spriteSheets: [CORE.Game.resources.getTiles('tileset')],
 							map: tiles,
 						}),
 					]
 				})
 			]
-        });
-        this.addObject(ladder);
-        return ladder;
-    }
+		});
+		this.addObject(ladder);
+		return ladder;
+	}
 
-    createCamera(hero, floor) {
-        const size = new CORE.Vector2d(document.body.clientWidth, document.body.clientHeight);
-        CORE.Screen.setSize(size); 
-        const camera = new CORE.Camera({
-            name: 'camera',
+	createCamera(hero, floor) {
+		const size = new CORE.Vector2d(document.body.clientWidth, document.body.clientHeight);
+		const camera = new CORE.Camera({
+			name: 'camera',
 			width: size.x,
 			height: size.y,
 			zoom: 4,
 			clearColor: new CORE.Color(156, 180, 219),
 			components: [
 				new MECH.Follower(hero, floor),
+				new MECH.Resizer(),
 			],
-        });
-        this.addObject(camera);
-        return camera;
-    }
+		});
+		this.addObject(camera);
+		return camera;
+	}
 
-    createDoor(position, nextLevel, hero) {
-        const ss = this.resources.getTiles('tileset');
-        const door = new CORE.GameObject({
+	createDoor(position, nextLevel, hero) {
+		const ss = CORE.Game.resources.getTiles('tileset');
+		const door = new CORE.GameObject({
 			name: 'door',
 			position,
 			scale: new CORE.Vector2d(0.5, 0.5),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: this.resources.getTiles('tileset').get('door'),
-                }),
+					sprite: CORE.Game.resources.getTiles('tileset').get('door'),
+				}),
 				new MECH.Door(nextLevel, hero),
 				new CORE.CircleCollider(2.27),
-            ],
-            children: [
-                new CORE.GameObject({
-                    name: 'finish',
-                    position: new CORE.Vector2d(0, 4),
-                    scale: new CORE.Vector2d(1.5, 1.5),
-                    components: [
-                        new CORE.SpriteRenderer({sprite: ss.get('finish1'), layer: -1}),
-                        new CORE.Animator([
-                            ['finish', new CORE.Animation(0.09, true, [
-                                new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
-                                new CORE.SpriteKeyFrame(ss.get('finish2'), 0.1)
-                            ])],
-                            ['idle', new CORE.Animation(1, false, [
-                                new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
-                            ])],
-                        ], 'idle'),
-                    ],
-                }),
-            ],
-        });
-        this.addObject(door);
-        return door;
-    }
+			],
+			children: [
+				new CORE.GameObject({
+					name: 'finish',
+					position: new CORE.Vector2d(0, 4),
+					scale: new CORE.Vector2d(1.5, 1.5),
+					components: [
+						new CORE.SpriteRenderer({sprite: ss.get('finish1'), layer: -1}),
+						new CORE.Animator([
+							['finish', new CORE.Animation(0.09, true, [
+								new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
+								new CORE.SpriteKeyFrame(ss.get('finish2'), 0.1)
+							])],
+							['idle', new CORE.Animation(1, false, [
+								new CORE.SpriteKeyFrame(ss.get('finish1'), 0),
+							])],
+						], 'idle'),
+					],
+				}),
+			],
+		});
+		this.addObject(door);
+		return door;
+	}
 
-    createUI(hero) {
-        const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
+	createUI(hero, deadline) {
+		const ui = new CORE.UIObject({id: 'ui', tag: 'div'});
+		const leftButton = new CORE.UIObject({
+			id: 'leftButton',
+			tag: 'button',
+			innerText: '<',
+		});
+		const rightButton = new CORE.UIObject({
+			id: 'rightButton',
+			tag: 'button',
+			innerText: '>',
+		});
+		const topButton = new CORE.UIObject({
+			id: 'topButton',
+			tag: 'button',
+			innerHTML: '<p>></p>',
+		});
+		const bottomButton = new CORE.UIObject({
+			id: 'bottomButton',
+			tag: 'button',
+			innerHTML: '<p>></p>',
+		});
+		const jumpButton = new CORE.UIObject({
+			id: 'jumpButton',
+			tag: 'button',
+			innerText: 'Прыжок',
+		});
+		ui.addChild(leftButton);
+		ui.addChild(rightButton);
 		const countsContainer = new CORE.UIObject({
 			tag: 'div',
 			id: 'countsContainer',
@@ -252,17 +232,12 @@ export default class GameScene extends CORE.Scene {
 		const about = new CORE.UIObject({
 			tag: 'div',
 			id: 'about',
-			innerHTML: this.resources.getText('description'),
+			innerHTML: CORE.Game.resources.getText('description'),
 		});
 		const audio = new CORE.UIObject({
 			tag: 'div',
 			id: 'audio',
 			children: [
-				new CORE.UIObject({
-					tag: 'div',
-					id: 'audioText',
-					innerText: 'Громкость звука:',
-				}),
 				new CORE.UIObject({
 					name: 'volume',
 					tag: 'input',
@@ -288,7 +263,7 @@ export default class GameScene extends CORE.Scene {
 					children: [
 						new CORE.UIObject({
 							tag: 'li',
-							id: 'liAbout',
+							name: 'liAbout',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
@@ -302,7 +277,7 @@ export default class GameScene extends CORE.Scene {
 						}),
 						new CORE.UIObject({
 							tag: 'li',
-							id: 'liAudio',
+							name: 'liAudio',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
@@ -316,7 +291,7 @@ export default class GameScene extends CORE.Scene {
 						}),
 						new CORE.UIObject({
 							tag: 'li',
-							id: 'liClose',
+							name: 'liClose',
 							children: [
 								new CORE.UIObject({
 									tag: 'button',
@@ -332,17 +307,40 @@ export default class GameScene extends CORE.Scene {
 				}),
 			],
 		});
+		const topPanel = new CORE.UIObject({
+			id: 'topPanel',
+			tag: 'div',
+			children: [countsContainer, menuButton],
+		});
+		const horizontalMoveButtons = new CORE.UIObject({
+			id: 'horizontalMoveButtons',
+			tag: 'div',
+			children: [leftButton, rightButton],
+		});
+		const verticalMoveButtons = new CORE.UIObject({
+			id: 'verticalMoveButtons',
+			tag: 'div',
+			children: [topButton, bottomButton, jumpButton],
+		});
+		const bottomPanel = new CORE.UIObject({
+			id: 'bottomPanel',
+			tag: 'div',
+			children: [horizontalMoveButtons, verticalMoveButtons],
+		});
 		this.addObject(ui);
-		ui.addChild(countsContainer);
-		ui.addChild(menuButton);
+		ui.addChild(topPanel);
+		ui.addChild(bottomPanel);
 		ui.addChild(menu);
+		hero.addComponent(
+			new MECH.Controller(deadline, leftButton, rightButton, topButton, bottomButton, jumpButton),
+		);
 		countsContainer.htmlObject.style.display = 'flex';
 		menuButton.htmlObject.style.display = 'flex';
 		menu.htmlObject.style.display = 'none';
 		about.htmlObject.style.display = 'block';
-        audio.htmlObject.style.display = 'none';
-        return ui;
-    }
+		audio.htmlObject.style.display = 'none';
+		return ui;
+	}
 
 	createCoin(position, layer = 2) {
 		this.addObject(new CORE.GameObject({
@@ -351,7 +349,7 @@ export default class GameScene extends CORE.Scene {
 			position: position,
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('coin')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('coin')),
 					layer,
 				}),
 				new CORE.CircleCollider(0.5),
@@ -360,76 +358,76 @@ export default class GameScene extends CORE.Scene {
 	}
 
 	createExtraLife(position, layer = 2) {
-        this.addObject(new CORE.GameObject({
-            name: 'extraLife',
-            isStatic: true,
-            scale: new CORE.Vector2d(0.3, 0.3),
-            position: position,
-            components: [
+		this.addObject(new CORE.GameObject({
+			name: 'extraLife',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('extraLife')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('extraLife')),
 					layer, 
 				}),
-                new CORE.CircleCollider(4.64 / 2),
-            ],
-        }));
+				new CORE.CircleCollider(4.64 / 2),
+			],
+		}));
 	}
 	
 	createCheckPoint(position, layer = 2) {
-        this.addObject(new CORE.GameObject({
-            name: 'checkPoint',
-            isStatic: true,
-            scale: new CORE.Vector2d(0.5, 0.5),
-            position: position,
-            components: [
+		this.addObject(new CORE.GameObject({
+			name: 'checkPoint',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.5, 0.5),
+			position: position,
+			components: [
 				new CORE.SpriteRenderer({
-					sprite: this.resources.getTiles('tileset').get('checkPoint'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('checkPoint'),
 					layer,
 				}),
-                new CORE.BoxCollider(1, 1),
-            ],
-        }));
-    }
+				new CORE.BoxCollider(1, 1),
+			],
+		}));
+	}
 
 	createTurrel(position, rotation, speed, timer) {
-        this.addObject(new CORE.GameObject({
-            name: 'turrel',
-            isStatic: true,
-            scale: new CORE.Vector2d(0.3, 0.3),
-            position: position,
-            rotation: rotation,
-            components: [
-                new CORE.SpriteRenderer({
-					sprite: this.resources.getTiles('tileset').get('turrel'),
+		this.addObject(new CORE.GameObject({
+			name: 'turrel',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			rotation: rotation,
+			components: [
+				new CORE.SpriteRenderer({
+					sprite: CORE.Game.resources.getTiles('tileset').get('turrel'),
 					layer: 2,
 				}),
-                new CORE.BoxCollider(4, 3.4),
-                new CORE.RigidBody({
-                    material: new CORE.Material(1, 0),
-                }),
-                new MECH.Turrel(position, rotation, speed, timer),
-            ],
-        }));
+				new CORE.BoxCollider(4, 3.4),
+				new CORE.RigidBody({
+					material: new CORE.Material(1, 0),
+				}),
+				new MECH.Turrel(position, rotation, speed, timer),
+			],
+		}));
 	}
 
 	createTrampoline(position, layer = 2) {
-        this.addObject(new CORE.GameObject({
-            name: 'trampoline',
-            isStatic: true,
-            scale: new CORE.Vector2d(0.3, 0.3),
-            position: position,
-            components: [
-                new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('trampoline')), 
+		this.addObject(new CORE.GameObject({
+			name: 'trampoline',
+			isStatic: true,
+			scale: new CORE.Vector2d(0.3, 0.3),
+			position: position,
+			components: [
+				new CORE.SpriteRenderer({
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('trampoline')), 
 					layer,
 				}),
-                new CORE.BoxCollider(5.14, 2.02),
-                new CORE.RigidBody({
-                    material: new CORE.Material(1, 1),
-                }),
-            ],
-        }));
-    }
+				new CORE.BoxCollider(5.14, 2.02),
+				new CORE.RigidBody({
+					material: new CORE.Material(1, 1),
+				}),
+			],
+		}));
+	}
 	
 	createInvisibleWall(position, scale) {
 		this.addObject(new CORE.GameObject({
@@ -455,7 +453,7 @@ export default class GameScene extends CORE.Scene {
 			scale: new CORE.Vector2d(size, 1),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('rail')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('rail')),
 					layer: 2,
 				}),
 			],
@@ -477,7 +475,7 @@ export default class GameScene extends CORE.Scene {
 			position: spawn,
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('spike')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('spike')),
 					layer: 2,
 				}),
 				new CORE.RigidBody({
@@ -497,7 +495,7 @@ export default class GameScene extends CORE.Scene {
 				position: new CORE.Vector2d(position.x + (i * 2), position.y),
 				components: [
 					new CORE.SpriteRenderer({
-						sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+						sprite: new CORE.Sprite(CORE.Game.resources.getTexture('ball')),
 						layer: 3,
 					}),
 					new CORE.CircleCollider(0.5),
@@ -513,7 +511,7 @@ export default class GameScene extends CORE.Scene {
 			position: position.subtract(new CORE.Vector2d(2, 0)),
 			components: [
 				new CORE.SpriteRenderer({
-					sprite: new CORE.Sprite(this.resources.getTexture('ball')),
+					sprite: new CORE.Sprite(CORE.Game.resources.getTexture('ball')),
 					layer: 3,
 				}),
 				new CORE.CircleCollider(0.5),
@@ -534,7 +532,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('littlebush'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('littlebush'),
 				}),
 			],
 		}));
@@ -548,7 +546,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('bush'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('bush'),
 				}),
 			],
 		}));
@@ -563,7 +561,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('tree'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('tree'),
 				}),
 			],
 		}));
@@ -577,7 +575,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('littletree'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('littletree'),
 				}),
 			],
 		}));
@@ -591,7 +589,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('box2'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('box2'),
 				}),
 			],
 		}));
@@ -604,7 +602,7 @@ export default class GameScene extends CORE.Scene {
 			components: [
 				new CORE.SpriteRenderer({
 					layer,
-					sprite: this.resources.getTiles('tileset').get('box1'),
+					sprite: CORE.Game.resources.getTiles('tileset').get('box1'),
 				}),
 				new CORE.BoxCollider(1, 1),
 				new CORE.RigidBody({
@@ -613,5 +611,5 @@ export default class GameScene extends CORE.Scene {
 				}),
 			],
 		}));
-    }
+	}
 }

@@ -25,8 +25,8 @@ export default class Camera extends ComponentObject {
 	 */
 	constructor({
 		name,
-		width,
-		height,
+		width = 1280,
+		height = 720,
 		zoom = 1,
 		clearColor = Color.black,
 		isEnabled = true,
@@ -191,7 +191,7 @@ export default class Camera extends ComponentObject {
 	draw(renderers) {
 		this.throwIfNotInitialized();
 		this.throwIfDestroyed();
-		Renderer.clear(0, 0, Screen.getSize(), this.clearColor);
+		Renderer.clear(0, 0, Screen.size, this.clearColor);
 		Renderer.begin(this);
 
 		renderers.forEach(renderer => renderer.draw(this));

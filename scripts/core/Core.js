@@ -49,4 +49,5 @@ export { default as KeyFrame } from './animations/KeyFrame.js';
 export { default as SpriteKeyFrame } from './animations/SpriteKeyFrame.js';
 export { default as Animation } from './animations/Animation.js';
 export { default as Animator } from './animations/Animator.js';
+export { default as Platform } from './Platform.js';
 export { default as Game } from './Game.js';

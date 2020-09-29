@@ -1,22 +1,57 @@
-import GameComponent from '../core/GameComponent.js';
-import RigidBody from '../core/physics/RigidBody.js';
 import Player from './Player.js';
 import Follower from './Follower.js';
-import Vector2d from '../core/mathematics/Vector2d.js';
-import Animator from '../core/animations/Animator.js';
-import Input from '../core/Input.js';
+import * as CORE from '../core/Core.js';
 
-export default class Controller extends GameComponent {
-	constructor(deadline) {
+export default class Controller extends CORE.GameComponent {
+	constructor(deadline, leftButton, rightButton, topButton, bottomButton, jumpButton) {
 		super();
+		this.canJump = true;
 		this.deadline = deadline;
+		this.leftButton = leftButton;
+		this.rightButton = rightButton;
+		this.topButton = topButton;
+		this.bottomButton = bottomButton;
+		this.jumpButton = jumpButton;
+		if (CORE.Platform.current !== CORE.Platform.ios && CORE.Platform.current !== CORE.Platform.android) {
+			this.leftButton.htmlObject.style.display = 'none';
+			this.rightButton.htmlObject.style.display = 'none';
+			this.topButton.htmlObject.style.display = 'none';
+			this.bottomButton.htmlObject.style.display = 'none';
+			this.jumpButton.htmlObject.style.display = 'none';
+			return;
+		}
+
+		this.topButton.htmlObject.style.display = 'none';
+		this.bottomButton.htmlObject.style.display = 'none';
+		const component = this;
+		this.leftButtonPressed = false;
+		this.rightButtonPressed = false;
+		this.topButtonPressed = false;
+		this.bottomButtonPressed = false;
+		this.leftButton.addEventListener('pointerdown', () => component.leftButtonPressed = true);
+		this.leftButton.addEventListener('pointerup', () => component.leftButtonPressed = false);
+		this.leftButton.addEventListener('pointerout', () => component.leftButtonPressed = false);
+
+		this.rightButton.addEventListener('pointerdown', () => component.rightButtonPressed = true);
+		this.rightButton.addEventListener('pointerup', () => component.rightButtonPressed = false);
+		this.rightButton.addEventListener('pointerout', () => component.rightButtonPressed = false);
+
+		this.topButton.addEventListener('pointerdown', () => component.topButtonPressed = true);
+		this.topButton.addEventListener('pointerup', () => component.topButtonPressed = false);
+		this.topButton.addEventListener('pointerout', () => component.topButtonPressed = false);
+
+		this.bottomButton.addEventListener('pointerdown', () => component.bottomButtonPressed = true);
+		this.bottomButton.addEventListener('pointerup', () => component.bottomButtonPressed = false);
+		this.bottomButton.addEventListener('pointerout', () => component.bottomButtonPressed = false);
+
+		this.jumpButton.addEventListener('pointerdown', () => component.jump());
 	}
 
 	onInitialize() {
 		/**
-		 * @type {RigidBody}
+		 * @type {CORE.RigidBody}
 		 */
-		this.rigidBody = this.gameObject.getComponent(RigidBody);
+		this.rigidBody = this.gameObject.getComponent(CORE.RigidBody);
 		if (this.rigidBody == null) {
 			throw new Error('no rigid body.');
 		}
@@ -27,22 +62,19 @@ export default class Controller extends GameComponent {
 		if (this.player == null) {
 			throw new Error('no player.');
 		}
-		/**
-		 * @type {Follower}
-		 */
-		this.follower = this.gameObject.scene.camera.getComponent(Follower);
-		if (this.follower == null) {
-			throw new Error('no follower.');
-		}
 		this.isFreeze = false;
 		/**
-		 * @type {Animator}
+		 * @type {CORE.Animator}
 		 */
-		this.animator = this.gameObject.getComponent(Animator);
+		this.animator = this.gameObject.getComponent(CORE.Animator);
 		if (this.animator == null) {
 			throw new Error('no animator.');
 		}
 		this.state = 'idle';
+	}
+
+	relocate(destination) {
+		this.transform.setPosition(destination);
 	}
 
 	changeState(state) {
@@ -51,10 +83,6 @@ export default class Controller extends GameComponent {
 		}
 		this.animator.play(state);
 		this.state = state;
-	}
-
-	relocate(destination) {
-		this.transform.setPosition(destination);
 	}
 
 	freeze() {
@@ -81,6 +109,11 @@ export default class Controller extends GameComponent {
 		if (collider.gameObject.name === 'ladder') {
 			this.isLadder = true;
 			this.rigidBody.setKinematic(true);
+			if (CORE.Platform.current === CORE.Platform.ios || CORE.Platform.current === CORE.Platform.android) {
+				this.topButton.htmlObject.style.display = 'block';
+				this.bottomButton.htmlObject.style.display = 'block';
+				this.jumpButton.htmlObject.style.display = 'none';
+			}
 		}
 	}
 
@@ -88,6 +121,11 @@ export default class Controller extends GameComponent {
 		if (collider.gameObject.name === 'ladder') {
 			this.isLadder = false;
 			this.rigidBody.setKinematic(false);
+			if (CORE.Platform.current === CORE.Platform.ios || CORE.Platform.current === CORE.Platform.android) {
+				this.topButton.htmlObject.style.display = 'none';
+				this.bottomButton.htmlObject.style.display = 'none';
+				this.jumpButton.htmlObject.style.display = 'block';
+			}
 		}
 	}
 
@@ -97,52 +135,101 @@ export default class Controller extends GameComponent {
 		}
 	}
 
-	onUpdate() {
-		this.follower.isLookDown = false;
-		if (this.isLadder) {
-			if (Input.getKeyPressed('KeyW')) {
-				this.rigidBody.setVelocity(new Vector2d(this.rigidBody.velocity.x, 3));
-			} else if (Input.getKeyPressed('KeyS')) {
-				this.rigidBody.setVelocity(new Vector2d(this.rigidBody.velocity.x, -3));
+	moveLeft() {
+		const speed = this.isLadder ? -3 : -5;
+		this.rigidBody.setVelocity(new CORE.Vector2d(speed, this.rigidBody.velocity.y));
+		this.transform.setLocalScale(new CORE.Vector2d(-0.8, 0.8));
+		this.changeState('walk');
+	}
+
+	moveRight() {
+		const speed = this.isLadder ? 3 : 5;
+		this.rigidBody.setVelocity(new CORE.Vector2d(speed, this.rigidBody.velocity.y));
+		this.transform.setLocalScale(new CORE.Vector2d(0.8, 0.8));
+		this.changeState('walk');
+	}
+
+	moveTop() {
+		this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 3));
+	}
+
+	moveBottom() {
+		this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, -3));
+	}
+
+	jump() {
+		if (this.canJump) {
+			if (this.isTrampoline) {
+				this.rigidBody.addForce(new CORE.Vector2d(0, 1400));
 			} else {
-				this.rigidBody.setVelocity(new Vector2d(this.rigidBody.velocity.x, 0));
+				this.rigidBody.addForce(new CORE.Vector2d(0, 700));
 			}
-			if (Input.getKeyPressed('KeyA')) {
-				this.rigidBody.setVelocity(new Vector2d(-3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (Input.getKeyPressed('KeyD')) {
-				this.rigidBody.setVelocity(new Vector2d(3, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new Vector2d(0.8, 0.8));
-				this.changeState('walk');
+			this.canJump = false;
+		}
+	}
+
+	onUpdate() {
+		const follower = this.gameObject.scene.camera.getComponent(Follower);
+		follower.isLookDown = false;
+		if (this.isLadder) {
+			if (
+				CORE.Input.getKeyPressed('KeyW')
+				|| CORE.Input.getKeyPressed('ArrowUp')
+				|| this.topButtonPressed
+			) {
+				this.moveTop();
+			} else if (
+				CORE.Input.getKeyPressed('KeyS')
+				|| CORE.Input.getKeyPressed('ArrowDown')
+				|| this.bottomButtonPressed
+			) {
+				this.moveBottom();
 			} else {
-				this.rigidBody.setVelocity(new Vector2d(0, this.rigidBody.velocity.y));
+				this.rigidBody.setVelocity(new CORE.Vector2d(this.rigidBody.velocity.x, 0));
+			}
+
+			if (
+				CORE.Input.getKeyPressed('KeyA')
+				|| CORE.Input.getKeyPressed('ArrowLeft')
+				|| this.leftButtonPressed
+			) {
+				this.moveLeft();
+			} else if (
+				CORE.Input.getKeyPressed('KeyD')
+				|| CORE.Input.getKeyPressed('ArrowRight')
+				|| this.rightButtonPressed
+			) {
+				this.moveRight();
+			} else {
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
 				this.changeState('idle');
 			}
 		} else {
-			if (Input.getKeyPressed('KeyA')) {
-				this.rigidBody.setVelocity(new Vector2d(-5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new Vector2d(-0.8, 0.8));
-				this.changeState('walk');
-			} else if (Input.getKeyPressed('KeyD')) {
-				this.rigidBody.setVelocity(new Vector2d(5, this.rigidBody.velocity.y));
-				this.transform.setLocalScale(new Vector2d(0.8, 0.8));
-				this.changeState('walk');
+			if (
+				CORE.Input.getKeyPressed('KeyA')
+				|| CORE.Input.getKeyPressed('ArrowLeft')
+				|| this.leftButtonPressed
+			) {
+				this.moveLeft();
+			} else if (
+				CORE.Input.getKeyPressed('KeyD')
+				|| CORE.Input.getKeyPressed('ArrowRight')
+				|| this.rightButtonPressed
+			) {
+				this.moveRight();
 			} else {
-				this.rigidBody.setVelocity(new Vector2d(0, this.rigidBody.velocity.y));
+				follower.isLookDown = CORE.Input.getKeyPressed('KeyS') || CORE.Input.getKeyPressed('ArrowDown');
+				follower.isLookDown &&= this.canJump;
+				this.rigidBody.setVelocity(new CORE.Vector2d(0, this.rigidBody.velocity.y));
 				this.changeState('idle');
 			}
-			if (Input.getKeyDown('Space') && this.canJump) {
-				if (this.isTrampoline) {
-					this.rigidBody.addForce(new Vector2d(0, 1400));
-				} else {
-					this.rigidBody.addForce(new Vector2d(0, 700));
-				}
-				this.canJump = false;
+
+			if (CORE.Input.getKeyDown('Space') || CORE.Input.getKeyDown('ArrowUp')) {
+				this.jump();
 			}
 		}
 		if (this.transform.position.y < this.deadline) {
-			this.player.decreaseLife();
+			this.gameObject.scene.reload();
 		}
 	}
 }

@@ -13,3 +13,4 @@ export { default as UICloseButton } from './UI/UICloseButton.js';
 export { default as UIAboutButton } from './UI/UIAboutButton.js';
 export { default as InteractingObject } from './InteractingObject.js';
 export { default as Door } from './Door.js';
+export { default as Resizer } from './Resizer.js';

@@ -1,10 +1,12 @@
 * {
 	margin: unset;
 	font-family: PixelFont;
+	font-size: 20px;
+	outline: none;
 }
 
 body, html, #container, #menu {
-    height:100%;
+	height:100%;
 	min-height:100%;
 	width: 100%;
 	min-width: 100%;
@@ -14,10 +16,6 @@ body, html, #container, #menu {
 #game {
 	z-index: 0;
 	position: absolute;
-	image-rendering: -moz-crisp-edges;
-	image-rendering: -webkit-crisp-edges;
-	image-rendering: pixelated;
-	image-rendering: crisp-edges;
 }
 
 #container {
@@ -25,6 +23,46 @@ body, html, #container, #menu {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	background-color: #505050;
+	height: 100%;
+	width: 100%;
+}
+
+#loader {
+	display: none;
+}
+
+#loader > div {
+	display: inline-block;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	background-color: rgb(133, 133, 133);
+	animation: loader-scaling 2.5s ease-in-out infinite;
+}
+
+#loader > div:nth-child(1) {
+	animation-delay: 0s;
+}
+
+#loader > div:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+#loader > div:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes loader-scaling {
+	0%, 100% {
+		transform: scale(1);
+		background-color: rgb(133, 133, 133);
+	}
+
+	50% {
+		transform: scale(0.4);
+		background-color: rgb(112, 112, 112);
+	}
 }
 
 #uiHost {
@@ -34,24 +72,92 @@ body, html, #container, #menu {
 }
 
 #ui {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
+	width: 100%;
+}
+
+#topPanel {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	flex-direction: row;
+	align-items: flex-start;
 	justify-content: space-between;
 }
 
+#bottomPanel {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+}
+
+#horizontalMoveButtons {
+	padding: 35px;
+	padding-left: 15px;
+}
+
+#verticalMoveButtons {
+	padding: 35px;
+	padding-right: 15px;
+}
+
+#topButton > p {
+	font-size: 0.8em;
+	transform: rotate(-90deg);
+}
+
+#bottomButton > p {
+	font-size: 0.8em;
+	transform: rotate(90deg);
+}
+
+#jumpButton {
+	font-size: 1em;
+}
+
+#verticalMoveButtons {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+#horizontalMoveButtons > button {
+	margin-right: 10px;
+}
+
+#verticalMoveButtons > button {
+	margin-top: 10px;
+}
+
+#horizontalMoveButtons > button, #verticalMoveButtons > button, #menuButton {
+	padding: 15px 25px;
+	color: white;
+	background-color: rgba(68, 68, 68, 0.74);
+	border: none;
+	box-shadow: 2px 2px 10px black;
+}
+
+#horizontalMoveButtons > button {
+	font-size: 1em;
+}
+
+#horizontalMoveButtons > button:active, #verticalMoveButtons > button:active, #menuButton:active {
+	background-color: rgba(68, 68, 68, 0.911);
+}
+
 #menuButton {
-	background-color:  cornflowerblue;
-	width: 8%;
-	height: 10%;
-	padding:10px;
-	justify-content: center;
-	align-items: center;
-	font-size: 20px;
+	margin: 15px;
 }
 
 #countsContainer {
-	width: 10%;
-	height: 10%;
+	margin: 15px;
 	padding-left: 10px;
 	flex-direction: column;
 	justify-content: space-around;
@@ -63,17 +169,37 @@ body, html, #container, #menu {
 	flex-direction: row;
 }
 
+#playButton {
+	user-select: none;
+	z-index: 100;
+	border-radius: 0px;
+	padding: 5px 25px;
+	background-color: #505050;
+	color: #fff;
+	border: none;
+	box-shadow: 2px 2px 10px rgb(29, 29, 29);
+}
+
+#playButton:hover {
+	box-shadow: 2px 2px 10px rgb(12, 12, 12);
+}
+
+#playButton:active {
+	background-color: rgb(75, 75, 75);
+}
+
 #menu {
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
-	width: 1280px;
-	height: 720px;
+	width: 100%;
+	height: 100%;
 	background-color: rgb(123, 184, 235);
 }
 
 #info {
-	height: auto;
+	height: 100%;
+	overflow-y: auto;
 }
 
 #about, #audio{
@@ -124,18 +250,7 @@ body, html, #container, #menu {
 	border-left: 5px solid #3333FF;
 }
 
- #navbar button:visited {
-	border: 5px solid #33ADFF;
- }
-
- #navbar button:active, button:focus {
-	outline: none;
-  }
-  #navbar button::-moz-focus-inner {
-	border: 0;
-  }
-
-  #closeMenu {
+#closeMenu {
 	display: none;
 }
 

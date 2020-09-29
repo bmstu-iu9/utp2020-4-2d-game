@@ -17,7 +17,7 @@ export default class Follower extends CameraComponent {
 		let position = this.target.transform.position;
 		position = new Vector2d(position.x, position.y + 1.2);
 		if (this.isLookDown) {
-			position = position.subtract(new CORE.Vector2d(0, 2));
+			position = position.subtract(new Vector2d(0, 2));
 		}
 		if (position.y < this.floor) {
 			position = new Vector2d(position.x, this.floor);

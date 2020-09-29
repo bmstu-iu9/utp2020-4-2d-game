@@ -6,6 +6,7 @@ import SpriteRenderer from '../core/graphics/SpriteRenderer.js';
 import BoxCollider from '../core/physics/BoxCollider.js';
 import RigidBody from '../core/physics/RigidBody.js';
 import Material from '../core/physics/Material.js';
+import Game from '../core/Game.js';
 
 export default class Turrel extends GameComponent {
 	constructor(position, rotation, speed, timer) {
@@ -42,7 +43,7 @@ export default class Turrel extends GameComponent {
 					rotation: this.rotation,
 					components: [					
 						new SpriteRenderer({
-							sprite: new Sprite(this.gameObject.scene.resources.getTexture('laser')),
+							sprite: new Sprite(Game.resources.getTexture('laser')),
 							layer: 2,
 						}),
 						new BoxCollider(1, 1),

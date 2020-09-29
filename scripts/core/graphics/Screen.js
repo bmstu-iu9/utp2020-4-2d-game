@@ -8,14 +8,14 @@ export default class Screen {
 	static canvas = null;
 
 	/**
-	 * @return {Vector2d} Возвращает размер экрана.
+	 * @type {Vector2d}
 	 */
-	static getSize() {
-		if (Screen.canvas == null) {
-			throw new Error('screen is not initialized.');
-		}
-		return new Vector2d(Screen.canvas.clientWidth, Screen.canvas.clientHeight);
-	}
+	static size;
+
+	/**
+	 * @type {Vector2d}
+	 */
+	static unprocessedSize;
 
 	/**
 	 * @param {Vector2d} size Новый размер экрана.
@@ -24,32 +24,41 @@ export default class Screen {
 		if (!(size instanceof Vector2d)) {
 			throw new TypeError('invalid parameter "size". Expected an instance of Vector2d class.');
 		}
-		if (Screen.canvas == null) {
-			throw new Error('screen is not initialized.');
-		}
+
 		if (size.x <= 0) {
 			throw new RangeError('width must be greater than 0.');
 		}
+
 		if (size.y <= 0) {
 			throw new RangeError('height must be greater than 0.');
 		}
-		Screen.canvas.width = size.x;
-		Screen.canvas.height = size.y;
+
+		this.unprocessedSize = size;
 	}
 
 	/**
 	 * @return {Rect} Возвращает прямоугольник, который содержит позицию и размер элемента canvas.
 	 */
 	static getCanvasRect() {
-		if (Screen.canvas == null) {
+		if (this.canvas == null) {
 			throw new Error('screen is not initialized.');
 		}
+
 		return new Rect(
 			this.canvas.offsetLeft,
 			this.canvas.offsetTop,
 			this.canvas.clientWidth,
 			this.canvas.clientHeight,
 		);
+	}
+
+	static process() {
+		if (this.unprocessedSize != null) {
+			this.size = this.unprocessedSize;
+			this.unprocessedSize = null;
+			this.canvas.width = this.size.x;
+			this.canvas.height = this.size.y;
+		}
 	}
 
 	/**
@@ -59,10 +68,14 @@ export default class Screen {
 		if (!(canvas instanceof HTMLCanvasElement)) {
 			throw new TypeError('invalid parameter "canvas". Expected an instance of HTMLCanvasElement class.');
 		}
-		Screen.canvas = canvas;
+
+		this.canvas = canvas;
+		this.size = new Vector2d(this.canvas.clientWidth, this.canvas.clientHeight);
 	}
 
 	static destroy() {
-		Screen.canvas = null;
+		this.canvas = null;
+		this.unprocessedSize = null;
+		this.size = null;
 	}
 }

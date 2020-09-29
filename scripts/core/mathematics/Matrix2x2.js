@@ -50,6 +50,34 @@ export default class Matrix2x2 extends Float32Array {
 	}
 
 	/**
+	 * @param {number} angle Угол поворота в радианах.
+	 * 
+	 * @return {Matrix2x2} Возвращает матрицу поворота. 
+	 */
+	static ofRotation(angle) {
+		const matrix = new Matrix2x2();
+		const cos = Math.cos(angle);
+		const sin = Math.sin(angle);
+		matrix[0] = cos;
+		matrix[1] = -sin;
+		matrix[2] = sin;
+		matrix[3] = cos;
+		return matrix;
+	}
+
+	/**
+	 * @return {Matrix2x2} Возвращает матрицу, полученную транспонированием данной.
+	 */
+	transpose() {
+		const matrix = new Matrix2x2();
+		matrix[0] = this[0];
+		matrix[1] = this[2];
+		matrix[2] = this[1];
+		matrix[3] = this[3];
+		return matrix;
+	}
+
+	/**
 	 * Умножает данную матрицу на матрицу 2x2.
 	 * 
 	 * @param {Matrix2x2} matrix Матрица 2x2, на которую надо умножить.

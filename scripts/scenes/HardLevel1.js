@@ -4,11 +4,11 @@ import HardLevel2 from './HardLevel2.js';
 
 export default class HardLevel1 extends GameScene {
 	onStart() {
-		const ss = this.resources.getTiles('tileset');
-		this.hero = this.createHero(new CORE.Vector2d(-30, -0.7), 3, -6);
+		const ss = CORE.Game.resources.getTiles('tileset');
+		this.hero = this.createHero(new CORE.Vector2d(-30, -0.7), 3);
 		this.createSounds();
 
-		/*this.createBush(-40, -1);
+		this.createBush(-40, -1);
 		this.createBush(-40, 4.5, -1);
 		this.createLittleBush(-38, 4, 8);
 		this.createLittleTree(-37.5, 5.5);
@@ -38,7 +38,7 @@ export default class HardLevel1 extends GameScene {
 		}
 		for (let i = 0; i< 13; i += 5) {
 			this.createLittleTree(11 + i, 1.5);
-		}*/
+		}
 		this.addObject(new CORE.GameObject({
 			name: 'platform',
 			isStatic: true,
@@ -100,6 +100,6 @@ export default class HardLevel1 extends GameScene {
 		this.createBox(2.4, 0.7);
 		this.createDoor(new CORE.Vector2d(28, 0.7), HardLevel2, this.hero);
 		this.createCamera(this.hero, 1.5);
-		this.createUI(this.hero);
+		this.createUI(this.hero, -6);
 	}
 }

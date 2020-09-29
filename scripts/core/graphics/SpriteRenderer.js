@@ -7,13 +7,26 @@ import Matrix3x3 from '../mathematics/Matrix3x3.js';
 
 export default class SpriteRenderer extends RendererComponent {
 	/**
-	 * @param {object} settings
-	 * @param {Sprite} settings.sprite Спрайт, который будет отрисовываться каждый кадр.
-	 * @param {number} settings.color  Цвет спрайта.
-	 * @param {number} settings.layer  Слой отрисовки.
+	 * @param {object}  settings
+	 * @param {Sprite}  settings.sprite Спрайт, который будет отрисовываться каждый кадр.
+	 * @param {boolean} settings.flipX  Надо ли повернуть изображение по x.
+	 * @param {boolean} settings.flipY  Надо ли повернуть изображение по y.
+	 * @param {number}  settings.color  Цвет спрайта.
+	 * @param {number}  settings.layer  Слой отрисовки.
 	 */
-	constructor({sprite, color = Color.white, layer = 0}) {
+	constructor({sprite, flipX = false, flipY = false, color = Color.white, layer = 0}) {
 		super(layer);
+		if (typeof flipX !== 'boolean') {
+			throw new TypeError('invalid parameter "flipX". Expected a boolean value.');
+		}
+
+		if (typeof flipY !== 'boolean') {
+			throw new TypeError('invalid parameter "flipY". Expected a boolean value.');
+		}
+		
+		this.flipX = flipX;
+		this.flipY = flipY;
+		this.textureCoords = new Array(4);
 		this.setSprite(sprite);
 		this.setColor(color);
 		this.modelMatrix = null;
@@ -38,6 +51,28 @@ export default class SpriteRenderer extends RendererComponent {
 		this.modelMatrix = this.getModelMatrix();
 	}
 
+	updateTextureCoords() {
+		for (let i = 0; i < 4; i++) {
+			this.textureCoords[i] = this.sprite.textureCoords[i];
+		}
+
+		const swap = (a, b) => {
+			const temp = this.textureCoords[a];
+			this.textureCoords[a] = this.textureCoords[b];
+			this.textureCoords[b] = temp;
+		}
+
+		if (this.flipX) {
+			swap(0, 3);
+			swap(1, 2);
+		}
+
+		if (this.flipY) {
+			swap(0, 1);
+			swap(2, 3);
+		}
+	}
+
 	/**
 	 * Изменяет спрайт.
 	 * 
@@ -49,6 +84,7 @@ export default class SpriteRenderer extends RendererComponent {
 		}
 
 		this.sprite = sprite;
+		this.updateTextureCoords();
 	}
 
 	/**
@@ -63,6 +99,34 @@ export default class SpriteRenderer extends RendererComponent {
 		
 		this.color = color;
 	}
+
+	/**
+	 * Устанавливает поворот изображения по x.
+	 * 
+	 * @param {boolean} flipX Надо ли повернуть изображение по x.
+	 */
+	setFlipX(flipX) {
+		if (typeof flipX !== 'boolean') {
+			throw new TypeError('invalid parameter "flipX". Expected a boolean value.');
+		}
+
+		this.flipX = flipX;
+		this.updateTextureCoords();
+	}
+
+	/**
+	 * Устанавливает поворот изображения по y.
+	 * 
+	 * @param {boolean} flipY Надо ли повернуть изображение по y.
+	 */
+	setFlipY(flipY) {
+		if (typeof flipY !== 'boolean') {
+			throw new TypeError('invalid parameter "flipY". Expected a boolean value.');
+		}
+
+		this.flipY = flipY;
+		this.updateTextureCoords();
+	}
 	
 	/**
 	 * Отрисовывает спрайт.
@@ -73,7 +137,7 @@ export default class SpriteRenderer extends RendererComponent {
 		Renderer.drawQuad(
 			this.getModelMatrix(),
 			this.sprite.texture,
-			this.sprite.textureCoords,
+			this.textureCoords,
 			this.color,
 		);
 	}

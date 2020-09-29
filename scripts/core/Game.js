@@ -7,6 +7,7 @@ import Input from './Input.js';
 import Renderer from './graphics/webgl/Renderer.js';
 import Resources from './Resources.js'; 
 import Animator from './animations/Animator.js';
+import Platform from './Platform.js';
 
 export default class Game {
 	/**
@@ -33,12 +34,28 @@ export default class Game {
 	static resources;
 	static isActive = false;
 
-	static start(scene, canvasId, uiHostId, maxQuadCount = 5000) {
+	static start({
+		scene,
+		canvasId,
+		uiHostId,
+		resources = null,
+		onload = null,
+		maxQuadCount = 5000,
+	}) {
 		Game.canvas = document.getElementById(canvasId);
 		Game.uiHost = document.getElementById(uiHostId);
 
-		Game.resources = new Resources();
+		if (resources != null && !(resources instanceof Resources)) {
+			throw new TypeError('invalid parameter "resources". Expected an instance of Resources class.');
+		}
+
+		if (onload != null && typeof onload !== 'function') {
+			throw new TypeError('invalid parameter "onload". Expected a function.');
+		}
+
+		Game.resources = resources || new Resources();
 		Screen.initialize(Game.canvas);
+		Platform.initialize();
 		Input.initialize();
 		Renderer.initialize(Game.canvas, maxQuadCount);
 
@@ -51,6 +68,9 @@ export default class Game {
 			Game.isActive = true;
 			Scene.changeScene(scene);
 			requestAnimationFrame(Game.loop);
+			if (onload != null) {
+				onload();
+			}
 		});
 	}
 
@@ -59,10 +79,12 @@ export default class Game {
 			this.closeGame();
 			return true;
 		}
+
 		if (!Scene.current.isStarted || !Scene.current.isInitialized) {
 			requestAnimationFrame(Game.loop);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -71,15 +93,18 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
-	
+
 		const timestep = Math.min(0.1, (performance.now() - Game.lastFrameTime) / 1000);
 		Game.deltaTime += timestep;
 	
-		const size = Screen.getSize();
+		Screen.process();
+
+		const size = Screen.size;
 		
 		if (Game.uiHost.style.width !== `${size.x}px`) {
 			Game.uiHost.style.width = `${size.x}px`;
 		}
+
 		if (Game.uiHost.style.height !== `${size.y}px`) {
 			Game.uiHost.style.height = `${size.y}px`;
 		}
@@ -90,6 +115,8 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
+		const pTime = performance.now();
 	
 		while (Game.deltaTime > Game.step) {
 			Game.deltaTime -= Game.step;
@@ -98,6 +125,7 @@ export default class Game {
 				Game.lastFrameTime = performance.now();
 				return;
 			}
+
 			Collider.dynamicColliders.forEach(collider => collider.recalculate());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.recalculate());
 			const collisions = [];
@@ -111,6 +139,7 @@ export default class Game {
 					}
 				});
 			});
+
 			for (let i = 0; i < 20; i++) {
 				RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => {
 					dynamicRigidBody.integrateForces(Game.step / 20);
@@ -120,9 +149,17 @@ export default class Game {
 					dynamicRigidBody.integrateVelocity(Game.step / 20);
 				});
 			}
+
 			collisions.forEach(collision => collision.positionalCorrection());
 			RigidBody.dynamicRigidBodies.forEach(dynamicRigidBody => dynamicRigidBody.clearForce());
+			collisions.forEach(collision => {
+				collision.notify();
+			});
 			Animator.animators.forEach(animator => animator.process(Game.step));
+		}
+
+		if (Input.getKeyDown("KeyT")) {
+			console.log(`Physics - ${performance.now() - pTime}`);
 		}
 	
 		Scene.current.forEachEnabledGameObject(gameObject => gameObject.update(timestep));
@@ -130,24 +167,32 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Scene.current.updateCamera(timestep);
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Scene.current.forEachEnabledUIObject(uiObject => uiObject.update(timestep));
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		const start = performance.now();
 		Scene.current.draw();
 		if (Game.shouldStopLoop()) {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
+
 		Game.drawTime = performance.now() - start;
-	
+
+		if (Input.getKeyDown("KeyT")) {
+			console.log(`Top graphics - ${Game.drawTime}`);
+		}
+
 		Game.lastFrameTime = performance.now();
 	
 		requestAnimationFrame(Game.loop);
@@ -157,15 +202,18 @@ export default class Game {
 		if (!Game.isActive) {
 			return;
 		}
+
 		Game.isActive = false;
 		if (Scene.current != null && !Scene.current.isDestroyed) {
 			Scene.current.destroy();
 		}
+
 		Game.canvas = null;
 		Game.uiHost = null;
 		Game.resources.destroy();
 		Game.resources = null;
 		Screen.destroy();
+		Platform.destroy();
 		Input.destroy();
 		Renderer.destroy();
 	}
