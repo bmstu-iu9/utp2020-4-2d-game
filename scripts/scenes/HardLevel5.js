@@ -1,6 +1,5 @@
 import * as CORE from '../core/Core.js';
 import GameScene from './GameScene.js';
-//import Bonus from './Bonus.js';
 
 export default class HardLevel5 extends GameScene {
 	onStart() {

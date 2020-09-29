@@ -9,6 +9,7 @@ export default class Level1 extends GameScene {
 		this.createRailSpike(3, new CORE.Vector2d(20.4, -0.1), 5)
 		const ss = CORE.Game.resources.getTiles('tileset');
 		this.hero = this.createHero(new CORE.Vector2d(-30, -0.7), 3);
+		this.createSounds();
 		this.createBush(-40, -1);
 		this.createBush(-40, 4.5, -1);
 		this.createLittleBush(-38, 4, 8);
