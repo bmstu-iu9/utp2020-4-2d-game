@@ -10,7 +10,10 @@ playButton.addEventListener('click', () => {
 	const resources = new Resources();
 	resources.addTextureInLoadQueue('ball', 'resources/ball.png');
 	resources.addTextureInLoadQueue('coin', 'resources/coin.png');
+	resources.addTextureInLoadQueue('extraLife', 'resources/extraLife.png');
 	resources.addTextureInLoadQueue('spike', 'resources/spike.png');
+	resources.addTextureInLoadQueue('laser', 'resources/laser.png');
+	resources.addTextureInLoadQueue('trampoline', 'resources/trampoline.png');
 	resources.addTextureInLoadQueue('rail', 'resources/rail.png');
 	resources.addTextureInLoadQueue('hero', 'resources/hero.png');
 	resources.addSoundInLoadQueue('nature', 'resources/nature.mp3');
@@ -21,12 +24,15 @@ playButton.addEventListener('click', () => {
 		path: 'resources/map.png',
 		pixelsPerUnit: 16,
 		tiles: [
+			['door', new Rect(215, 61, 44, 74)],
+			['checkPoint', new Rect(204, 85, 9, 50)],
+			['turrel', new Rect(69, 112, 59, 28)],
 			['3', new Rect(16, 48, 16, 16)],
 			['1', new Rect(32, 48, 16, 16)],
 			['2', new Rect(48, 48, 16, 16)],
 			['01', new Rect(16, 64, 16, 16)],
 			['00', new Rect(64, 64, 16, 16)],
-			['ladders', new Rect(64, 48, 16, 16)],
+			['ladder', new Rect(64, 48, 16, 16)],
 			['littlebush', new Rect(0, 32, 32, 16)],
 			['bush', new Rect(32, 16, 48, 32)],
 			['littletree', new Rect(80, 0, 64, 80)],

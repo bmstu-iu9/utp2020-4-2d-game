@@ -115,7 +115,7 @@ export default class Game {
 			Game.lastFrameTime = performance.now();
 			return;
 		}
-	
+
 		while (Game.deltaTime > Game.step) {
 			Game.deltaTime -= Game.step;
 			Scene.current.forEachEnabledGameObject(gameObject => gameObject.fixedUpdate(Game.step));
